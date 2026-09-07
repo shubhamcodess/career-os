@@ -2,12 +2,23 @@
 .env
 config/user.json
 
-# ── Personal data — tracked in private fork (career-os-sp) ──
-# config/user.json is still gitignored (contains no secrets here but kept consistent)
-# Resumes, job tracker, market intel, checkpoints — all versioned privately below
-
-# Only keep the .gitkeep markers out of the public repo ignore:
-# (these lines are intentionally removed for private use)
+# ── Personal data — gitignored by default in the public template ──
+# If you fork this to build your own private career OS, either:
+#   (a) keep your fork private, or
+#   (b) remove these lines to track your own data in your own private repo
+data/master-experience.md
+data/star-stories.md
+data/version-registry.md
+data/portfolio-brief.md
+data/job-tracker.md
+data/comp-intel.md
+data/market/
+data/logs/
+checkpoints/interview-state.md
+resumes/*/
+!resumes/.gitkeep
+exports/*.json
+!exports/.gitkeep
 
 # ── Dependencies ──
 node_modules/
