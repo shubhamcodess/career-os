@@ -4,14 +4,14 @@ description: >
   Invoke when searching for live job listings. Triggers on: "find jobs for me",
   "search jobs at [company]", "what roles are open at [company]", "job search",
   "find [role] openings", or as part of `status` dashboard refresh.
-  Fans out to Indeed, ZipRecruiter, and Dice simultaneously (all free MCPs, no paid
-  keys required), deduplicates results, and ranks by match against master-experience.md.
+  Fans out to ATS Direct (Greenhouse/Lever), Naukri, and job board MCPs simultaneously,
+  deduplicates results, and ranks by match against master-experience.md.
   Saves results to data/market/job-feed.md and commits.
 ---
 
 # Job Aggregator Skill
 
-Searches all connected job MCPs in parallel, deduplicates, and ranks results
+Searches all connected job sources in parallel, deduplicates, and ranks results
 against your profile. Single source of live market intelligence.
 
 ## Trigger Commands
@@ -32,60 +32,128 @@ Read `config/user.json`:
 - `target_locations[]` — locations or "remote"
 - `experience_years` — for seniority filtering
 - `domain_keywords[]` — domain terms to include in searches
+- `integrations.naukri_enabled` — whether to include Naukri
+- `integrations.naukri_pages_per_search` — how many pages to scrape
 
 ## Step 2 — Fan Out to All Sources
 
-Run ALL of these in the same turn. Don't wait for one before starting the next.
+Run ALL of these simultaneously. Don't wait for one before starting the next.
 
-### Indeed MCP
+---
+
+### Source A: ATS Direct (Greenhouse + Lever)
+
+**Most reliable source** — pure JSON APIs, no scraping, no bot detection.
+Companies with internal ATS (Google, Amazon, etc.) are automatically skipped with
+a note pointing to their careers page.
+
+**For `find jobs` (broad search across config companies):**
+```bash
+python3 scripts/ats-fetcher.py --from-config --role "[first target_role]"
+```
+
+**For `find jobs at [company]` (single company):**
+```bash
+python3 scripts/ats-fetcher.py --company "[company]" --role "[first target_role]"
+```
+
+**For multiple specific companies:**
+```bash
+python3 scripts/ats-fetcher.py --companies Stripe Anthropic Groww --role "[role]"
+```
+
+Known Greenhouse companies (from `KNOWN_SLUGS` in the script): Groww, Postman, Stripe,
+Databricks, Cloudflare, Coinbase, Reddit, Discord, Airbnb, Figma, Anthropic, OpenAI,
+HashiCorp.
+
+Known Lever companies: Meesho, Cred, Freshworks, Netflix, Lyft, Vercel.
+
+Companies NOT on Greenhouse/Lever (internal ATS): Razorpay, PhonePe, Zepto,
+BrowserStack, Flipkart, Walmart, IKEA, Google, Microsoft, Amazon, Meta, Apple, Nvidia,
+Visa, Lowes, Target. The script will skip these and print the correct careers URL.
+
+To add a new company: look up its Greenhouse board at
+`boards-api.greenhouse.io/v1/boards/{slug}/jobs` or Lever at
+`api.lever.co/v0/postings/{slug}`, then add to `KNOWN_SLUGS` in `scripts/ats-fetcher.py`.
+
+---
+
+### Source B: Naukri (if `naukri_enabled: true` in config)
+
+Best for: Indian market listings, companies not on international job boards,
+mid-market product companies.
+
+```bash
+python3 scripts/naukri-scraper.py \
+  --role "[first target_role]" \
+  --location "[city from target_locations]" \
+  --pages [naukri_pages_per_search]
+```
+
+For `find jobs at [company]`: Naukri does not support single-company filtering
+via URL. Run normally and post-filter results by `company` field in the JSON.
+
+If Naukri is disabled or returns 0 results, continue without it — ATS + MCPs
+are sufficient. See `skills/naukri-scraper/SKILL.md` for troubleshooting.
+
+---
+
+### Source C: Job Board MCPs
+
+Run in parallel with Sources A and B.
+
+**Indeed MCP:**
 ```
 Tool: search_jobs
 Params: query=[role], location=[location], limit=20
 Then: get_job_details for top 10 results
 ```
 
-### ZipRecruiter MCP
+**ZipRecruiter MCP:**
 ```
 Tool: search_jobs (authless)
 Params: search=[role], location=[location], days_ago=7
 ```
 
-### Dice MCP
+**Dice MCP:**
 ```
 Tool: search_jobs (authless, tech-focused)
 Params: q=[role], location=[location]
 Best for: engineering, data, product roles at tech companies
 ```
 
-### ATS Direct (Greenhouse + Lever)
+If an MCP connector is unavailable or returns an error, skip it and note in the output.
+MCP sources are best for roles not at the specific companies in `target_companies[]`.
 
-Run in parallel alongside the MCPs above.
+---
 
-**For `find jobs` (broad search)** — fetch all target companies from config:
-```bash
-python3 scripts/ats-fetcher.py --from-config --role "[target_role]"
+## Step 3 — Merge All Results
+
+Collect JSON arrays from ATS fetcher (stdout), Naukri scraper (stdout), and MCP results.
+All three sources use the same field shape:
+```json
+{
+  "title": "...",
+  "company": "...",
+  "experience": "...",
+  "location": "...",
+  "salary": "...",
+  "description": "...",
+  "posted": "...",
+  "tags": [],
+  "url": "...",
+  "source": "greenhouse|lever|naukri|indeed|ziprecruiter|dice"
+}
 ```
 
-**For `find jobs at [company]`** — fetch that company only:
-```bash
-python3 scripts/ats-fetcher.py --company "[company]" --role "[target_role]"
-```
-
-These are public JSON APIs — no scraping, no bot detection. Companies on Greenhouse/Lever
-are returned immediately; companies on internal ATSs (Google, Amazon, Meta, etc.) are
-skipped with a note. See `scripts/ats-fetcher.py` → `KNOWN_SLUGS` to add/update mappings.
-
-Naukri (if enabled in config) runs via `scripts/naukri-scraper.py` — best for Indian
-listings not on international boards. See `skills/naukri-scraper/SKILL.md`.
-
-## Step 3 — Deduplicate
+## Step 4 — Deduplicate
 
 After all sources return results, deduplicate by:
 1. Exact match: same job title + same company = one listing
 2. Fuzzy match: title similarity >80% + same company = likely duplicate, keep the one
-   with more detail
+   with more detail (prefer ATS source over board MCPs — more accurate description)
 
-## Step 4 — Score and Rank
+## Step 5 — Score and Rank
 
 For each unique listing, score it against `data/master-experience.md`:
 
@@ -99,14 +167,14 @@ For each unique listing, score it against `data/master-experience.md`:
 
 Produce a score 0–100 for each listing.
 
-## Step 5 — Output Format
+## Step 6 — Output Format
 
 Save to `data/market/job-feed.md`:
 
 ```markdown
 # Live Job Feed
 _Last updated: [datetime]_
-_Sources: Indeed, ZipRecruiter, Dice (+ Naukri if enabled)_
+_Sources: ATS Direct ([N] companies), Naukri ([N] pages), Indeed, ZipRecruiter, Dice_
 
 ## 🔥 Strong Matches (Score 75+)
 ### [Company] — [Role Title]
@@ -131,10 +199,11 @@ Git commit after save:
 git commit -m "data: refreshed job feed — [N] listings, [N] strong matches"
 ```
 
-## Step 6 — Surface Insights
+## Step 7 — Surface Insights
 
 After ranking, tell the user:
-- How many total listings found across all sources
+- How many total listings found per source (ATS: N, Naukri: N, MCPs: N)
+- Which target companies had Greenhouse/Lever boards vs. internal ATS
 - How many strong matches
 - Any new companies appearing that aren't in their target list
 - Salary ranges seen (if available) → suggest adding to comp-intel.md

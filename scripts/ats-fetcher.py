@@ -177,7 +177,10 @@ def fetch_lever(slug: str, role_filter: str) -> list[dict]:
 
 
 def _strip_html(text: str) -> str:
-    return re.sub(r"<[^>]+>", " ", text or "").strip()
+    import html
+    text = html.unescape(text or "")
+    text = re.sub(r"<[^>]+>", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
 
 
 def fetch_company(company: str, role_filter: str) -> list[dict]:
