@@ -1,0 +1,45 @@
+{
+  "_comment": "TEMPLATE FILE \u2014 copy to config/user.json and fill in your own values. This example file IS committed to git; user.json is gitignored.",
+  "profile": {
+    "name": "",
+    "email": "",
+    "location": "",
+    "linkedin_url": "",
+    "github_username": ""
+  },
+  "target": {
+    "target_roles": [
+      "Your Target Role 1",
+      "Your Target Role 2"
+    ],
+    "target_companies": [
+      "Company A",
+      "Company B",
+      "Company C"
+    ],
+    "target_locations": [
+      "Your City",
+      "Remote"
+    ],
+    "experience_years": 5,
+    "domain_keywords": [
+      "your-domain-keyword"
+    ]
+  },
+  "integrations": {
+    "naukri_enabled": false,
+    "naukri_pages_per_search": 2,
+    "naukri_delay_seconds": [
+      3,
+      6
+    ],
+    "github_market_map_enabled": true,
+    "profile_intelligence_enabled": true
+  },
+  "resume": {
+    "default_template": "default",
+    "default_page_length": "1-page",
+    "always_run_ats_check": true,
+    "always_run_humanizer": true
+  }
+}

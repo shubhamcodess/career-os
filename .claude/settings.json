@@ -1,0 +1,24 @@
+{
+  "mcpConfigPath": "./mcp/.mcp.json",
+
+  "permissions": {
+    "allow": [
+      "Bash(git:*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(node:*)",
+      "Bash(python3:*)",
+      "Bash(pip:*)",
+      "Read(**)",
+      "Write(**)",
+      "Edit(**)"
+    ]
+  },
+
+  "notes": {
+    "setup": "Run 'npm install' in repo root after cloning to install pdf-export dependencies",
+    "github_pat": "Set GITHUB_PERSONAL_ACCESS_TOKEN in mcp/.mcp.json or as env variable",
+    "filesystem_path": "Update the filesystem MCP path in mcp/.mcp.json to your actual repo path",
+    "brave_key": "Optional — only needed for web search. Get free key at brave.com/search/api"
+  }
+}

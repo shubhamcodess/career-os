@@ -1,0 +1,40 @@
+# ── Secrets — never commit ──
+.env
+config/user.json
+
+# ── Personal data — gitignored by default in the public template ──
+# If you fork this to build your own private career OS, either:
+#   (a) keep your fork private, or
+#   (b) remove these lines to track your own data in your own private repo
+data/master-experience.md
+data/star-stories.md
+data/version-registry.md
+data/portfolio-brief.md
+data/job-tracker.md
+data/comp-intel.md
+data/market/
+data/logs/
+checkpoints/interview-state.md
+resumes/*/
+!resumes/.gitkeep
+exports/*.json
+!exports/.gitkeep
+
+# ── Dependencies ──
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# ── Puppeteer / Playwright cache ──
+.local-chromium/
+.playwright-cache/
+
+# ── OS files ──
+.DS_Store
+Thumbs.db
+
+# ── Temp files ──
+*.tmp
+*.temp
