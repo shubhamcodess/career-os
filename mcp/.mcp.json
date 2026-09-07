@@ -1,0 +1,62 @@
+{
+  "mcpServers": {
+
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+      },
+      "description": "GitHub operations — read/write repos, create PRs, push files, manage issues. Also used by github-market-map and profile-intelligence skills for the GitHub REST API layer."
+    },
+
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "${CAREER_OS_ROOT}"],
+      "description": "Extended local filesystem access. Set CAREER_OS_ROOT in .env to your absolute repo path."
+    },
+
+    "indeed": {
+      "type": "url",
+      "url": "https://mcp.indeed.com/claude/mcp",
+      "description": "Indeed job search — live listings. Used by job-aggregator skill."
+    },
+
+    "ziprecruiter": {
+      "type": "url",
+      "url": "https://api.ziprecruiter.com/mcp",
+      "description": "ZipRecruiter job search — authless, live listings. Used by job-aggregator skill."
+    },
+
+    "dice": {
+      "type": "url",
+      "url": "https://mcp.dice.com/mcp",
+      "description": "Dice job search — tech-focused, authless. Used by job-aggregator skill."
+    },
+
+    "puppeteer": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-puppeteer"],
+      "description": "Headless browser — renders HTML to PDF for resume export. Used by pdf-export skill."
+    },
+
+    "firecrawl": {
+      "command": "npx",
+      "args": ["-y", "firecrawl-mcp"],
+      "env": {
+        "FIRECRAWL_API_KEY": "${FIRECRAWL_API_KEY}"
+      },
+      "description": "Deep web scraping/crawl — use ONLY for high-value tasks: fetching full JDs from URLs, company profiling, finding candidate profiles. Not for routine searches."
+    }
+
+  },
+
+  "_setup_notes": {
+    "step1": "Copy .env.example to .env and fill in your keys",
+    "step2": "GITHUB_PERSONAL_ACCESS_TOKEN required for github + market-map skills — free to create",
+    "step3": "FIRECRAWL_API_KEY required for Firecrawl — use only for JD fetching, company profiling, candidate research (not routine searches)",
+    "step4": "CAREER_OS_ROOT should be the absolute path to this repo, e.g. /Users/you/career-os",
+    "naukri_note": "Naukri has no MCP/API — handled via scripts/naukri-scraper.py, not this file. Enable in config/user.json",
+    "linkedin_note": "No free/legal LinkedIn-layer data source is wired in yet (Crustdata requires a paid plan). profile-intelligence currently runs on GitHub public data only. Swap in a LinkedIn-data provider later by editing skills/profile-intelligence/SKILL.md and adding its MCP or API here."
+  }
+}
