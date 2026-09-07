@@ -145,6 +145,8 @@ career-os/
 | Tailoring resume to a JD | `skills/resume-tailoring/SKILL.md` |
 | AI-to-human pass | `skills/resume-humanizer/SKILL.md` |
 | PDF export | `skills/pdf-export/SKILL.md` |
+| Cover letter generation | `skills/cover-letter/SKILL.md` |
+| JD quality check / red flag analysis | `skills/jd-analyzer/SKILL.md` |
 | Naukri/LinkedIn/Instahyre profile optimization | `skills/profile-optimizer/SKILL.md` |
 | Live job search across sources (Indeed/ZipRecruiter/Dice) | `skills/job-aggregator/SKILL.md` |
 | Researching who works at a target company | `skills/profile-intelligence/SKILL.md` |
@@ -223,6 +225,15 @@ resumes/Razorpay_SeniorPM_2026-09-07_v1/
 6. Save `resume.md`, generate `resume.html` and `resume.pdf` → `pdf-export` skill
 7. Log to `data/version-registry.md`
 8. Commit all files
+9. Offer: "Generate a cover letter for this application? (`make cover letter for [Company/Role]`)"
+
+**For `make cover letter for [Company/Role]`** — reads `skills/cover-letter/SKILL.md`:
+1. Locate the targeted `resume.md` for this company/role (latest version)
+2. Parse JD (reuse from resume pipeline or re-fetch)
+3. Write cover letter using targeted resume achievements + master doc depth
+4. Run humanizer pass (cover-letter-specific rules)
+5. Generate `cover-letter.html` and `cover-letter.pdf` into same resume folder
+6. Commit
 
 ---
 
@@ -291,6 +302,8 @@ git commit -m "market: refreshed job feed — 34 listings, 6 strong matches"
 | `show checkpoints` | Display checkpoint log |
 | `rewind to [CP-N]` | Surface checkpoint, allow edit, re-save, commit |
 | `make resume for [Company/Role]` + JD | Full pipeline: intel check → tailor → build → ATS → humanize → PDF → commit |
+| `make cover letter for [Company/Role]` | Cover letter using targeted resume + master doc → humanize → PDF → commit |
+| `jd check` + JD text or URL | Analyze JD for red/yellow/green flags, score it, give apply/pass verdict |
 | `export pdf` | Generate PDF from latest resume |
 | `use template [name]` | Switch active resume template |
 | `ats check` | Full ATS audit on latest resume |
@@ -358,17 +371,20 @@ files first so the "current state" section is always accurate.
   update master            Re-run intake to update experience doc
 
 ━━━ RESUME PIPELINE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  make resume for [Company/Role]   Full pipeline (paste JD after)
-  ats check                        ATS audit on latest resume
-  export pdf                       Re-export PDF from latest resume.html
-  use template [name]              Switch resume template
-  version log                      All resume versions
-  diff [company] v1 v2             Compare two resume versions
+  make resume for [Company/Role]        Full pipeline (paste JD after)
+  make cover letter for [Company/Role]  Cover letter from targeted resume → humanized PDF
+  jd check                             Analyze JD for red/yellow/green flags before applying
+  ats check                            ATS audit on latest resume
+  export pdf                           Re-export PDF from latest resume.html
+  use template [name]                  Switch resume template
+  version log                          All resume versions
+  diff [company] v1 v2                 Compare two resume versions
 
 ━━━ JOB SEARCH ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   find jobs                        Search all sources (Indeed, ZipRecruiter, Dice, Naukri)
   find jobs at [company]           Search one company
   refresh job feed                 Re-run last search
+  jd check                         Analyze a JD for red/yellow/green flags (apply/pass verdict)
   job tracker                      View application status
 
 ━━━ MARKET INTELLIGENCE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
