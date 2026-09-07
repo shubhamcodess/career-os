@@ -5,13 +5,29 @@
 # The personal-main branch (in .personal-worktree) tracks personal:main.
 # Safe to run from main at any time — uses a worktree, never switches branches.
 #
-# Usage: bash scripts/backup-personal.sh
+# Usage:
+#   bash scripts/backup-personal.sh                        # auto timestamp commit
+#   bash scripts/backup-personal.sh -m "intake: CP-03 …"  # Claude-authored commit msg
 
 set -e
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 WORKTREE="$REPO_ROOT/.personal-worktree"
 TIMESTAMP="$(date '+%Y-%m-%d %H:%M')"
+COMMIT_MSG="sync: personal data — $TIMESTAMP"
+
+# Parse optional -m flag
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -m|--message)
+      COMMIT_MSG="$2"
+      shift 2
+      ;;
+    *)
+      shift
+      ;;
+  esac
+done
 
 # Ensure personal-main branch exists
 if ! git -C "$REPO_ROOT" show-ref --quiet refs/heads/personal-main; then
@@ -48,8 +64,10 @@ git add -f checkpoints data resumes config/user.json 2>/dev/null || true
 if git diff --cached --quiet; then
   echo "Nothing changed — career-os-sp:main already up to date."
 else
-  git commit -m "sync: personal data — $TIMESTAMP"
-  echo "Committed personal data snapshot."
+  git commit -m "$COMMIT_MSG
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
+  echo "Committed: $COMMIT_MSG"
 fi
 
 # Push personal-main as main to private repo
