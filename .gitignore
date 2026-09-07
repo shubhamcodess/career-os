@@ -2,6 +2,9 @@
 .env
 config/user.json
 
+# ── Local-only Claude instructions (personal git config, private remotes) ──
+.claude/CLAUDE.md
+
 # ── Personal data — gitignored by default in the public template ──
 # If you fork this to build your own private career OS, either:
 #   (a) keep your fork private, or
