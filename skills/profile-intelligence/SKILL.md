@@ -18,8 +18,8 @@ public sources. Feeds directly into resume tailoring and outreach.
 
 **Current data sources (all free):**
 - **GitHub REST API** — public profile data, org member lists, repo activity
-- **Brave Search MCP** (if connected, free tier) — company blog posts, team pages,
-  engineering culture writeups, Glassdoor/AmbitionBox summaries
+- **Firecrawl MCP** (if key set) — company blog posts, team pages, engineering culture
+  writeups, Glassdoor/AmbitionBox summaries — use sparingly, only for high-value targets
 - **Company website / careers page** — via web_fetch, for culture and team signals
 
 **What's intentionally NOT included yet:**
@@ -74,7 +74,7 @@ From the org's public repos (if any):
 - Recent commit activity (is the org active, what's being built lately)
 - Open issues/PRs (occasionally reveals team structure via reviewers/assignees)
 
-## Step 3 — Web Search Layer (if Brave Search MCP connected)
+## Step 3 — Web Search Layer (if Firecrawl MCP connected)
 
 Run targeted searches:
 - `"[company]" engineering blog`

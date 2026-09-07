@@ -30,7 +30,7 @@ Extract and categorize:
 
 ### Step 2 — Research the Company
 
-Using available MCP connectors (brave-search or indeed):
+Using available MCP connectors (firecrawl or indeed):
 - What does the company build? What's the core product?
 - Stage: seed / Series A-C / growth / public
 - Recent news: funding, product launches, leadership changes

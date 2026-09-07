@@ -141,7 +141,7 @@ Being upfront about what's live data vs. workaround, so you know what you're get
 | ZipRecruiter | ✅ Live MCP | Free, authless, works immediately |
 | Dice | ✅ Live MCP | Free, authless, tech-focused |
 | GitHub | ✅ Live REST API | Free, public data, 5,000 req/hr with a free personal access token |
-| Brave Search | ✅ Live MCP | Free tier (2,000 queries/month), used for company research |
+| Firecrawl | ✅ Live MCP | Paid key required — used for JD fetching, company profiling, candidate research (use sparingly) |
 | Naukri | ⚠️ Scraper | No official API. Playwright-based, free but fragile — may break if Naukri changes their site |
 | LinkedIn direct | ❌ Not possible | Scraping violates ToS — never attempted |
 | LinkedIn-layer data (e.g. Crustdata) | 🔜 Not included | Would give direct people-search by company/role; requires a paid plan, so it's left out of the default setup. `profile-intelligence` currently runs on GitHub + web search instead. See that skill's file for how to add a provider later. |

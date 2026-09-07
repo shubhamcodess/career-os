@@ -66,13 +66,12 @@ Edit `config/user.json`:
 
 **Used for:** git operations, github-market-map skill, profile-intelligence GitHub lookups
 
-### Brave Search API Key (optional, free tier)
-1. Sign up at https://brave.com/search/api
-2. Free tier: 2,000 queries/month, no credit card required
-3. Copy into `.env` as `BRAVE_API_KEY`
+### Firecrawl API Key (required for web scraping tasks)
+1. Sign up at https://www.firecrawl.dev
+2. Copy into `.env` as `FIRECRAWL_API_KEY`
 
-**Used for:** company research fallback (`profile-intelligence`), salary data gathering
-**If skipped:** Claude will rely on its own knowledge and other connectors for research
+**Used for:** fetching full JD pages from URLs, company profiling, candidate profile research
+**Use sparingly** — reserve for high-value tasks (not routine lookups)
 
 ### A note on paid data sources
 
