@@ -198,12 +198,16 @@ Resume templates live in `templates/resume-templates/` as HTML/CSS files.
 
 ## Git Behavior — Non-Negotiable
 
-After EVERY file write or update, without exception, use GitHub MCP (or `git` CLI fallback):
+After EVERY framework file write (skills, templates, scripts, docs), use GitHub MCP (or `git` CLI fallback):
 
 ```bash
-git add -A
+git status          # always check first — never blindly git add -A
+git add <files>     # add specific files only, never -A
 git commit -m "[type]: [what changed]"
 ```
+
+**Personal data files (`data/`, `checkpoints/`, `resumes/`, `config/user.json`, `.env`) are
+gitignored and must NEVER be committed or pushed to any remote.**
 
 Commit types: `init:` `intake:` `data:` `resume:` `checkpoint:` `skill:` `template:`
 `export:` `mcp:` `market:` (for job-aggregator/profile-intelligence/github-market-map writes)
