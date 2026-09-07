@@ -38,9 +38,7 @@ playwright install chromium
 Read `.env` (don't print values, just confirm presence) and tell me which of these
 are set vs. missing:
 - `GITHUB_PERSONAL_ACCESS_TOKEN` (required, free to create)
-- `BRAVE_API_KEY` (optional, free tier)
-
-Both are free — no paid API keys are needed for this setup.
+- `FIRECRAWL_API_KEY` (required for JD fetching, company profiling, candidate research — use sparingly)
 
 For any missing required keys, point me to the relevant section in `docs/SETUP.md`.
 
