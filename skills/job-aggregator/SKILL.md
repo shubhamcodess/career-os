@@ -33,7 +33,7 @@ Read `config/user.json`:
 - `experience_years` — for seniority filtering
 - `domain_keywords[]` — domain terms to include in searches
 
-## Step 2 — Fan Out to All Active MCPs
+## Step 2 — Fan Out to All Sources
 
 Run ALL of these in the same turn. Don't wait for one before starting the next.
 
@@ -57,14 +57,26 @@ Params: q=[role], location=[location]
 Best for: engineering, data, product roles at tech companies
 ```
 
-<!--
-FUTURE: A fourth source (e.g. Crustdata, or another job/company data provider) can be
-added here once a free or budget-friendly option is chosen. Crustdata was evaluated but
-requires a paid plan, so it's excluded from the default setup. To add a new source:
-1. Add its MCP config to mcp/.mcp.json
-2. Add a fan-out block here following the pattern above
-3. Update the dedupe and scoring steps below if it returns a different data shape
--->
+### ATS Direct (Greenhouse + Lever)
+
+Run in parallel alongside the MCPs above.
+
+**For `find jobs` (broad search)** — fetch all target companies from config:
+```bash
+python3 scripts/ats-fetcher.py --from-config --role "[target_role]"
+```
+
+**For `find jobs at [company]`** — fetch that company only:
+```bash
+python3 scripts/ats-fetcher.py --company "[company]" --role "[target_role]"
+```
+
+These are public JSON APIs — no scraping, no bot detection. Companies on Greenhouse/Lever
+are returned immediately; companies on internal ATSs (Google, Amazon, Meta, etc.) are
+skipped with a note. See `scripts/ats-fetcher.py` → `KNOWN_SLUGS` to add/update mappings.
+
+Naukri (if enabled in config) runs via `scripts/naukri-scraper.py` — best for Indian
+listings not on international boards. See `skills/naukri-scraper/SKILL.md`.
 
 ## Step 3 — Deduplicate
 
