@@ -269,6 +269,7 @@ git commit -m "market: refreshed job feed — 34 listings, 6 strong matches"
 | `status` | Full dashboard across all data files + market intel freshness |
 | `add skill [name]` | Scaffold a new skill in skills/[name]/SKILL.md |
 | `add template [name]` | Save new resume template |
+| `backup` | Run `bash scripts/backup-personal.sh` — push personal data to career-os-sp:personal-data branch |
 | `help` | Show this full command reference with current system state and next recommended action |
 
 ---
