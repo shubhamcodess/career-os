@@ -265,6 +265,80 @@ git commit -m "market: refreshed job feed — 34 listings, 6 strong matches"
 | `status` | Full dashboard across all data files + market intel freshness |
 | `add skill [name]` | Scaffold a new skill in skills/[name]/SKILL.md |
 | `add template [name]` | Save new resume template |
+| `help` | Show this full command reference with current system state and next recommended action |
+
+---
+
+## `help` Command — Output Specification
+
+When the user types `help`, output the following structured guide. Read live state from
+files first so the "current state" section is always accurate.
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║                     CAREER OS — HELP                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+━━━ CURRENT STATE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Interview       : [NOT STARTED | IN PROGRESS (CP-N) | COMPLETE]
+  Master doc      : [empty | partial (N sections) | complete]
+  Resumes         : [N generated — latest: Company_Role_date_vN]
+  Job feed        : [never run | last run: DATE (N listings)]
+  Last action     : [most recent commit message]
+
+━━━ WHAT TO DO NEXT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  → [Single recommended next action based on current state]
+     e.g. "begin intake interview" / "resume interview" /
+          "make resume for [company]" / "find jobs"
+
+━━━ SETUP CHECKLIST (one-time) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  [✅/❌] config/user.json filled
+  [✅/❌] .env keys set (GITHUB_PERSONAL_ACCESS_TOKEN, FIRECRAWL_API_KEY)
+  [✅/❌] npm install done (node_modules present)
+  [✅/❌] PDF export working (exports/test-render.pdf exists)
+  [✅/❌] Naukri enabled + .venv + chromium installed
+  [✅/❌] master-experience.md has content
+  [✅/❌] At least one resume generated
+
+━━━ INTAKE INTERVIEW ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  begin intake interview   Start from scratch
+  resume interview         Continue from last checkpoint
+  pause interview          Save state and stop
+  show checkpoints         See progress log
+  rewind to [CP-N]         Go back to a specific checkpoint
+  update master            Re-run intake to update experience doc
+
+━━━ RESUME PIPELINE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  make resume for [Company/Role]   Full pipeline (paste JD after)
+  ats check                        ATS audit on latest resume
+  export pdf                       Re-export PDF from latest resume.html
+  use template [name]              Switch resume template
+  version log                      All resume versions
+  diff [company] v1 v2             Compare two resume versions
+
+━━━ JOB SEARCH ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  find jobs                        Search all sources (Indeed, ZipRecruiter, Dice, Naukri)
+  find jobs at [company]           Search one company
+  refresh job feed                 Re-run last search
+  job tracker                      View application status
+
+━━━ MARKET INTELLIGENCE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  profile intel for [company]      Who works there, what they know
+  github market map for [role]     What people in this role actually build
+  research comp for [role/company] Salary, equity, negotiation position
+
+━━━ OUTREACH & INTERVIEW PREP ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  prep for [company] interview     STAR matching + mock Q&A
+  draft outreach for [company]     Cold message to recruiter/employee
+  optimize profile for [platform]  Naukri / LinkedIn / Instahyre / Wellfound
+
+━━━ SYSTEM ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  status                   Full dashboard + data freshness
+  export portfolio brief   Generate portfolio-brief.json
+  add skill [name]         Scaffold a new skill
+  add template [name]      Add a new resume template
+  help                     Show this screen
+```
 
 ---
 
