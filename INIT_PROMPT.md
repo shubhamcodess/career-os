@@ -58,8 +58,8 @@ Confirm success and report file size.
 ## Step 7 — Read all skills
 
 Read every `SKILL.md` file in `skills/`. Confirm which are ready to use and which need
-missing API keys (note them, don't block on them — everything is designed to work on
-free tiers, with graceful degradation if optional keys like `BRAVE_API_KEY` are absent).
+missing API keys (note them, don't block on them — skills degrade gracefully when
+optional connectors like Naukri are disabled).
 
 ## Step 8 — Initial commit
 
