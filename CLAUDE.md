@@ -198,14 +198,40 @@ Resume templates live in `templates/resume-templates/` as HTML/CSS files.
 
 ## Git Behavior — Non-Negotiable
 
-After EVERY file write or update, without exception, use GitHub MCP (or `git` CLI fallback):
+### Identity
+Local git config is set to `prakashshubham36@gmail.com` / `Shubham Prakash` (shubhamcodess account).
+Never use the global git config — it belongs to a client account. All commits in this repo must
+use the local identity already configured in `.git/config`.
+
+### Two-Remote Model
+This repo has two remotes with distinct purposes:
+
+| Remote | Repo | Push when |
+|---|---|---|
+| `origin` | `shubhamcodess/career-os` (public) | Framework changes only — skills, templates, scripts, docs |
+| `personal` | `shubhamcodess/career-os-sp` (private) | Every commit — personal data, resumes, job tracker, market intel |
+
+**After EVERY file write or update, without exception:**
 
 ```bash
 git add -A
 git commit -m "[type]: [what changed]"
+git push personal main          # always — backs up everything
 ```
 
-Commit types: `init:` `intake:` `data:` `resume:` `checkpoint:` `skill:` `template:`
+Push to `origin` only when the change is framework-level (a skill improvement, new template,
+script fix, doc update) — never when the change contains or references personal data.
+
+```bash
+git push origin main            # framework changes only
+```
+
+### SSH
+Both remotes use the `github-career-os` SSH host alias (key at `~/.ssh/career-os`).
+If push fails with a key error, check `ssh -T git@github-career-os` before debugging further.
+
+### Commit Types
+`init:` `intake:` `data:` `resume:` `checkpoint:` `skill:` `template:`
 `export:` `mcp:` `market:` (for job-aggregator/profile-intelligence/github-market-map writes)
 
 Examples:
