@@ -147,6 +147,7 @@ career-os/
 | PDF export | `skills/pdf-export/SKILL.md` |
 | Cover letter generation | `skills/cover-letter/SKILL.md` |
 | JD quality check / red flag analysis | `skills/jd-analyzer/SKILL.md` |
+| Cold outreach email to recruiter/hiring manager | `skills/cold-outreach/SKILL.md` |
 | Naukri/LinkedIn/Instahyre profile optimization | `skills/profile-optimizer/SKILL.md` |
 | Live job search across sources (Indeed/ZipRecruiter/Dice) | `skills/job-aggregator/SKILL.md` |
 | Researching who works at a target company | `skills/profile-intelligence/SKILL.md` |
@@ -315,7 +316,7 @@ git commit -m "market: refreshed job feed — 34 listings, 6 strong matches"
 | `github market map for [role]` | What people in this role actually build |
 | `prep for [company] interview` | STAR matching + mock Q&A |
 | `research comp for [role/company]` | Salary, equity, negotiation position |
-| `draft outreach for [company]` | Cold message to recruiter/employee |
+| `draft outreach for [company]` | Personalized cold email: pulls all intel, ONE hook + ONE achievement, renders as email card in chat, optional persist |
 | `version log` | Display version-registry.md |
 | `diff [company] v1 v2` | Git diff between two resume versions |
 | `job tracker` | Display job-tracker.md |
@@ -393,9 +394,14 @@ files first so the "current state" section is always accurate.
   research comp for [role/company] Salary, equity, negotiation position
 
 ━━━ OUTREACH & INTERVIEW PREP ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  prep for [company] interview     STAR matching + mock Q&A
-  draft outreach for [company]     Cold message to recruiter/employee
-  optimize profile for [platform]  Naukri / LinkedIn / Instahyre / Wellfound
+  draft outreach for [company]           Cold email: personalized hook + best achievement,
+                                         rendered as email card, 100-150 words, humanized
+  draft outreach for [company] [role]    Same, targeted at a specific role
+  cold email to [name] at [company]      Same, personalized to a named recruiter/HM
+  [after draft] save this outreach       Persist to data/outreach/ + commit
+  [after draft] follow-up version        2-sentence follow-up for after 7 days no reply
+  prep for [company] interview           STAR matching + mock Q&A
+  optimize profile for [platform]        Naukri / LinkedIn / Instahyre / Wellfound
 
 ━━━ SYSTEM ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   status                   Full dashboard + data freshness

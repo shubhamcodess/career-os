@@ -17,6 +17,8 @@ data/job-tracker.md
 data/comp-intel.md
 data/market/
 data/logs/
+data/outreach/
+!data/outreach/.gitkeep
 checkpoints/interview-state.md
 resumes/*/
 !resumes/.gitkeep
