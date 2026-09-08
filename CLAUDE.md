@@ -394,11 +394,13 @@ files first so the "current state" section is always accurate.
   research comp for [role/company] Salary, equity, negotiation position
 
 ━━━ OUTREACH & INTERVIEW PREP ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  draft outreach for [company]           Cold email: personalized hook + best achievement,
-                                         rendered as email card, 100-150 words, humanized
+  draft outreach for [company]           Cold email + LinkedIn variants: personalized hook
+                                         + one achievement, humanized, rendered as cards
   draft outreach for [company] [role]    Same, targeted at a specific role
-  cold email to [name] at [company]      Same, personalized to a named recruiter/HM
-  [after draft] save this outreach       Persist to data/outreach/ + commit
+  cold email to [name] at [company]      Email only, personalized to a named recruiter/HM
+  LinkedIn message to [name]             Connection note (≤280 chars) + DM/InMail version
+  connection request for [company]       Just the ≤280-char connection note
+  [after draft] save this outreach       Persist all drafted variants to data/outreach/
   [after draft] follow-up version        2-sentence follow-up for after 7 days no reply
   prep for [company] interview           STAR matching + mock Q&A
   optimize profile for [platform]        Naukri / LinkedIn / Instahyre / Wellfound

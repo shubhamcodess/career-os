@@ -168,37 +168,51 @@ One achievement only. A list of achievements in a cold email reads as desperatio
 Never: "Excited about [Role] opportunity", "Quick question about [Company]",
 "Reaching out regarding...", "I wanted to introduce myself"
 
-### Email Body (100-150 words)
+### Email Template Skeleton
+
+This skeleton is always followed — fill each slot, respect the word budgets.
+Do not merge slots or skip the PS if a strong secondary hook is available.
 
 ```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SUBJECT  │ [6-10 words — use a formula from the table above]
+─────────┼──────────────────────────────────────────────────────────
+FROM     │ [Full Name] <[email from config/user.json]>
+TO       │ [Recruiter Name / [Company] Recruiting Team]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 Hi [First Name / [Company] Team],
 
-[HOOK — 1-2 sentences]
-[Something specific about them/their company that shows real research. NOT "I admire your mission."
-The recruiter must think: "they actually know what we're doing."]
+▸ HOOK       [≤ 30 words]
+             One specific thing about them or their company.
+             Test: could this sentence appear in an email to a different company? If yes, rewrite.
 
-[ACHIEVEMENT — 2-3 sentences]
-[One specific win from the targeted resume, stated with the metric, in the context of
-why it's relevant here. "At [Company], I [did X] which [resulted in Y metric]. That maps
-directly to [what this role needs / what you're building]."]
+▸ ACHIEVEMENT [≤ 40 words]
+             One win with a metric. From targeted resume.md.
+             Connect it explicitly to what this company is building or this role needs.
 
-[ASK — 1-2 sentences]
-[Specific, low-friction. Not "I would love to be considered for any opportunities."
-Yes: "Would you have 15 minutes this week to talk about the [Role]?"]
+▸ ASK        [≤ 25 words]
+             Single, specific, low-friction action.
+             Name the format and timeframe: "15 minutes this week", "a quick intro call".
 
-[Sign-off],
+[Best / Thanks],
 [Full Name]
-[Email] · [LinkedIn short URL] · [GitHub if relevant]
+[email] · [linkedin] · [github or portfolio — if relevant]
 
-P.S. [Optional: one secondary hook — link to portfolio, relevant project, GitHub repo,
-or something that reinforces the achievement. PS lines get read even when body gets
-skimmed.]
+P.S. [≤ 20 words — optional but use it if there's a strong secondary hook:
+     a live project, a relevant repo, a portfolio piece, or a specific metric
+     that didn't fit the body. PS lines are read even when body gets skimmed.]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WORD BUDGET │ Hook ≤30 · Achievement ≤40 · Ask ≤25 · PS ≤20
+TOTAL BODY  │ 100-150 words (hard cap — count before rendering)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-### Sign-off Options (in order of preference)
-- "Best," — professional, not stiff
-- "Thanks," — warm, peer-to-peer
-- Never: "Sincerely," "Regards," "Respectfully," (too formal for cold email)
+### Sign-off
+- "Best," — professional, not stiff (default)
+- "Thanks," — warmer, peer-to-peer (use when tone is more casual)
+- Never: "Sincerely," "Regards," "Respectfully," — too formal for cold outreach
 
 ---
 
@@ -232,6 +246,193 @@ research the company.
 **Read-aloud test:** read the email aloud. If any sentence sounds like you're presenting
 at a conference or giving a performance review, rewrite it in the voice you'd use
 talking to a colleague at a meetup.
+
+---
+
+## LinkedIn Message Variants
+
+When the user says "LinkedIn message", "LinkedIn outreach", "connection request",
+"InMail", or "DM on LinkedIn", produce the appropriate LinkedIn variant instead of
+(or alongside) the email. Same research pipeline applies — same hook and achievement
+selection logic. Different constraints on format, length, and tone.
+
+### Variant A — Connection Request Note (≤ 300 characters hard limit)
+
+LinkedIn enforces a 300-character cap on connection request notes. Every character counts.
+No subject line. No sign-off. No links. Pure text.
+
+**Template skeleton:**
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TYPE     │ LinkedIn Connection Request Note
+CHAR CAP │ 300 (hard limit enforced by LinkedIn — draft to ≤ 280 for safety)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Hi [First Name],
+
+▸ HOOK [1 sentence, ≤ 100 chars]
+  Something specific — their recent post, talk, company initiative, or shared context.
+
+▸ BRIDGE [1 sentence, ≤ 100 chars]
+  One line on your most relevant signal for them — role, metric, or shared background.
+
+▸ SOFT ASK [1 sentence, ≤ 80 chars]
+  "Would love to connect." or "Happy to share more if useful."
+  Never ask for a call in a connection note — too much friction before they've accepted.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CHAR BUDGET │ Hook ≤100 · Bridge ≤100 · Ask ≤80 · TOTAL ≤ 280
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+After drafting, always show the character count: `[N]/300 characters`.
+
+**Example (filled):**
+```
+Hi Priya,
+
+Saw your post on Razorpay's checkout latency work — that's exactly the problem I
+spent 18 months on at [Company], cutting p95 from 800ms to 140ms.
+
+Would love to connect.
+
+[Name]
+```
+→ 196 characters. Clean, specific, leaves room.
+
+**Banned from connection notes:**
+- "I came across your profile on LinkedIn" (every note starts this way — instant generic signal)
+- "I am looking for new opportunities" (makes it about you, not them)
+- Links of any kind (LinkedIn strips them from notes)
+- Multiple asks
+- "Please accept my request" (desperate)
+
+---
+
+### Variant B — LinkedIn DM / InMail (after connected, or with InMail credit)
+
+More room than a connection note, but still tighter than email. Casual, peer-to-peer.
+No formal subject line shown to recipient (InMail has a subject field — treat it like
+the email subject but can be slightly longer: up to 15 words).
+
+**Template skeleton:**
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TYPE      │ LinkedIn DM or InMail
+SUBJECT   │ [InMail only — ≤ 15 words, same formula as email subject]
+WORD CAP  │ 150-200 words (DM) / 200-300 words (InMail — still keep it tight)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Hi [First Name],
+
+▸ HOOK        [≤ 30 words]
+              Same rule as email: must be specific, not swappable with another company.
+
+▸ ACHIEVEMENT [≤ 40 words]
+              One metric-backed win. Tighter than email — no "that maps directly to"
+              filler. Let the metric speak: "At [Co], I [did X] → [metric result]."
+
+▸ ASK         [≤ 20 words]
+              Same as email. "Would you have 15 minutes?" works here too.
+              Can add: "Happy to send my resume/portfolio if useful."
+
+[First name only — no formal sign-off on LinkedIn DMs]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WORD BUDGET │ Hook ≤30 · Achievement ≤40 · Ask ≤20 · TOTAL ≤ 200
+NO PS LINE  │ PS lines don't render well in LinkedIn DMs — skip it
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**Sign-off:** First name only. "Priya" not "Best, Priya Sharma".
+LinkedIn is casual — a formal sign-off reads wrong.
+
+**Banned from LinkedIn DMs (additional to the shared list below):**
+- "I noticed you viewed my profile" (even if true — sounds surveillance-y)
+- "I came across your profile on LinkedIn" (everyone says this)
+- "I thought I'd reach out" (filler — just reach out)
+- "I would love to be considered for any opportunities" (too passive, makes them do the work)
+- Emoji in the first sentence (one at the end of the message is fine if tone is casual)
+
+---
+
+### Shared Humanizer Rules (apply to all LinkedIn variants)
+
+In addition to the email humanizer rules:
+- LinkedIn tone is 10% more casual than email. Contractions are fine ("I've", "you're").
+- No formal salutation ("Dear [Name]" — never on LinkedIn)
+- No closing pleasantries ("Looking forward to connecting!", "Have a great day!")
+- Keep sentences under 12 words — LinkedIn is read on mobile; long sentences get skipped
+
+---
+
+### LinkedIn Rendering in Chat
+
+For **connection request notes**, render as a LinkedIn-style card:
+
+```html
+<div style="font-family: -apple-system, 'Segoe UI', sans-serif; max-width: 500px;
+  border: 1px solid #d0d7de; border-radius: 8px; overflow: hidden;">
+  <div style="background: #0a66c2; padding: 10px 16px; display: flex;
+    align-items: center; gap: 10px;">
+    <span style="color: white; font-weight: 700; font-size: 15px;">in</span>
+    <span style="color: white; font-size: 13px; opacity: 0.9;">Connection Request</span>
+  </div>
+  <div style="padding: 16px; background: white;">
+    <div style="font-size: 12px; color: #666; margin-bottom: 10px;">
+      To: [Recruiter Name] · [Title] at [Company]
+    </div>
+    <div style="font-size: 14px; line-height: 1.6; color: #1a1a1a; white-space: pre-wrap;">
+      [NOTE TEXT]
+    </div>
+  </div>
+  <div style="background: #f3f2ef; border-top: 1px solid #d0d7de; padding: 8px 16px;
+    font-size: 11px; color: #888;">
+    [N]/300 characters
+  </div>
+</div>
+```
+
+For **DMs/InMail**, render as a LinkedIn message thread bubble:
+
+```html
+<div style="font-family: -apple-system, 'Segoe UI', sans-serif; max-width: 540px;
+  border: 1px solid #d0d7de; border-radius: 8px; overflow: hidden;">
+  <div style="background: #0a66c2; padding: 10px 16px; display: flex;
+    align-items: center; gap: 10px;">
+    <span style="color: white; font-weight: 700; font-size: 15px;">in</span>
+    <span style="color: white; font-size: 13px; opacity: 0.9;">
+      [DM / InMail] · [Recruiter Name]
+    </span>
+  </div>
+  [InMail only — show subject line bar]
+  <div style="background: #f3f2ef; padding: 8px 16px; font-size: 12px;
+    color: #555; border-bottom: 1px solid #d0d7de;">
+    Subject: [SUBJECT]
+  </div>
+  <div style="padding: 16px; background: white;">
+    <div style="background: #dce6f1; border-radius: 12px 12px 2px 12px;
+      padding: 12px 14px; font-size: 14px; line-height: 1.65;
+      color: #1a1a1a; white-space: pre-wrap; display: inline-block; max-width: 90%;">
+      [MESSAGE TEXT]
+    </div>
+  </div>
+  <div style="background: #f3f2ef; border-top: 1px solid #d0d7de; padding: 8px 16px;
+    font-size: 11px; color: #888;">
+    [N] words · Generated [date]
+  </div>
+</div>
+```
+
+After rendering any LinkedIn variant, add in regular text:
+```
+[Connection note: N/300 chars | DM: N words]
+To persist: say "save this outreach"
+To revise: say "make it more casual" / "tighten the hook" / "different achievement"
+Want the email version too? Say "also draft the email"
+```
 
 ---
 
@@ -272,7 +473,12 @@ After rendering, add in regular text:
 Word count: [N] (target: 100-150)
 To persist: say "save this outreach"
 To revise: say "make it more [casual/direct/brief]" or "add more about [X]"
+Want a LinkedIn version? Say "also draft LinkedIn message" or "connection request version"
 ```
+
+**Note:** LinkedIn rendering is handled in the LinkedIn Message Variants section above.
+When both email and LinkedIn are requested in the same session, render them sequentially —
+email card first, LinkedIn card second — so the user can compare tone.
 
 ---
 
@@ -288,21 +494,40 @@ If the user says "save this", "keep this", or "persist this outreach":
 # Cold Outreach — [Company] / [Role] / [Recruiter Name]
 _Drafted: [date] | Resume version: [folder name] | Status: drafted_
 
-## Subject
-[subject line]
+## Cold Email
 
-## Email
-[full email text]
+**Subject:** [subject line]
+
+[full email text including PS]
+
+---
+
+## LinkedIn Connection Request Note
+_[N]/300 characters_
+
+[note text]
+
+---
+
+## LinkedIn DM / InMail
+_[InMail subject if applicable]_
+
+[message text]
+
+---
 
 ## Intel Used
-- Company intel: [yes/no, date]
-- Role portrait: [yes/no, date]
-- Recruiter research: [what was found / "none"]
-- Targeted resume: [folder name]
+- Company intel: [yes/no — data/market/company-intel/[slug].md, date if exists]
+- Role portrait: [yes/no — data/market/role-portraits/[slug].md, date if exists]
+- Recruiter research: [what was found: name, title, profile source / "none"]
+- Targeted resume: [resumes/[folder]/resume.md]
 
 ## Notes
-[Any notes on follow-up, when to send, variations tried]
+[Anything relevant: when to send, which variant performed, follow-up sent date]
 ```
+
+Omit any section (Email / Connection Note / DM) that wasn't drafted in this session —
+don't save empty placeholders.
 
 2. Commit:
 ```bash
@@ -329,6 +554,11 @@ After the initial draft, support quick iterations without re-running the full pi
 | `stronger subject` | Generate 3 alternative subject lines, user picks |
 | `add portfolio` | Weave in portfolio link or specific project URL in the PS |
 | `follow-up version` | Draft a 2-sentence follow-up for if there's no reply after 7 days |
+| `also draft LinkedIn message` | Draft both connection note (≤280 chars) AND DM version |
+| `connection request version` | Draft just the ≤280-character connection note |
+| `LinkedIn DM version` | Draft the longer DM/InMail variant (~150-200 words) |
+| `tighten the hook` | Rewrite hook only — keep rest of email/message intact |
+| `different achievement` | Swap to the next strongest achievement from targeted resume |
 
 ---
 
@@ -358,13 +588,29 @@ Still happy to find 15 minutes if the timing works.
 
 ## Quality Gates
 
+### Cold Email
 Before rendering, verify:
-- [ ] Body is 100-150 words (hard limit)
-- [ ] Hook is specific enough that it couldn't apply to another company or recruiter
-- [ ] Achievement has a concrete metric — no vague claims
-- [ ] Ask is explicit: one specific action (call, reply, intro)
+- [ ] Body is 100-150 words (hard limit — count before rendering)
+- [ ] Hook is specific: could NOT appear in an email to a different company or recruiter
+- [ ] Achievement has a concrete metric — no vague claims ("improved performance")
+- [ ] Ask is explicit: one specific action, named format and timeframe
 - [ ] No banned phrases survived the humanizer pass
-- [ ] Subject line is ≤10 words
-- [ ] PS (if included) adds a distinct secondary hook, not a repeat of the body
-- [ ] Sign-off is "Best," or "Thanks," — not "Sincerely"
-- [ ] Email reads at a 7th-grade level — clear, simple, direct
+- [ ] Subject line is ≤10 words, uses one of the formulas
+- [ ] PS (if included) adds a distinct secondary hook — not a repeat of the body
+- [ ] Sign-off is "Best," or "Thanks," — not "Sincerely" or "Regards"
+- [ ] Reads at a 7th-grade level — clear, direct, no corporate vocabulary
+
+### LinkedIn Connection Request Note
+- [ ] ≤ 280 characters (show count — LinkedIn cap is 300, draft to 280 for safety)
+- [ ] Hook is specific: could not be copy-pasted to someone else at the same company
+- [ ] No links (LinkedIn strips them from connection notes)
+- [ ] Soft ask only — do NOT ask for a call in a connection note
+- [ ] Does NOT open with "I came across your profile on LinkedIn"
+
+### LinkedIn DM / InMail
+- [ ] ≤ 200 words (DM) / ≤ 300 words (InMail)
+- [ ] Same hook specificity rule as email
+- [ ] No formal sign-off — first name only
+- [ ] InMail subject line present if drafting InMail (≤15 words)
+- [ ] No PS line (doesn't render well in LinkedIn UI)
+- [ ] Does NOT open with "I noticed you viewed my profile" or "I came across your profile"
