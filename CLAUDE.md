@@ -155,6 +155,7 @@ career-os/
 | Naukri-specific scraping | `skills/naukri-scraper/SKILL.md` |
 | Any job search task, general orchestration | `skills/job-search-command-center/SKILL.md` |
 | Full phase-by-phase instructions | `skills/job-search-command-center/references/phases.md` |
+| `help`, `status`, `/help`, `/status`, "show commands", "show dashboard" | `skills/dashboard/SKILL.md` |
 
 When a new `.md` file appears in any `skills/*/` folder, read it automatically without being asked.
 
@@ -326,14 +327,21 @@ git commit -m "market: refreshed job feed — 34 listings, 6 strong matches"
 | `add skill [name]` | Scaffold a new skill in skills/[name]/SKILL.md |
 | `add template [name]` | Save new resume template |
 | `backup` | Run `bash scripts/sync-vault.sh -m "[meaningful message]"` — sync personal data to vault with a descriptive commit message |
-| `help` | Show this full command reference with current system state and next recommended action |
+| `help` | Render the command reference + current state as an interactive widget (see dashboard skill) |
+| `status` | Render full data freshness dashboard as an interactive widget (see dashboard skill) |
 
 ---
 
-## `help` Command — Output Specification
+## `help` and `status` Commands — Widget Output
 
-When the user types `help`, output the following structured guide. Read live state from
-files first so the "current state" section is always accurate.
+When the user types `help`, `status`, `/help`, `/status`, "show commands", or "show dashboard":
+
+1. Read `skills/dashboard/SKILL.md` first
+2. Read all live state files (interview checkpoint, master doc, resumes, job feed, git log, setup checks)
+3. Call `show_widget` using the template in the dashboard skill — **never output plain ASCII text**
+4. Output at most one sentence of text after the widget (or nothing)
+
+The ASCII template below is kept for reference only — do NOT render it as plain text output.
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
