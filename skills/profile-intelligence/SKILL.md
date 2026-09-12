@@ -18,12 +18,12 @@ public sources. Feeds directly into resume tailoring and outreach.
 
 **Current data sources (all free):**
 - **GitHub REST API** — public profile data, org member lists, repo activity
-- **Built-in `WebSearch` + `WebFetch`** — always available, no key needed; use for company
-  blogs, team pages, engineering culture writeups, Glassdoor/AmbitionBox summaries,
-  careers pages, and any public web research. Use `WebFetch` for direct page URLs;
-  use `WebSearch` for discovery queries (e.g. `"[company]" engineering blog`)
-- **Firecrawl MCP** (if key set) — better extraction on JS-heavy or dynamic pages;
-  use sparingly for high-value targets where WebFetch returns incomplete content
+- **Built-in `WebSearch`** — always available; use for discovery queries: company blog,
+  team pages, engineering culture writeups, Glassdoor/AmbitionBox, recent funding/news
+- **Built-in `WebFetch`** — always available; use to read full content of URLs found via WebSearch
+- **Firecrawl MCP** (if key set) — use alongside WebFetch for high-value targets;
+  gives richer/cleaner extraction on JS-rendered pages (company career portals, LinkedIn
+  public profiles, Medium/Substack engineering blogs) where WebFetch returns thin content
 
 **What's intentionally NOT included yet:**
 A dedicated LinkedIn-layer data source (e.g. Crustdata) would give direct people-search
@@ -79,9 +79,9 @@ From the org's public repos (if any):
 
 ## Step 3 — Web Search Layer
 
-Run targeted searches using **built-in `WebSearch`** (always available) or Firecrawl MCP
-(prefer for JS-heavy pages). Both produce the same output — use whichever is connected;
-if Firecrawl is missing, built-in search covers everything here:
+Run targeted searches using built-in `WebSearch` for discovery, then read full content
+using **`WebFetch`** (fast, clean HTML pages) and/or **Firecrawl MCP** (JS-rendered pages,
+Medium/Substack/corporate blogs that render client-side). Use both where applicable:
 
 - `"[company]" engineering blog`
 - `"[company]" "[role]" hiring OR "we're looking for"`
@@ -89,15 +89,18 @@ if Firecrawl is missing, built-in search covers everything here:
 - `"[company]" tech stack`
 - `site:glassdoor.com OR site:ambitionbox.com "[company]" reviews`
 
-Then `WebFetch` the most relevant URLs from search results to get full article content.
+For each promising URL: try `WebFetch` for standard HTML pages; use Firecrawl for pages
+that return thin or empty content via WebFetch (JS-heavy blogs, dynamic career portals).
 
 Extract: culture signals, interview process notes, tech stack mentions, team structure
 hints, recent news (funding, launches, layoffs — all relevant context).
 
 ## Step 4 — Company Careers Page
 
-Use built-in `WebFetch` on the careers URL (if known or found via Step 3 search).
-For JS-rendered pages that return empty content, fall back to Firecrawl MCP.
+Fetch the careers URL (if known or found via Step 3 search). Use both where applicable:
+- **`WebFetch`** — fast for standard HTML careers pages
+- **Firecrawl MCP** — use for JS-rendered portals (Workday, Greenhouse-embedded, Lever-embedded)
+  that return incomplete content via WebFetch
 
 Extract: currently open roles (cross-reference with job-aggregator results), stated
 values/culture language, team photos/bios if present, benefits signals.

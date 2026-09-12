@@ -30,8 +30,13 @@ Extract and categorize:
 
 ### Step 2 — Research the Company
 
-Use built-in `WebSearch` and `WebFetch` (always available) to research. Fall back to
-Firecrawl MCP for JS-heavy or paywalled pages. Find:
+Use all three tools where they excel — they're complementary:
+- **Built-in `WebSearch`** — discovery: engineering blog, funding news, team pages
+- **Built-in `WebFetch`** — read full content of URLs found via search; fast on standard HTML
+- **Firecrawl MCP** — use alongside WebFetch for JS-rendered pages (Medium engineering blogs,
+  Substack, LinkedIn public company pages, Glassdoor) where WebFetch returns thin content
+
+Find:
 - What does the company build? What's the core product?
 - Stage: seed / Series A-C / growth / public
 - Recent news: funding, product launches, leadership changes

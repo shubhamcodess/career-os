@@ -90,9 +90,10 @@ what's available. Offer to run `profile intel for [company]` afterward.
 
 ### Step 2 — Recruiter Research (if any info provided)
 
-If a LinkedIn URL is given:
-- Try `WebFetch` first (built-in, no key needed)
-- If it returns empty/login wall, use Firecrawl MCP (better at JS-rendered pages)
+If a LinkedIn URL is given — use both where they excel:
+- **`WebFetch`** — fast for public LinkedIn profiles and personal sites
+- **Firecrawl MCP** — use for JS-heavy or login-walled pages where WebFetch returns thin content
+  (Firecrawl handles dynamic rendering better for LinkedIn public profiles and company pages)
 
 Extract: current role/title, how long at company, recent posts or articles they've shared,
 any public interests (conferences they attend, topics they post about), prior companies.
