@@ -38,7 +38,7 @@ from datetime import date
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from ats_platforms import (  # noqa: E402
     PLATFORMS, PROBE_ORDER, probe, slug_candidates, board_url,
-    owner_name, names_match,
+    owner_name, names_match, platform_from_url,
 )
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -285,6 +285,10 @@ def main() -> None:
                    help="Manually pin a company to a platform+slug")
     g.add_argument("--set-careers", nargs=2, metavar=("NAME", "URL"),
                    help="Set the careers page URL for a company with no public ATS")
+    g.add_argument("--from-url", nargs=2, metavar=("NAME", "URL"),
+                   help="Pin a company from a pasted ATS board URL — platform and slug "
+                        "are read straight off the URL. Use this when auto-discovery "
+                        "misses a board registered under a legal entity name.")
     g.add_argument("--list", action="store_true", help="Print the current registry")
 
     p.add_argument("--workers", type=int, default=6, help="Parallel probe threads (default 6)")
@@ -316,6 +320,31 @@ def main() -> None:
         save_registry(reg)
         verdict = f"{count} jobs" if count is not None else "board did not respond — pinned anyway"
         print(f"Pinned {name} -> {platform}:{slug} ({verdict})", file=sys.stderr)
+        return
+
+    if args.from_url:
+        name, url = args.from_url
+        parsed = platform_from_url(url)
+        if not parsed:
+            print(f"Could not recognize an ATS board in: {url}", file=sys.stderr)
+            print(f"Supported: {', '.join(PLATFORMS)}", file=sys.stderr)
+            print('If it is just a careers page, use --set-careers instead.', file=sys.stderr)
+            sys.exit(1)
+        platform, slug = parsed
+        count = probe(platform, slug)
+        if count is None:
+            print(f"Recognized {platform}:{slug} but the board did not respond. "
+                  f"Not pinning — check the URL.", file=sys.stderr)
+            sys.exit(1)
+        reg.setdefault("companies", {})[key_of(name)] = {
+            "name": name, "platform": platform, "slug": slug,
+            "status": "manual", "jobs_seen": count,
+            "board_url": board_url(platform, slug),
+            "careers_url": reg.get("companies", {}).get(key_of(name), {}).get("careers_url", ""),
+            "verified_at": today,
+        }
+        save_registry(reg)
+        print(f"Pinned {name} -> {platform}:{slug} ({count} jobs)", file=sys.stderr)
         return
 
     if args.set_careers:

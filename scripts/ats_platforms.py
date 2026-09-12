@@ -15,6 +15,7 @@ the fetcher pick it up automatically.
 import html
 import json
 import re
+import urllib.parse
 import urllib.request
 
 HEADERS = {
@@ -242,6 +243,93 @@ def _fetch_workday(slug: str) -> list[dict] | None:
     return out
 
 
+# ---------------------------------------------------------------------------
+# Eightfold AI — powers many large-enterprise careers portals (Netflix, and a
+# long tail of others). Slug is compound: "host|domain".
+#   e.g. "explore.jobs.netflix.net|netflix.com"
+# ---------------------------------------------------------------------------
+
+EIGHTFOLD_PAGE = 50
+EIGHTFOLD_MAX = 500
+
+
+def _fetch_eightfold(slug: str) -> list[dict] | None:
+    if "|" not in (slug or ""):
+        return None
+    host, domain = slug.split("|", 1)
+    out: list[dict] = []
+    start = 0
+    while start < EIGHTFOLD_MAX:
+        url = (f"https://{host}/api/apply/v2/jobs?domain={domain}"
+               f"&start={start}&num={EIGHTFOLD_PAGE}")
+        data = http_json(url)
+        if not isinstance(data, dict):
+            return out if out else None
+        page = data.get("positions") or []
+        if not page:
+            break
+        total = data.get("count") or 0
+        for j in page:
+            loc = j.get("location") or ""
+            if not loc and isinstance(j.get("locations"), list):
+                loc = ", ".join(str(x) for x in j["locations"][:3])
+            out.append({
+                "title": j.get("name", ""),
+                "location": loc,
+                "description": strip_html(j.get("job_description", "")),
+                "posted": str(j.get("t_create", "")),
+                "tags": [t for t in [j.get("department"), j.get("work_location_option")] if t],
+                "url": j.get("canonicalPositionUrl", ""),
+            })
+        # Eightfold silently caps page size below what we ask for, so advance by
+        # what we actually got and stop on the reported total, not on a short page.
+        start += len(page)
+        if total and start >= total:
+            break
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Amazon — its own public search JSON. Slug is unused but kept for uniformity.
+# ---------------------------------------------------------------------------
+
+AMAZON_URL = ("https://www.amazon.jobs/en/search.json"
+              "?base_query={q}&result_limit=100&offset={offset}&sort=recent")
+AMAZON_MAX = 300
+
+
+def _fetch_amazon(slug: str) -> list[dict] | None:
+    # slug optionally carries a query hint, e.g. "software engineer"
+    query = urllib.parse.quote_plus(slug or "software engineer")
+    out: list[dict] = []
+    offset = 0
+    while offset < AMAZON_MAX:
+        data = http_json(AMAZON_URL.format(q=query, offset=offset))
+        if not isinstance(data, dict):
+            return out if out else None
+        page = data.get("jobs") or []
+        if not page:
+            break
+        for j in page:
+            loc = j.get("location") or ", ".join(
+                x for x in [j.get("city"), j.get("state"), j.get("country_code")] if x)
+            path = j.get("job_path", "")
+            out.append({
+                "title": j.get("title", ""),
+                "location": loc,
+                "description": strip_html(_first_nonempty(
+                    j.get("description_short"), j.get("description"),
+                    j.get("basic_qualifications"))),
+                "posted": j.get("posted_date", ""),
+                "tags": [t for t in [j.get("job_category"), j.get("business_category")] if t],
+                "url": f"https://www.amazon.jobs{path}" if path else "https://www.amazon.jobs",
+            })
+        if len(page) < 100:
+            break
+        offset += 100
+    return out
+
+
 def discover_workday(company: str) -> str | None:
     """Probe the Workday host/site matrix. Returns a compound slug or None."""
     from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -331,6 +419,22 @@ PLATFORMS: dict[str, dict] = {
         "board_url_fn": lambda slug: (
             lambda p: f"https://{p[0]}.{p[1]}.myworkdayjobs.com/en-US/{p[2]}" if p else ""
         )(parse_workday_slug(slug)),
+    },
+    "eightfold": {
+        # Compound slug: "host|domain", e.g. "explore.jobs.netflix.net|netflix.com".
+        # No auto-discovery: the host is company-specific and unguessable. Pin it
+        # with --from-url after finding the careers portal.
+        "url": None,
+        "parse": None,
+        "fetch": _fetch_eightfold,
+        "board_url_fn": lambda slug: f"https://{slug.split('|')[0]}" if "|" in slug else "",
+    },
+    "amazon": {
+        # Amazon's own public search JSON. Slug carries an optional query hint.
+        "url": None,
+        "parse": None,
+        "fetch": _fetch_amazon,
+        "board_url_fn": lambda slug: "https://www.amazon.jobs",
     },
 }
 
@@ -434,6 +538,93 @@ def slug_candidates(name: str) -> list[str]:
                "", clean).strip().replace(" ", ""),
     ]
     return [v for v in dict.fromkeys(variants) if v]
+
+
+def platform_from_url(url: str) -> tuple[str, str] | None:
+    """
+    Work out (platform, slug) from a pasted ATS or careers URL.
+
+    This is the escape hatch from slug guessing. Auto-discovery only tries
+    variations of the company name, so it misses boards registered under a legal
+    entity — Razorpay's Greenhouse slug is "razorpaysoftwareprivatelimited", which
+    no name-based guess would ever produce. Search the web for the real board,
+    paste the URL here, and the mapping is exact.
+
+    Returns None if the URL isn't a recognizable ATS board.
+    """
+    u = (url or "").strip()
+    if not u:
+        return None
+    if not u.startswith("http"):
+        u = "https://" + u
+
+    parsed = urllib.parse.urlparse(u)
+    host = (parsed.netloc or "").lower()
+    path = [p for p in (parsed.path or "").split("/") if p]
+
+    def seg_after(marker: str) -> str | None:
+        for i, p in enumerate(path):
+            if p == marker and i + 1 < len(path):
+                return path[i + 1]
+        return None
+
+    # Greenhouse: boards.greenhouse.io/<slug>, job-boards.greenhouse.io/<slug>,
+    # boards-api.greenhouse.io/v1/boards/<slug>/jobs
+    if "greenhouse.io" in host:
+        slug = seg_after("boards") or (path[0] if path and path[0] != "v1" else None)
+        return ("greenhouse", slug) if slug else None
+
+    # Lever: jobs.lever.co/<slug>, api.lever.co/v0/postings/<slug>
+    if "lever.co" in host:
+        slug = seg_after("postings") or (path[0] if path else None)
+        return ("lever", slug) if slug else None
+
+    # Ashby: jobs.ashbyhq.com/<slug>
+    if "ashbyhq.com" in host:
+        slug = seg_after("job-board") or (path[0] if path else None)
+        return ("ashby", slug) if slug else None
+
+    # Workable: apply.workable.com/<slug>
+    if "workable.com" in host:
+        slug = seg_after("accounts") or (path[0] if path else None)
+        return ("workable", slug) if slug else None
+
+    # SmartRecruiters: jobs.smartrecruiters.com/<Slug>
+    if "smartrecruiters.com" in host:
+        slug = seg_after("companies") or (path[0] if path else None)
+        return ("smartrecruiters", slug) if slug else None
+
+    # Recruitee: <slug>.recruitee.com
+    if host.endswith("recruitee.com"):
+        slug = host.split(".")[0]
+        return ("recruitee", slug) if slug else None
+
+    # Workday: <tenant>.wdN.myworkdayjobs.com/[en-US/]<site>
+    if "myworkdayjobs.com" in host:
+        parts = host.split(".")
+        if len(parts) >= 3:
+            tenant, wd = parts[0], parts[1]
+            site = None
+            for p in path:
+                if p.lower() in ("en-us", "wday", "cxs") or p == tenant:
+                    continue
+                site = p
+                break
+            if site:
+                return ("workday", f"{tenant}/{wd}/{site}")
+        return None
+
+    # Eightfold: the host is company-specific, so infer the domain from the host.
+    # Recognized by the /careers or /api/apply path shape.
+    if "/api/apply" in (parsed.path or "") or any(
+            s in host for s in ("eightfold.ai", "jobs.", "explore.", "careers.")):
+        domain = ".".join(host.split(".")[-2:])
+        for marker in ("netflix", "microsoft"):
+            if marker in host:
+                domain = f"{marker}.com"
+        return ("eightfold", f"{host}|{domain}")
+
+    return None
 
 
 def board_url(platform: str, slug: str) -> str:
