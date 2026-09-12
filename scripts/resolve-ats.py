@@ -209,7 +209,9 @@ def merge(reg: dict, resolved: dict[str, dict], preserve_manual: bool = True) ->
 
 def print_summary(reg: dict) -> None:
     companies = reg.get("companies", {})
-    live = [c for c in companies.values() if c.get("status") in ("verified", "manual")]
+    # A manual entry pinned to platform "none" is a careers-page pointer, not a board.
+    live = [c for c in companies.values()
+            if c.get("status") in ("verified", "manual") and c.get("platform", "none") != "none"]
     empty = [c for c in companies.values() if c.get("status") == "empty"]
     unresolved = [c for c in companies.values() if c.get("status") == "unresolved"]
     needs_attention = empty + unresolved
