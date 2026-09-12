@@ -125,6 +125,11 @@ Best for: engineering, data, product roles at tech companies
 If an MCP connector is unavailable or returns an error, skip it and note in the output.
 MCP sources are best for roles not at the specific companies in `target_companies[]`.
 
+**Web search fallback (when all MCPs are down):** Use built-in `WebSearch` with queries like
+`site:greenhouse.io "[role]"`, `"[company]" "[role]" hiring 2026`, or `[role] jobs [location]`
+to surface listings from public job boards. Then `WebFetch` each result URL to extract the
+full JD. This is slower but always available — note in output that results came from web search.
+
 ---
 
 ## Step 3 — Merge All Results

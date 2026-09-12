@@ -25,7 +25,10 @@ should tell you: apply confidently / apply but clarify these things first / pass
 - `check this job posting`
 - Automatically when a URL to a job posting is shared without another command
 
-If a URL is provided, fetch the full JD via Firecrawl before analyzing.
+If a URL is provided, fetch the full JD text before analyzing. Use whichever is available:
+- **Built-in `WebFetch`** — always available, no key needed; use this first
+- **Firecrawl MCP** — richer extraction; prefer it for paywalled or JS-heavy job boards
+- **Built-in `WebSearch`** — if the URL is broken or returns a redirect, search "[company] [role] job posting" to find the canonical JD page
 
 ---
 

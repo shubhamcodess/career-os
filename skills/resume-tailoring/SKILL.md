@@ -30,11 +30,12 @@ Extract and categorize:
 
 ### Step 2 — Research the Company
 
-Using available MCP connectors (firecrawl or indeed):
+Use built-in `WebSearch` and `WebFetch` (always available) to research. Fall back to
+Firecrawl MCP for JS-heavy or paywalled pages. Find:
 - What does the company build? What's the core product?
 - Stage: seed / Series A-C / growth / public
 - Recent news: funding, product launches, leadership changes
-- Tech stack: what they actually use (not what JD lists)
+- Tech stack: what they actually use (not what JD lists) — check their engineering blog
 - Engineering culture: how they talk about their team publicly
 - Indian product companies: note scale (DAU/MAU), domain (fintech/edtech/etc.), ESOP culture
 

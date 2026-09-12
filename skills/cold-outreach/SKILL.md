@@ -91,17 +91,18 @@ what's available. Offer to run `profile intel for [company]` afterward.
 ### Step 2 — Recruiter Research (if any info provided)
 
 If a LinkedIn URL is given:
-```
-Firecrawl: fetch [linkedin_url]
-```
+- Try `WebFetch` first (built-in, no key needed)
+- If it returns empty/login wall, use Firecrawl MCP (better at JS-rendered pages)
+
 Extract: current role/title, how long at company, recent posts or articles they've shared,
 any public interests (conferences they attend, topics they post about), prior companies.
 
 If a name is given without a URL:
 ```
-Web search: "[name]" "[company]" recruiter OR "talent acquisition" OR "hiring manager"
+WebSearch: "[name]" "[company]" recruiter OR "talent acquisition" OR "hiring manager"
 ```
-Try to find: their LinkedIn, any public profiles, talks or posts.
+Then `WebFetch` any promising results (LinkedIn public profiles, personal sites, conference
+speaker pages, blog posts). Try to find: their LinkedIn, any public profiles, talks or posts.
 
 If a GitHub username is in the company intel:
 ```

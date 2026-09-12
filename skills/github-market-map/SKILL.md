@@ -174,6 +174,18 @@ Based on what appears in the top 20% of profiles for this role:
 - [Skill] — present in [N]% of market but underrepresented in your resume
 ```
 
+## Step 4b — Supplement with Web Search (optional, high-value roles)
+
+For any role where GitHub data alone feels thin (small sample, niche role, low follower
+counts), supplement with built-in `WebSearch`:
+
+- `[role] portfolio examples GitHub`
+- `[role] interview what to build site:reddit.com OR site:dev.to`
+- `"[role]" "projects" "hired" OR "got the job"`
+
+Use `WebFetch` to read the full content of promising results. Synthesize findings
+into the "What They Build" and "Recommendations" sections.
+
 ## Step 5 — Save and Commit
 
 Save to `data/market/role-portraits/[role-slug].md`
