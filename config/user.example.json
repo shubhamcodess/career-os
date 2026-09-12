@@ -34,7 +34,32 @@
       6
     ],
     "github_market_map_enabled": true,
-    "profile_intelligence_enabled": true
+    "profile_intelligence_enabled": true,
+    "_connector_note": "Slack and Gmail authenticate over OAuth in the Claude app (Settings -> Connectors). There is no API key for them in .env. Only the preferences below live here.",
+    "slack": {
+      "enabled": false,
+      "notify_channel_id": "",
+      "command_channel_id": "",
+      "command_prefix": "!os",
+      "notify_on": [
+        "job_feed",
+        "jd_analysis",
+        "resume_generated",
+        "outreach_drafted",
+        "market_intel",
+        "inbox_scan"
+      ],
+      "long_output_as_canvas": true,
+      "job_tracker_list_id": ""
+    },
+    "gmail": {
+      "enabled": false,
+      "signature": "Your Name\nyour@email.com\nlinkedin.com/in/your-handle",
+      "label": "CareerOS",
+      "scan_days": 14,
+      "follow_up_after_days": 7,
+      "auto_label": true
+    }
   },
   "resume": {
     "default_template": "default",

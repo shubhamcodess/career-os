@@ -41,15 +41,22 @@ Run ALL of these simultaneously. Don't wait for one before starting the next.
 
 ---
 
-### Source A: ATS Direct (Greenhouse + Lever)
+### Source A: ATS Direct
 
-**Most reliable source** — pure JSON APIs, no scraping, no bot detection.
-Companies with internal ATS (Google, Amazon, etc.) are automatically skipped with
-a note pointing to their careers page.
+**Most reliable source** — pure JSON APIs, no scraping, no bot detection. Covers
+Greenhouse, Lever, Ashby, Recruitee, Workable, SmartRecruiters and Workday.
 
-**For `find jobs` (broad search across config companies):**
+**No company is hardcoded.** Every company → platform/slug mapping is read from
+`config/companies.json`. If that file doesn't exist, the fetcher will tell you to
+build it — do that first:
+
 ```bash
-python3 scripts/ats-fetcher.py --from-config --role "[first target_role]"
+python3 scripts/resolve-ats.py --from-config
+```
+
+**For `find jobs` (every company in the registry):**
+```bash
+python3 scripts/ats-fetcher.py --all --role "[first target_role]"
 ```
 
 **For `find jobs at [company]` (single company):**
@@ -57,24 +64,21 @@ python3 scripts/ats-fetcher.py --from-config --role "[first target_role]"
 python3 scripts/ats-fetcher.py --company "[company]" --role "[first target_role]"
 ```
 
-**For multiple specific companies:**
+If that company isn't in the registry the fetcher says so — resolve it, then retry:
 ```bash
-python3 scripts/ats-fetcher.py --companies Stripe Anthropic Groww --role "[role]"
+python3 scripts/resolve-ats.py --company "[company]"
 ```
 
-Known Greenhouse companies (from `KNOWN_SLUGS` in the script): Groww, Postman, Stripe,
-Databricks, Cloudflare, Coinbase, Reddit, Discord, Airbnb, Figma, Anthropic, OpenAI,
-HashiCorp.
+**Companies with no reachable board.** Entries with status `empty` or `unresolved`
+have no public ATS. The fetcher prints their `careers_url` instead of returning jobs.
+Route those to the web-search path below rather than reporting zero results — a
+company being unreachable by API does not mean it has no openings.
 
-Known Lever companies: Meesho, Cred, Freshworks, Netflix, Lyft, Vercel.
-
-Companies NOT on Greenhouse/Lever (internal ATS): Razorpay, PhonePe, Zepto,
-BrowserStack, Flipkart, Walmart, IKEA, Google, Microsoft, Amazon, Meta, Apple, Nvidia,
-Visa, Lowes, Target. The script will skip these and print the correct careers URL.
-
-To add a new company: look up its Greenhouse board at
-`boards-api.greenhouse.io/v1/boards/{slug}/jobs` or Lever at
-`api.lever.co/v0/postings/{slug}`, then add to `KNOWN_SLUGS` in `scripts/ats-fetcher.py`.
+**Registry hygiene.** ATS boards move. If a company that used to return jobs suddenly
+returns none, re-verify before assuming the market went quiet:
+```bash
+python3 scripts/resolve-ats.py --refresh
+```
 
 ---
 
@@ -156,7 +160,7 @@ All three sources use the same field shape:
   "posted": "...",
   "tags": [],
   "url": "...",
-  "source": "greenhouse|lever|naukri|indeed|ziprecruiter|dice"
+  "source": "greenhouse|lever|ashby|workable|smartrecruiters|recruitee|workday|naukri|indeed|ziprecruiter|dice|websearch"
 }
 ```
 
@@ -213,11 +217,21 @@ Git commit after save:
 git commit -m "data: refreshed job feed — [N] listings, [N] strong matches"
 ```
 
+## Step 6b — Notify via Slack (if enabled)
+
+If `integrations.slack.enabled` is true in `config/user.json` and `job_feed` is in
+`notify_on`, post the digest after `job-feed.md` is written and committed.
+Read `skills/slack-bridge/SKILL.md` for format. Post the summary as a message and
+the full ranked feed as a Canvas — never dump the whole feed into chat.
+
+Slack failing must never fail the job search. Write the file, commit, then try Slack.
+
 ## Step 7 — Surface Insights
 
 After ranking, tell the user:
 - How many total listings found per source (ATS: N, Naukri: N, MCPs: N)
-- Which target companies had Greenhouse/Lever boards vs. internal ATS
+- Which target companies returned jobs vs. which have no reachable board
+  (from `config/companies.json` — name them, and give their careers URL)
 - How many strong matches
 - Any new companies appearing that aren't in their target list
 - Salary ranges seen (if available) → suggest adding to comp-intel.md

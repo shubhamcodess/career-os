@@ -493,6 +493,21 @@ email card first, LinkedIn card second — so the user can compare tone.
 
 ---
 
+## Sending — Handoff to Gmail
+
+This skill drafts; it never sends. When the user says `send this`, `draft this in
+gmail`, or `put this in my drafts`, hand off to `skills/gmail-tracker/SKILL.md`.
+
+That skill will confirm the recipient and the full body before creating a **draft**
+in Gmail. Nothing is ever sent by Claude — the user reviews and sends from Gmail.
+If Gmail isn't connected, gmail-tracker says so once; don't invent a fallback.
+
+If `integrations.slack.enabled` is true and `outreach_drafted` is in `notify_on`,
+also post the draft to Slack for approval-at-a-distance — subject and hook in the
+message, full body in a thread reply.
+
+---
+
 ## Persistence
 
 By default: **show only in chat, don't save.**

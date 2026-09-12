@@ -153,6 +153,8 @@ career-os/
 | Researching who works at a target company | `skills/profile-intelligence/SKILL.md` |
 | Understanding what people in a role actually build | `skills/github-market-map/SKILL.md` |
 | Naukri-specific scraping | `skills/naukri-scraper/SKILL.md` |
+| Posting results to Slack / reading commands from Slack | `skills/slack-bridge/SKILL.md` |
+| Drafting outreach into Gmail, scanning inbox for replies | `skills/gmail-tracker/SKILL.md` |
 | Any job search task, general orchestration | `skills/job-search-command-center/SKILL.md` |
 | Full phase-by-phase instructions | `skills/job-search-command-center/references/phases.md` |
 | `help`, `status`, `/help`, `/status`, "show commands", "show dashboard" | `skills/dashboard/SKILL.md` |
@@ -176,6 +178,14 @@ GitHub, job boards, or external services — check which connectors are active.
 | Puppeteer MCP | pdf-export | No |
 | Firecrawl MCP | JD fetching from URLs, company profiling, candidate profile research — use sparingly | Yes — `FIRECRAWL_API_KEY` |
 | Naukri (script, not MCP) | naukri-scraper skill | No key, but fragile |
+| Slack connector | slack-bridge skill — push results, read `!os` commands | No key — OAuth in Settings → Connectors |
+| Gmail connector | gmail-tracker skill — draft outreach, scan for replies | No key — OAuth in Settings → Connectors |
+
+**Slack and Gmail are OAuth connectors, not API keys.** Nothing goes in `.env` or
+`.claude/settings.json` for them. Only channel IDs and preferences live in
+`config/user.json` under `integrations.slack` / `integrations.gmail`. If a Slack or
+Gmail tool call fails with an auth error, the fix is always: the user opens
+**Settings → Connectors** and signs in. Never ask them to paste a token.
 
 Every key above is free to obtain — no paid API keys required for this setup. A
 LinkedIn-layer data source (e.g. Crustdata) would add richer people-search but requires
@@ -189,6 +199,31 @@ If a task needs a connector whose key is missing from `.env`, tell me clearly wh
 is missing and what it's for — don't fail silently or skip without explanation.
 
 ---
+
+## Company Registry — No Hardcoded Companies
+
+Company → ATS platform/slug mappings live in exactly one place: `config/companies.json`
+(gitignored; `config/companies.example.json` documents the shape). **No company name,
+slug, or careers URL may be hardcoded in any script, skill, or doc.**
+
+The flow:
+
+1. User puts company **names** in `config/user.json` → `target.target_companies[]`
+2. `python3 scripts/resolve-ats.py --from-config` probes Greenhouse, Lever, Ashby,
+   Recruitee, Workable, SmartRecruiters and Workday, then writes the registry
+3. `scripts/ats-fetcher.py` reads **only** that registry
+
+Registry statuses: `verified` (live board), `manual` (pinned by hand, never
+auto-overwritten), `empty` (board exists but has no postings — company hires
+elsewhere), `unresolved` (no board found). The last two need a `careers_url` so the
+job search can point at the careers page instead of silently skipping them.
+
+When a company resolves with `confidence: "low"`, tell the user to verify it before
+trusting results — ATS slugs are squattable and a small board usually means a demo
+or unrelated account, not the real company.
+
+If the user names a company that isn't in the registry, run
+`resolve-ats.py --company "[name]"` rather than guessing a slug.
 
 ## Live Market Intelligence Layer
 
@@ -313,6 +348,17 @@ git commit -m "market: refreshed job feed — 34 listings, 6 strong matches"
 | `find jobs` | Aggregate live listings across all active sources |
 | `find jobs at [company]` | Filter live search to one company |
 | `refresh job feed` | Re-run last search, surface new listings |
+| `resolve companies` | Probe all 7 ATS platforms for every company in `target_companies[]`, write `config/companies.json` |
+| `add company [name]` | Resolve one new company and append it to the registry |
+| `refresh companies` | Re-verify every resolved board (run monthly — boards move) |
+| `show companies` | Print the registry: who is fetchable, who needs a careers URL |
+| `send to slack` | Post the last result to the configured Slack channel |
+| `check slack` | Read `!os` commands from Slack and run them |
+| `mirror job tracker to slack` | Create/sync the Slack List version of the job tracker |
+| `draft this in gmail` | Turn the current outreach draft into a Gmail draft (never sends) |
+| `check my email` / `scan inbox` | Classify replies, interview invites, rejections; update job tracker |
+| `who hasn't replied?` | Stale-thread check against `follow_up_after_days` |
+| `follow up with [company]` | Draft a threaded follow-up on the original email |
 | `profile intel for [company]` | Map who works there, what they know |
 | `github market map for [role]` | What people in this role actually build |
 | `prep for [company] interview` | STAR matching + mock Q&A |

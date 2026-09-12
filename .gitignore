@@ -18,6 +18,8 @@ data/comp-intel.md
 data/market/
 data/logs/
 data/outreach/
+data/*.pdf
+data/*.docx
 !data/outreach/.gitkeep
 checkpoints/interview-state.md
 resumes/*/
