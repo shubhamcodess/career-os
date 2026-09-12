@@ -44,3 +44,6 @@ Thumbs.db
 *.tmp
 *.temp
 .personal-worktree/
+
+# ── Resolved ATS registry (personal target list) ──
+config/companies.json

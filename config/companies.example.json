@@ -1,0 +1,48 @@
+{
+  "_comment": "TEMPLATE — copy to config/companies.json, or just run: python3 scripts/resolve-ats.py --from-config (it creates the file for you). companies.json is gitignored; this example is committed.",
+  "_how_it_works": {
+    "1": "Put company NAMES in config/user.json -> target.target_companies[]. Names only — never slugs.",
+    "2": "Run: python3 scripts/resolve-ats.py --from-config",
+    "3": "The resolver probes Greenhouse, Lever, Ashby, Workable, SmartRecruiters and Recruitee for each name and writes the resolved platform+slug here.",
+    "4": "Anything it can't resolve lands as status:'unresolved' — give it a careers_url by hand with --set-careers.",
+    "5": "scripts/ats-fetcher.py reads ONLY this file. No company is hardcoded anywhere in the codebase."
+  },
+  "_status_values": {
+    "verified": "Auto-resolved by probing a live ATS board. Re-checked by --refresh.",
+    "manual": "Pinned by hand with --set. --refresh will never overwrite it.",
+    "unresolved": "No public ATS board found — company uses an internal ATS. Set careers_url."
+  },
+  "_supported_platforms": [
+    "greenhouse",
+    "lever",
+    "ashby",
+    "workable",
+    "smartrecruiters",
+    "recruitee"
+  ],
+  "version": 1,
+  "updated": "",
+  "companies": {
+    "example-resolved-company": {
+      "name": "Example Resolved Company",
+      "platform": "greenhouse",
+      "slug": "examplecompany",
+      "status": "verified",
+      "jobs_seen": 42,
+      "board_url": "https://boards.greenhouse.io/examplecompany",
+      "careers_url": "",
+      "verified_at": "2026-01-01"
+    },
+    "example-internal-ats-company": {
+      "name": "Example Internal ATS Company",
+      "platform": "none",
+      "slug": "",
+      "status": "unresolved",
+      "jobs_seen": 0,
+      "board_url": "",
+      "careers_url": "https://example.com/careers",
+      "note": "Internal ATS — job-aggregator will point you at the careers page instead of fetching.",
+      "verified_at": "2026-01-01"
+    }
+  }
+}
