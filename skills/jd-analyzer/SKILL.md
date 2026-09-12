@@ -30,6 +30,13 @@ If a URL is provided, fetch the full JD text before analyzing. Use both where ap
 - **Firecrawl MCP** — richer extraction, better on JS-heavy or dynamic job boards (Greenhouse, Lever, LinkedIn Jobs); use this when the JD is on a known ATS or the page renders poorly via WebFetch
 - **Built-in `WebSearch`** — if the URL is broken or redirects, search `"[company]" "[role]" job posting site:[jobboard]` to find the canonical listing URL, then fetch it
 
+**Research depth rule:**
+- URL provided and loads cleanly → **quick fetch**: WebFetch/Firecrawl that URL directly, use the result.
+- URL broken / no URL provided → **deep research**: run multiple WebSearch queries with refined terms
+  (try job board variants, company careers page, LinkedIn, etc.), fetch the top results, pick the
+  best canonical JD, then analyze. Don't stop at one failed search — try 3–4 query variations
+  before giving up.
+
 ---
 
 ## Analysis Framework

@@ -79,9 +79,12 @@ From the org's public repos (if any):
 
 ## Step 3 — Web Search Layer
 
-Run targeted searches using built-in `WebSearch` for discovery, then read full content
-using **`WebFetch`** (fast, clean HTML pages) and/or **Firecrawl MCP** (JS-rendered pages,
-Medium/Substack/corporate blogs that render client-side). Use both where applicable:
+**This step is always deep research** — you are synthesizing across multiple sources.
+Run ALL queries below, fetch the top results from each, then synthesize before moving on.
+Don't stop after one search — cross-referencing across sources is what makes this useful.
+
+Use built-in `WebSearch` for discovery, then read full content via **`WebFetch`** (standard
+HTML pages) and/or **Firecrawl MCP** (JS-rendered pages — Medium, Substack, corporate blogs):
 
 - `"[company]" engineering blog`
 - `"[company]" "[role]" hiring OR "we're looking for"`
@@ -89,8 +92,8 @@ Medium/Substack/corporate blogs that render client-side). Use both where applica
 - `"[company]" tech stack`
 - `site:glassdoor.com OR site:ambitionbox.com "[company]" reviews`
 
-For each promising URL: try `WebFetch` for standard HTML pages; use Firecrawl for pages
-that return thin or empty content via WebFetch (JS-heavy blogs, dynamic career portals).
+For each promising URL: WebFetch for standard HTML pages; Firecrawl for pages that return
+thin or empty content via WebFetch.
 
 Extract: culture signals, interview process notes, tech stack mentions, team structure
 hints, recent news (funding, launches, layoffs — all relevant context).

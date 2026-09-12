@@ -30,11 +30,20 @@ Extract and categorize:
 
 ### Step 2 — Research the Company
 
+**This step is always deep research** — run multiple queries, fetch from multiple sources,
+synthesize. Don't stop at one result; cross-reference before drawing conclusions.
+
 Use all three tools where they excel — they're complementary:
-- **Built-in `WebSearch`** — discovery: engineering blog, funding news, team pages
-- **Built-in `WebFetch`** — read full content of URLs found via search; fast on standard HTML
-- **Firecrawl MCP** — use alongside WebFetch for JS-rendered pages (Medium engineering blogs,
-  Substack, LinkedIn public company pages, Glassdoor) where WebFetch returns thin content
+- **Built-in `WebSearch`** — discovery: engineering blog, funding news, team pages, tech stack
+- **Built-in `WebFetch`** — read full content of URLs found; fast on standard HTML pages
+- **Firecrawl MCP** — use for JS-rendered pages (Medium engineering blogs, Substack, LinkedIn
+  company pages, Glassdoor) where WebFetch returns thin content
+
+Minimum queries to run:
+1. `"[company]" engineering blog` or `"[company]" tech stack`
+2. `"[company]" culture OR values OR interview`
+3. `site:glassdoor.com "[company]"` or `site:ambitionbox.com "[company]"` (for Indian companies)
+4. Recent news: `"[company]" funding OR launch OR layoff 2025 OR 2026`
 
 Find:
 - What does the company build? What's the core product?

@@ -90,10 +90,16 @@ what's available. Offer to run `profile intel for [company]` afterward.
 
 ### Step 2 — Recruiter Research (if any info provided)
 
+**Research depth rule:**
+- LinkedIn URL provided → **quick fetch**: WebFetch the URL first; if thin/empty, use Firecrawl.
+  One tool call per URL — don't over-research when you already have the target.
+- Name only (no URL) → **targeted deep research**: run 3–4 WebSearch queries across sources,
+  fetch the most promising results, synthesize what you find before writing. Don't stop at one
+  failed search — try different query formulations.
+
 If a LinkedIn URL is given — use both where they excel:
 - **`WebFetch`** — fast for public LinkedIn profiles and personal sites
 - **Firecrawl MCP** — use for JS-heavy or login-walled pages where WebFetch returns thin content
-  (Firecrawl handles dynamic rendering better for LinkedIn public profiles and company pages)
 
 Extract: current role/title, how long at company, recent posts or articles they've shared,
 any public interests (conferences they attend, topics they post about), prior companies.
@@ -101,9 +107,12 @@ any public interests (conferences they attend, topics they post about), prior co
 If a name is given without a URL:
 ```
 WebSearch: "[name]" "[company]" recruiter OR "talent acquisition" OR "hiring manager"
+WebSearch: "[name]" "[company]" site:linkedin.com
+WebSearch: "[name]" "[company]" blog OR talk OR conference OR podcast
 ```
-Then `WebFetch` any promising results (LinkedIn public profiles, personal sites, conference
-speaker pages, blog posts). Try to find: their LinkedIn, any public profiles, talks or posts.
+Fetch the top results from each query via WebFetch or Firecrawl. Cross-reference to build
+a picture before selecting the hook — the best hook often comes from a secondary source
+(a conference talk, a tweet, a blog post) not just their job title.
 
 If a GitHub username is in the company intel:
 ```

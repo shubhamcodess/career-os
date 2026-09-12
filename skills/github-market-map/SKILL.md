@@ -177,14 +177,20 @@ Based on what appears in the top 20% of profiles for this role:
 ## Step 4b — Supplement with Web Search (optional, high-value roles)
 
 For any role where GitHub data alone feels thin (small sample, niche role, low follower
-counts), supplement with built-in `WebSearch`:
+counts), run **deep research** — execute all queries below, read multiple results from each,
+then synthesize before writing the portrait. Don't just skim titles; fetch and read the
+content to get specific project names, skill combinations, and community consensus.
 
+Queries to run:
 - `[role] portfolio examples GitHub`
 - `[role] interview what to build site:reddit.com OR site:dev.to`
 - `"[role]" "projects" "hired" OR "got the job"`
+- `"[role]" resume projects 2025 OR 2026`
 
-Use `WebFetch` to read the full content of promising results. Synthesize findings
-into the "What They Build" and "Recommendations" sections.
+Use `WebFetch` (standard HTML) or Firecrawl (Reddit, dev.to, JS-rendered pages) to read
+the full content of promising results. Cross-reference across sources — one Reddit thread
+alone is anecdote; three threads + two blog posts = signal. Synthesize into the "What They
+Build" and "Recommendations" sections.
 
 ## Step 5 — Save and Commit
 

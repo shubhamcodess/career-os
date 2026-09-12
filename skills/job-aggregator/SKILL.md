@@ -125,10 +125,19 @@ Best for: engineering, data, product roles at tech companies
 If an MCP connector is unavailable or returns an error, skip it and note in the output.
 MCP sources are best for roles not at the specific companies in `target_companies[]`.
 
-**Web search fallback (when all MCPs are down):** Use built-in `WebSearch` with queries like
-`site:greenhouse.io "[role]"`, `"[company]" "[role]" hiring 2026`, or `[role] jobs [location]`
-to surface listings from public job boards. Then `WebFetch` each result URL to extract the
-full JD. This is slower but always available — note in output that results came from web search.
+**Web search fallback (when all MCPs are down):** This is curated job hunting — run deep
+research, not a single query. Use multiple `WebSearch` queries to cover the search space,
+then `WebFetch`/Firecrawl each promising result URL to extract the full JD:
+
+Queries to run (adapt role/location from config):
+- `site:greenhouse.io "[role]" [location]`
+- `site:lever.co "[role]" [location]`
+- `"[company]" "[role]" hiring 2026 site:linkedin.com/jobs`
+- `[role] jobs [location] -site:indeed.com` (surface direct company pages)
+- `"[target company]" careers "[role]"` (for each company in target_companies[])
+
+Fetch the top 3–5 results per query, extract JD text, deduplicate by company+title, then
+rank as usual. Note in output that results came from web search and coverage may be incomplete.
 
 ---
 
