@@ -195,7 +195,7 @@ body{font-family:var(--font-mono);font-size:12px;color:var(--text-primary);line-
 <!-- INTEL TAB -->
 <div id="intel" class="panel">
   <div class="sg">MARKET INTELLIGENCE</div>
-  <div class="cr"><span class="cc">profile intel for [company]</span><span class="cd">GitHub org + Firecrawl → who works there, what they know</span></div>
+  <div class="cr"><span class="cc">profile intel for [company]</span><span class="cd">GitHub org + web search → who works there, what they know</span></div>
   <div class="cr"><span class="cc">github market map for [role]</span><span class="cd">Public GitHub → what people in this role actually build</span></div>
   <div class="cr"><span class="cc">research comp for [role/co]</span><span class="cd">Market salary, equity ranges, negotiation position</span></div>
   <div class="div"></div>

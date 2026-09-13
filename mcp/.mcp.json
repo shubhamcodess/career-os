@@ -38,23 +38,18 @@
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-puppeteer"],
       "description": "Headless browser — renders HTML to PDF for resume export. Used by pdf-export skill."
-    },
-
-    "firecrawl": {
-      "command": "npx",
-      "args": ["-y", "firecrawl-mcp"],
-      "env": {
-        "FIRECRAWL_API_KEY": "${FIRECRAWL_API_KEY}"
-      },
-      "description": "Deep web scraping/crawl — use ONLY for high-value tasks: fetching full JDs from URLs, company profiling, finding candidate profiles. Not for routine searches."
     }
 
+  },
+
+  "_removed": {
+    "firecrawl": "Removed. Claude's built-in WebSearch and WebFetch are the web layer for this project — always available, no key, no quota to exhaust. Firecrawl added a paid dependency and a second failure mode for no capability Career OS actually needed. If you want it back, add the server block and set FIRECRAWL_API_KEY; nothing depends on it."
   },
 
   "_setup_notes": {
     "step1": "Copy .env.example to .env and fill in your keys",
     "step2": "GITHUB_PERSONAL_ACCESS_TOKEN required for github + market-map skills — free to create",
-    "step3": "FIRECRAWL_API_KEY required for Firecrawl — use only for JD fetching, company profiling, candidate research (not routine searches)",
+    "step3": "No web-scraping key needed — Claude built-in WebSearch/WebFetch are the web layer",
     "step4": "CAREER_OS_ROOT should be the absolute path to this repo, e.g. /Users/you/career-os",
     "naukri_note": "Naukri has no MCP/API — handled via scripts/naukri-scraper.py, not this file. Enable in config/user.json",
     "linkedin_note": "No free/legal LinkedIn-layer data source is wired in yet (Crustdata requires a paid plan). profile-intelligence currently runs on GitHub public data only. Swap in a LinkedIn-data provider later by editing skills/profile-intelligence/SKILL.md and adding its MCP or API here."

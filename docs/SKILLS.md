@@ -49,7 +49,7 @@ free sources — deduplicates, and ranks against your profile.
 
 ### profile-intelligence
 Maps signals about a target company's engineering culture and GitHub-visible employees,
-using GitHub public API + Firecrawl for web scraping (if key set). Free sources only —
+using GitHub public API + Claude's built-in WebSearch/WebFetch for web research. Free sources only —
 no dedicated LinkedIn people-search yet (that would require a paid provider like Crustdata;
 see the skill file for how to add one later).
 
@@ -60,7 +60,7 @@ see the skill file for how to add one later).
 
 **Output:** `data/market/company-intel/[company-slug].md`
 
-**Requires:** `GITHUB_PERSONAL_ACCESS_TOKEN` (free) to avoid rate limits; `FIRECRAWL_API_KEY`
+**Requires:** `GITHUB_PERSONAL_ACCESS_TOKEN` (free) to avoid rate limits; built-in WebSearch/WebFetch (no key)
 for web scraping — use sparingly on high-value company targets only.
 
 ### github-market-map
@@ -141,7 +141,7 @@ job-search-command-center (orchestrator)
 │   ├── uses: Indeed, ZipRecruiter, Dice MCPs
 │   └── may trigger: naukri-scraper (if enabled)
 ├── profile-intelligence
-│   └── uses: GitHub REST API + Firecrawl MCP (for high-value targets)
+│   └── uses: GitHub REST API + built-in WebSearch/WebFetch
 ├── github-market-map
 │   └── uses: GitHub REST API
 └── profile-optimizer

@@ -25,13 +25,13 @@ should tell you: apply confidently / apply but clarify these things first / pass
 - `check this job posting`
 - Automatically when a URL to a job posting is shared without another command
 
-If a URL is provided, fetch the full JD text before analyzing. Use both where applicable:
-- **Built-in `WebFetch`** — always available, no key needed; fast for standard HTML job pages
-- **Firecrawl MCP** — richer extraction, better on JS-heavy or dynamic job boards (Greenhouse, Lever, LinkedIn Jobs); use this when the JD is on a known ATS or the page renders poorly via WebFetch
+If a URL is provided, fetch the full JD text before analyzing:
+- **Built-in `WebFetch`** — the default. Always available, no key, no quota.
 - **Built-in `WebSearch`** — if the URL is broken or redirects, search `"[company]" "[role]" job posting site:[jobboard]` to find the canonical listing URL, then fetch it
+- **Browser tool** — only when WebFetch returns a client-rendered shell with no JD text in it. Navigate, then read the page.
 
 **Research depth rule:**
-- URL provided and loads cleanly → **quick fetch**: WebFetch/Firecrawl that URL directly, use the result.
+- URL provided and loads cleanly → **quick fetch**: WebFetch that URL directly, use the result.
 - URL broken / no URL provided → **deep research**: run multiple WebSearch queries with refined terms
   (try job board variants, company careers page, LinkedIn, etc.), fetch the top results, pick the
   best canonical JD, then analyze. Don't stop at one failed search — try 3–4 query variations

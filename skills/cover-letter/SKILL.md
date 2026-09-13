@@ -28,7 +28,7 @@ draw from the master doc.
 ## Inputs Required
 
 1. **Target company and role** — from the command
-2. **JD** — paste in, or fetch via Firecrawl if a URL is provided
+2. **JD** — paste in, or fetch with `WebFetch` if a URL is provided
 3. **Targeted resume** — auto-located (see Step 1 below)
 4. **Master experience doc** — `data/master-experience.md`
 5. **Company intel** — `data/market/company-intel/[company-slug].md` if it exists
@@ -59,7 +59,7 @@ Read in order:
 1. `resumes/[folder]/resume.md` — the targeted resume (primary)
 2. `data/master-experience.md` — full story, for depth not in the resume
 3. `data/market/company-intel/[company-slug].md` — if exists, for specific company hooks
-4. JD — from URL (use Firecrawl) or pasted text
+4. JD — from URL (use `WebFetch`) or pasted text
 
 From the targeted resume, extract:
 - Top 3 achievement bullets (those with the strongest metrics)

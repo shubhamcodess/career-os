@@ -36,8 +36,8 @@ synthesize. Don't stop at one result; cross-reference before drawing conclusions
 Use all three tools where they excel — they're complementary:
 - **Built-in `WebSearch`** — discovery: engineering blog, funding news, team pages, tech stack
 - **Built-in `WebFetch`** — read full content of URLs found; fast on standard HTML pages
-- **Firecrawl MCP** — use for JS-rendered pages (Medium engineering blogs, Substack, LinkedIn
-  company pages, Glassdoor) where WebFetch returns thin content
+- **Browser tool** — only when WebFetch returns a client-rendered shell (some engineering
+  blogs, LinkedIn company pages, Glassdoor)
 
 Minimum queries to run:
 1. `"[company]" engineering blog` or `"[company]" tech stack`

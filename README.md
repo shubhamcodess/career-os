@@ -174,7 +174,7 @@ What's live vs. workaround, so you know what you're getting.
 | ZipRecruiter | ✅ Live MCP | Free, authless |
 | Dice | ✅ Live MCP | Free, authless, tech-focused |
 | GitHub | ✅ Live REST API | Free, public data, 5,000 req/hr with a free personal access token |
-| Firecrawl | ✅ Live MCP | Free tier available — used for JD fetching, company profiling, candidate research |
+| Built-in WebSearch / WebFetch | ✅ Always on | No key, no quota — the web layer for JD fetching, company intel and research |
 | Naukri | ⚠️ Scraper | No official API. Uses Playwright + system Chrome (bypasses Akamai WAF). Free but fragile — may break if Naukri updates their DOM or anti-bot rules. Best for Indian market. |
 | LinkedIn direct | ❌ Not possible | Scraping violates ToS — never attempted |
 | LinkedIn-layer data (Crustdata) | 🔜 Not included | Richer people-search by company/role, but requires a paid plan. `profile-intelligence` runs on GitHub + web search instead. See that skill's file for how to add a provider later. |

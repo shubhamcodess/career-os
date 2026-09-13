@@ -35,7 +35,23 @@
     ],
     "github_market_map_enabled": true,
     "profile_intelligence_enabled": true,
-    "_connector_note": "Slack and Gmail authenticate over OAuth in the Claude app (Settings -> Connectors). There is no API key for them in .env. Only the preferences below live here.",
+    "_connector_note": "Slack, Gmail, Indeed, ZipRecruiter and Dice authenticate over OAuth in the Claude app (Settings -> Connectors). There is no API key for them in .env. Only the preferences below live here.",
+    "_budget_note": "Indeed and ZipRecruiter authenticate as YOUR account, so Career OS caps its own usage rather than exhausting a service you rely on personally. Effective cap = assumed_daily_limit * cap_fraction. Neither provider publishes a per-account MCP quota, so assumed_daily_limit is an assumption — raise it if you learn the real number. Set assumed_daily_limit to 0 to mark a connector unmetered. Enforced by scripts/mcp-budget.py.",
+    "indeed": {
+      "enabled": false,
+      "assumed_daily_limit": 100,
+      "cap_fraction": 0.6
+    },
+    "ziprecruiter": {
+      "enabled": false,
+      "assumed_daily_limit": 100,
+      "cap_fraction": 0.6
+    },
+    "dice": {
+      "enabled": false,
+      "assumed_daily_limit": 0,
+      "cap_fraction": 0.6
+    },
     "slack": {
       "enabled": false,
       "notify_channel_id": "",

@@ -38,7 +38,7 @@ playwright install chromium
 Read `.env` (don't print values, just confirm presence) and tell me which of these
 are set vs. missing:
 - `GITHUB_PERSONAL_ACCESS_TOKEN` (required, free to create)
-- `FIRECRAWL_API_KEY` (required for JD fetching, company profiling, candidate research — use sparingly)
+- no web key needed — Claude's built-in WebSearch/WebFetch cover JD fetching, company profiling and research
 
 For any missing required keys, point me to the relevant section in `docs/SETUP.md`.
 

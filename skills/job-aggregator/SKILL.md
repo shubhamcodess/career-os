@@ -154,6 +154,37 @@ Before relying on any of them, check whether their tools exist in the session. I
 are absent, say so plainly and fall through to Source D. Never let a missing connector
 read as "the market is quiet".
 
+### Budget — check before every Indeed or ZipRecruiter call
+
+**Indeed authenticates as the user's own Indeed account.** Burning its quota does not
+just fail a search here — it degrades a service they use personally, outside this tool.
+A feed refresh fanning out across 25 companies can spend a daily allowance in one
+command, so the budget is enforced, not just intended.
+
+```bash
+python3 scripts/mcp-budget.py check indeed     # exit 0 = go, 1 = stop
+python3 scripts/mcp-budget.py record indeed    # after each successful call
+python3 scripts/mcp-budget.py status           # show all budgets
+```
+
+The rule:
+
+1. Run `check` **before** the first Indeed/ZipRecruiter call of a task.
+2. If it exits non-zero, **do not call that connector.** Say the budget is spent for
+   today, and get the results from ATS, Naukri or web search instead.
+3. Run `record` after each successful call so the ledger stays accurate.
+4. When a search would need many calls, record the real count: `record indeed --count 12`.
+
+Default cap is 60% of an assumed 100 calls/day, so 60. **That assumption is not a
+provider-reported limit** — neither Indeed nor ZipRecruiter publishes a per-account MCP
+quota. It is a deliberately conservative self-imposed budget. If the user learns the real
+number, change `assumed_daily_limit` in `config/user.json` and the cap follows.
+Dice is configured as unmetered (`assumed_daily_limit: 0`) — it needs no auth.
+
+Prefer the cheapest source that answers the question. The ATS registry is free and
+unlimited; spend Indeed calls on companies the registry cannot reach, not on ones it
+already covers.
+
 Dice is tech-focused and the best of the three for engineering roles. Its `search_jobs`
 takes `keyword`, `location`, `radius`, `jobs_per_page`, `page_number`, `sort`,
 `posted_date`, `workplace_types`, `employment_types`. Use `get_job_details` on the top

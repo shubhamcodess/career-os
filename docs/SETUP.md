@@ -66,12 +66,12 @@ Edit `config/user.json`:
 
 **Used for:** git operations, github-market-map skill, profile-intelligence GitHub lookups
 
-### Firecrawl API Key (required for web scraping tasks)
-1. Sign up at https://www.firecrawl.dev
-2. Copy into `.env` as `FIRECRAWL_API_KEY`
+### Web research — no key needed
 
-**Used for:** fetching full JD pages from URLs, company profiling, candidate profile research
-**Use sparingly** — reserve for high-value tasks (not routine lookups)
+Claude's built-in `WebSearch` and `WebFetch` handle all web research: JD fetching,
+company intel, careers pages, recruiter research. Nothing to sign up for, nothing to
+exhaust. Firecrawl was removed from this project — it added a paid dependency and a
+second failure mode for no capability Career OS actually needed.
 
 ### A note on paid data sources
 

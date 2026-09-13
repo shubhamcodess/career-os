@@ -59,7 +59,7 @@ Collect before writing. Ask for what's missing — don't fabricate.
 ### Optional but high-impact (ask if not provided)
 - **Recruiter / hiring manager info** — any of:
   - Full name
-  - LinkedIn URL → fetch full profile via Firecrawl
+  - LinkedIn URL → fetch the public profile with `WebFetch`
   - Job title at the company
   - GitHub username (if found in company intel)
   - Something they've written/posted publicly (talk, blog post, tweet, conference talk)
@@ -91,15 +91,15 @@ what's available. Offer to run `profile intel for [company]` afterward.
 ### Step 2 — Recruiter Research (if any info provided)
 
 **Research depth rule:**
-- LinkedIn URL provided → **quick fetch**: WebFetch the URL first; if thin/empty, use Firecrawl.
-  One tool call per URL — don't over-research when you already have the target.
+- LinkedIn URL provided → **quick fetch**: `WebFetch` the URL. One tool call per URL —
+  don't over-research when you already have the target.
 - Name only (no URL) → **targeted deep research**: run 3–4 WebSearch queries across sources,
   fetch the most promising results, synthesize what you find before writing. Don't stop at one
   failed search — try different query formulations.
 
 If a LinkedIn URL is given — use both where they excel:
 - **`WebFetch`** — fast for public LinkedIn profiles and personal sites
-- **Firecrawl MCP** — use for JS-heavy or login-walled pages where WebFetch returns thin content
+- **Browser tool** — only if WebFetch returns a login wall or an empty shell
 
 Extract: current role/title, how long at company, recent posts or articles they've shared,
 any public interests (conferences they attend, topics they post about), prior companies.
@@ -110,7 +110,7 @@ WebSearch: "[name]" "[company]" recruiter OR "talent acquisition" OR "hiring man
 WebSearch: "[name]" "[company]" site:linkedin.com
 WebSearch: "[name]" "[company]" blog OR talk OR conference OR podcast
 ```
-Fetch the top results from each query via WebFetch or Firecrawl. Cross-reference to build
+Fetch the top results from each query with `WebFetch`. Cross-reference to build
 a picture before selecting the hook — the best hook often comes from a secondary source
 (a conference talk, a tweet, a blog post) not just their job title.
 

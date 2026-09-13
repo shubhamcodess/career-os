@@ -187,7 +187,7 @@ Queries to run:
 - `"[role]" "projects" "hired" OR "got the job"`
 - `"[role]" resume projects 2025 OR 2026`
 
-Use `WebFetch` (standard HTML) or Firecrawl (Reddit, dev.to, JS-rendered pages) to read
+Use `WebFetch` to read
 the full content of promising results. Cross-reference across sources — one Reddit thread
 alone is anecdote; three threads + two blog posts = signal. Synthesize into the "What They
 Build" and "Recommendations" sections.

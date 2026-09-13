@@ -19,6 +19,7 @@
     "setup": "Run 'npm install' in repo root after cloning to install pdf-export dependencies",
     "github_pat": "Set GITHUB_PERSONAL_ACCESS_TOKEN in mcp/.mcp.json or as env variable",
     "filesystem_path": "Update the filesystem MCP path in mcp/.mcp.json to your actual repo path",
-    "firecrawl_key": "Required for JD fetching, company profiling, candidate research. Get key at firecrawl.dev — use sparingly"
+    "web_layer": "Claude built-in WebSearch/WebFetch handle all web research — no key required. Firecrawl was removed.",
+    "connector_budget": "Indeed/ZipRecruiter authenticate as the user's own account — check scripts/mcp-budget.py before calling"
   }
 }

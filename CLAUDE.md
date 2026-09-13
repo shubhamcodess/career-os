@@ -176,7 +176,7 @@ GitHub, job boards, or external services — check which connectors are active.
 | ZipRecruiter MCP | job-aggregator | No |
 | Dice MCP | job-aggregator | No |
 | Puppeteer MCP | pdf-export | No |
-| Firecrawl MCP | JD fetching from URLs, company profiling, candidate profile research — use sparingly | Yes — `FIRECRAWL_API_KEY` |
+| Built-in `WebSearch` / `WebFetch` | **The web layer.** JD fetching, company intel, JD research, careers pages | No key — always available |
 | Naukri (script, not MCP) | naukri-scraper skill | No key, but fragile |
 | Slack connector | slack-bridge skill — push results, read `!os` commands | No key — OAuth in Settings → Connectors |
 | Gmail connector | gmail-tracker skill — draft outreach, scan for replies | No key — OAuth in Settings → Connectors |
@@ -188,6 +188,16 @@ GitHub, job boards, or external services — check which connectors are active.
 Indeed, ZipRecruiter and Dice are first-party connectors installed under
 Settings → Connectors. Before using them, check their tools are actually present in the
 session; if not, say so and fall through to the Source D ladder in `job-aggregator`.
+
+**Firecrawl has been removed.** Claude's built-in `WebSearch` and `WebFetch` are the web
+layer for every skill — company intel, JD research, careers pages, recruiter research.
+They need no key, have no quota to exhaust, and are always available. Never tell the user
+a lookup failed because Firecrawl is missing, and never add it back as a dependency
+without being asked.
+
+**Indeed is rate-budgeted.** It authenticates as the user's own Indeed account, so
+burning through its quota degrades a service they rely on personally. Before any Indeed
+call, check the budget; see "Connector Budgets" below.
 
 **Slack and Gmail are OAuth connectors, not API keys.** Nothing goes in `.env` or
 `.claude/settings.json` for them. Only channel IDs and preferences live in
@@ -207,6 +217,32 @@ If a task needs a connector whose key is missing from `.env`, tell me clearly wh
 is missing and what it's for — don't fail silently or skip without explanation.
 
 ---
+
+## Connector Budgets
+
+Indeed and ZipRecruiter authenticate as **the user's own account**. Exhausting their
+quota does not just fail a search here — it degrades a service they rely on personally.
+So Career OS caps its own usage.
+
+```bash
+python3 scripts/mcp-budget.py check indeed     # exit 0 = go, 1 = budget spent
+python3 scripts/mcp-budget.py record indeed    # after each successful call
+python3 scripts/mcp-budget.py status           # show all budgets
+```
+
+Rules, non-negotiable:
+
+1. Run `check` **before** the first Indeed or ZipRecruiter call in a task.
+2. Non-zero exit means **do not call it.** Say the budget is spent and use ATS, Naukri
+   or web search instead. Never work around the cap.
+3. Run `record` after each successful call — `--count N` when a task made N calls.
+4. Prefer the cheapest source that answers the question. The ATS registry is free and
+   unlimited; spend Indeed calls on companies the registry cannot reach.
+
+Default cap is 60% of an assumed 100 calls/day. **That assumption is not provider-reported**
+— neither service publishes a per-account MCP quota. Tune `assumed_daily_limit` and
+`cap_fraction` in `config/user.json`; `assumed_daily_limit: 0` marks a connector unmetered
+(Dice, which needs no auth).
 
 ## Company Registry — No Hardcoded Companies
 
@@ -420,7 +456,7 @@ The ASCII template below is kept for reference only — do NOT render it as plai
   [✅/❌] PERSONALIZE=true in .env
   [✅/❌] PRIVATE_REPO_URL set in .env (your private GitHub repo SSH URL)
   [✅/❌] config/user.json filled
-  [✅/❌] GITHUB_PERSONAL_ACCESS_TOKEN + FIRECRAWL_API_KEY in .env
+  [✅/❌] GITHUB_PERSONAL_ACCESS_TOKEN in .env
   [✅/❌] npm install done (node_modules present)
   [✅/❌] PDF export working (exports/test-render.pdf exists)
   [✅/❌] Naukri enabled + playwright-stealth installed + system Chrome present

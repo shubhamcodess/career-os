@@ -21,9 +21,8 @@ public sources. Feeds directly into resume tailoring and outreach.
 - **Built-in `WebSearch`** — always available; use for discovery queries: company blog,
   team pages, engineering culture writeups, Glassdoor/AmbitionBox, recent funding/news
 - **Built-in `WebFetch`** — always available; use to read full content of URLs found via WebSearch
-- **Firecrawl MCP** (if key set) — use alongside WebFetch for high-value targets;
-  gives richer/cleaner extraction on JS-rendered pages (company career portals, LinkedIn
-  public profiles, Medium/Substack engineering blogs) where WebFetch returns thin content
+- **Browser tool** — only when WebFetch returns a client-rendered shell. Navigate and read
+  the page, or read its network requests to find the underlying API.
 
 **What's intentionally NOT included yet:**
 A dedicated LinkedIn-layer data source (e.g. Crustdata) would give direct people-search
@@ -83,8 +82,7 @@ From the org's public repos (if any):
 Run ALL queries below, fetch the top results from each, then synthesize before moving on.
 Don't stop after one search — cross-referencing across sources is what makes this useful.
 
-Use built-in `WebSearch` for discovery, then read full content via **`WebFetch`** (standard
-HTML pages) and/or **Firecrawl MCP** (JS-rendered pages — Medium, Substack, corporate blogs):
+Use built-in `WebSearch` for discovery, then read full content via **`WebFetch`**:
 
 - `"[company]" engineering blog`
 - `"[company]" "[role]" hiring OR "we're looking for"`
@@ -92,8 +90,8 @@ HTML pages) and/or **Firecrawl MCP** (JS-rendered pages — Medium, Substack, co
 - `"[company]" tech stack`
 - `site:glassdoor.com OR site:ambitionbox.com "[company]" reviews`
 
-For each promising URL: WebFetch for standard HTML pages; Firecrawl for pages that return
-thin or empty content via WebFetch.
+For each promising URL use `WebFetch`. If a page returns a client-rendered shell with
+no readable content, open it in the browser tool instead.
 
 Extract: culture signals, interview process notes, tech stack mentions, team structure
 hints, recent news (funding, launches, layoffs — all relevant context).
@@ -102,7 +100,7 @@ hints, recent news (funding, launches, layoffs — all relevant context).
 
 Fetch the careers URL (if known or found via Step 3 search). Use both where applicable:
 - **`WebFetch`** — fast for standard HTML careers pages
-- **Firecrawl MCP** — use for JS-rendered portals (Workday, Greenhouse-embedded, Lever-embedded)
+- **Browser tool** — for JS-rendered portals (Workday, Greenhouse-embedded, Lever-embedded)
   that return incomplete content via WebFetch
 
 Extract: currently open roles (cross-reference with job-aggregator results), stated
