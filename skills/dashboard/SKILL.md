@@ -166,6 +166,8 @@ body{font-family:var(--font-mono);font-size:12px;color:var(--text-primary);line-
 <div id="resume" class="panel">
   <div class="sg">GENERATION</div>
   <div class="cr"><span class="cc">make resume for [Co/Role]</span><span class="cd">Full pipeline: intel → tailor → ATS → humanize → PDF → commit</span></div>
+  <div class="cr"><span class="cc">make resume for Google [role]</span><span class="cd">Google-only: application budget → MQ gate → X-Y-Z bullets → pre-submit check</span></div>
+  <div class="cr"><span class="cc">google application budget</span><span class="cd">Google applications used in the rolling 30 days (limit 3)</span><button class="rb" onclick="sendPrompt('google application budget')">run ↗</button></div>
   <div class="cr"><span class="cc">make cover letter for [Co/Role]</span><span class="cd">From targeted resume.md + master doc → humanized → PDF</span></div>
   <div class="cr"><span class="cc">jd check</span><span class="cd">Analyze a JD for red/yellow/green flags before applying</span><button class="rb" onclick="sendPrompt('jd check\n')">run ↗</button></div>
   <div class="cr"><span class="cc">ats check</span><span class="cd">Full ATS audit on latest resume</span><button class="rb" onclick="sendPrompt('ats check')">run ↗</button></div>

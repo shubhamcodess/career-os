@@ -124,6 +124,7 @@ career-os/
 │   ├── resume-builder/           ← Structure, bullets, length standards
 │   ├── resume-ats-optimizer/     ← ATS scoring, keyword match
 │   ├── resume-tailoring/         ← JD-specific tailoring, company research
+│   ├── google-resume/            ← Google-only: MQ gate, X-Y-Z bullets, application budget
 │   ├── resume-humanizer/         ← AI-to-human pass
 │   ├── cover-letter/             ← Cover letter generation
 │   ├── cold-outreach/            ← Cold email + LinkedIn variants
@@ -181,6 +182,7 @@ career-os/
 | Resume generation (structure/bullets) | `skills/resume-builder/SKILL.md` |
 | ATS scoring | `skills/resume-ats-optimizer/SKILL.md` |
 | Tailoring resume to a JD | `skills/resume-tailoring/SKILL.md` |
+| Resume for a **Google** job (Google Careers posting) | `skills/google-resume/SKILL.md` — read this *before* resume-tailoring |
 | AI-to-human pass | `skills/resume-humanizer/SKILL.md` |
 | PDF export | `skills/pdf-export/SKILL.md` |
 | Cover letter generation | `skills/cover-letter/SKILL.md` |
@@ -351,6 +353,10 @@ resumes/Razorpay_SeniorPM_2026-09-07_v1/
 
 **Naming:** `[Company]_[Role]_[YYYY-MM-DD]_v[N]`
 
+**If the company is Google, read `skills/google-resume/SKILL.md` first.** It adds a
+minimum-qualification gate, Google's 3-applications-per-30-days budget, and Google's
+own bullet formula on top of the pipeline below.
+
 **Full pipeline on `make resume for [Company/Role]`:**
 1. Check for existing company-intel and role-portrait; offer to refresh if stale
 2. Fetch/parse JD → `resume-tailoring` skill
@@ -439,6 +445,8 @@ git commit -m "market: refreshed job feed — 34 listings, 6 strong matches"
 | `show checkpoints` | Display checkpoint log |
 | `rewind to [CP-N]` | Surface checkpoint, allow edit, re-save, commit |
 | `make resume for [Company/Role]` + JD | Full pipeline: intel check → tailor → build → ATS → humanize → PDF → commit |
+| `make resume for Google [role]` + JD or URL | Google pipeline: application-budget gate → MQ map → blank-page X-Y-Z resume → pre-submit check → interview bridge |
+| `google mq check [url]` / `google application budget` | Can this role pass the MQ screen? / Google applications used in the last 30 days |
 | `make cover letter for [Company/Role]` | Cover letter using targeted resume + master doc → humanize → PDF → commit |
 | `jd check` + JD text or URL | Analyze JD for red/yellow/green flags, score it, give apply/pass verdict |
 | `export pdf` | Generate PDF from latest resume |

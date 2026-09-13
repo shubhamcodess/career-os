@@ -53,6 +53,28 @@ Puppeteer-based HTML→PDF rendering with full margin/padding/font control.
 
 ---
 
+### google-resume
+
+**Trigger:** `make resume for Google [role]`, a Google Careers job URL, or any resume
+request where the company is Google. `resume-tailoring` defers to it.
+
+A dedicated pipeline for Google openings, built from Google's own published hiring
+guidance. It runs on top of the standard resume skills rather than replacing them:
+
+- **Application budget gate:** Google allows 3 applications per rolling 30 days and no
+  edits after submitting. Checks the job store before any writing starts.
+- **Minimum Qualifications map:** every MQ, verbatim, mapped to evidence and to where
+  it's visible on the resume. An unmet MQ is a recommendation not to apply.
+- **Blank-page build** with every bullet in Google's X-Y-Z form: *accomplished [X] as
+  measured by [Y], by doing [Z]*.
+- **Pre-submit checklist** (2 MB, parser check) and an **interview bridge** mapping each
+  bullet to a STAR story.
+
+Every rule is labelled **[Google]** (from Google's pages) or **[Career OS]** (this
+project's practice), with source links at the end of the skill.
+
+---
+
 ## Market Intelligence Layer
 
 ### job-aggregator

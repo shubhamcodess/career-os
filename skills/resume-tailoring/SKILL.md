@@ -16,6 +16,15 @@ description: >
   Until then, the built-in fallback below applies.
 -->
 
+## Company-specific skills — check first
+
+If the target company has its own skill, read it before this one. It overrides the
+generic rules below where they conflict.
+
+| Company | Skill |
+|---|---|
+| Google | `skills/google-resume/SKILL.md`: MQ gate, 3-applications-per-30-days budget, X-Y-Z bullets |
+
 ## Built-in Fallback
 
 ### Step 1 — Parse the JD
