@@ -38,19 +38,86 @@ Read `config/user.json`:
 - `integrations.naukri_enabled` — whether to include Naukri
 - `integrations.naukri_pages_per_search` — how many pages to scrape
 
-## Step 2 — Run the Entry Point
+## Step 2 — The Runbook
 
-**`find jobs` runs one command.** `scripts/find-jobs.py` fans out, merges, dedupes,
-scores and ranks in a single place, so a listing is shaped the same way regardless of
-which source it came from.
+**`find jobs` means running every step below, in order.** This is not a menu. A source
+you skip is coverage the user silently loses, and they cannot tell from the output that
+it happened.
+
+Only two things can call all the sources: a script can run scripts, and only you can call
+MCP connectors. So you do the connector half first, hand the results to the entry point,
+and it does the merging.
+
+### 1. Check connector budgets
 
 ```bash
-python3 scripts/find-jobs.py --limit 25 --write-feed
+python3 scripts/mcp-budget.py check indeed
+python3 scripts/mcp-budget.py check ziprecruiter
 ```
 
-Role and location default to `target_roles[0]` and `target_locations[0]`. Override with
-`--role` / `--location`. Add `--with-naukri` when the user wants India coverage (slower —
-browser automation).
+Non-zero exit means that connector is spent for today — skip it and say so. Never
+work around the cap.
+
+### 2. Call the MCP connectors yourself
+
+A script cannot reach these. Call each one that is connected and under budget:
+
+- **Indeed** — `search_jobs(search, location, country_code)`
+- **Dice** — `search_jobs(keyword, location, jobs_per_page, sort)`
+- **ZipRecruiter** — US and Canada only. For any other country it returns
+  `UNSUPPORTED_COUNTRY`; skip it rather than spending a call to confirm that again.
+
+Then `mcp-budget.py record <connector>` for each call you actually made.
+
+### 3. Write connector results to JSON
+
+Normalize to the standard shape — `title, company, location, url, source, posted,
+salary, description` — and write one file per connector:
+
+```
+/tmp/cojobs/indeed.json
+/tmp/cojobs/dice.json
+```
+
+### 4. Run the entry point with those files merged in
+
+```bash
+python3 scripts/find-jobs.py --limit 25 --write-feed \
+  --merge /tmp/cojobs/indeed.json \
+  --merge /tmp/cojobs/dice.json
+```
+
+This runs the ATS registry across all nine platforms, runs Naukri (on by default
+whenever `naukri_enabled` is true), folds in the connector files, then dedupes, scores,
+tags each job targeted/discovery, and ranks.
+
+Role and location default to `target_roles[0]` and `target_locations[0]` — override with
+`--role` / `--location`.
+
+### 5. Read the coverage report before reporting anything
+
+The entry point prints which sources ran, were skipped, or failed:
+
+```
+Source coverage:
+  ✓ ATS registry     ran      1854 jobs
+  ✓ Naukri           ran      126 jobs
+  ✓ indeed           ran      8 jobs (merged)
+  ○ ziprecruiter     skipped  connector not merged — Claude did not call it
+```
+
+**Relay anything not marked `ran` to the user.** A skipped source is missing coverage,
+not an empty market — and only the coverage line makes that visible.
+
+### What this skill does NOT run
+
+`resolve-ats.py` and `careers-probe.py` are setup tools, not search tools. They discover
+boards and write `config/companies.json`, probing dozens of endpoints per company for
+data that changes rarely. Running them on every search would turn a 30-second job search
+into several minutes. They belong to `setup`, `add company` and `refresh companies`.
+
+Run them from here only when the registry is the actual problem — a company returning
+zero that used to return jobs, or a company the user names that isn't in the registry.
 
 ### The two tracks
 

@@ -242,7 +242,9 @@ def main() -> None:
     p.add_argument("--location", default="", help="Location filter for Naukri")
     p.add_argument("--limit", type=int, default=0, help="Max jobs to output (0 = all)")
     p.add_argument("--with-naukri", action="store_true",
-                   help="Include Naukri — slower, uses browser automation")
+                   help="Force Naukri on even if naukri_enabled is false in config")
+    p.add_argument("--no-naukri", action="store_true",
+                   help="Skip Naukri (it is ON by default when naukri_enabled is true)")
     p.add_argument("--no-ats", action="store_true", help="Skip the ATS registry")
     p.add_argument("--merge", action="append", default=[], metavar="FILE",
                    help="JSON file of connector results to fold in (repeatable)")
@@ -265,33 +267,61 @@ def main() -> None:
 
     raw: list[dict] = []
     sources: list[str] = []
+    # Every source ends up here as ran / skipped / failed, so a missing source is
+    # visible in the output instead of silently reducing the result count.
+    coverage: list[tuple[str, str, str]] = []
 
-    if not args.no_ats:
+    if args.no_ats:
+        coverage.append(("ATS registry", "skipped", "--no-ats"))
+    else:
         jobs = run_script([os.path.join(ROOT, "scripts", "ats-fetcher.py"),
                            "--all", "--role", role], "ATS registry")
+        coverage.append(("ATS registry", "ran" if jobs else "failed",
+                         f"{len(jobs)} jobs"))
         if jobs:
             sources.append("ATS")
         raw += jobs
 
-    if args.with_naukri:
+    naukri_on = cfg.get("integrations", {}).get("naukri_enabled", False)
+    if args.no_naukri:
+        coverage.append(("Naukri", "skipped", "--no-naukri"))
+    elif not (naukri_on or args.with_naukri):
+        coverage.append(("Naukri", "skipped", "naukri_enabled is false in config"))
+    else:
         jobs = run_script([os.path.join(ROOT, "scripts", "naukri-scraper.py"),
                            "--role", role, "--location", location, "--pages", "1"],
                           "Naukri")
+        coverage.append(("Naukri", "ran" if jobs else "failed", f"{len(jobs)} jobs"))
         if jobs:
             sources.append("Naukri")
         raw += jobs
 
     for path in args.merge:
+        label = os.path.splitext(os.path.basename(path))[0]
         try:
             with open(path) as f:
                 jobs = json.load(f)
-            label = os.path.splitext(os.path.basename(path))[0]
             print(f"  {label} (merged): {len(jobs)} jobs", file=sys.stderr)
+            coverage.append((label, "ran", f"{len(jobs)} jobs (merged)"))
             if jobs:
                 sources.append(label)
             raw += jobs
         except Exception as e:
             print(f"  {path}: could not merge — {e}", file=sys.stderr)
+            coverage.append((label, "failed", str(e)[:60]))
+
+    for name in ("indeed", "dice", "ziprecruiter"):
+        if not any(c[0].lower().startswith(name) for c in coverage):
+            coverage.append((name, "skipped",
+                             "connector not merged — Claude did not call it"))
+
+    print("\nSource coverage:", file=sys.stderr)
+    for name, state, detail in coverage:
+        mark = {"ran": "✓", "skipped": "○", "failed": "✗"}[state]
+        print(f"  {mark} {name:16} {state:8} {detail}", file=sys.stderr)
+    missing = [c[0] for c in coverage if c[1] != "ran"]
+    if missing:
+        print(f"  -> not contributing: {', '.join(missing)}", file=sys.stderr)
 
     if not raw:
         print("\nNo jobs from any source.", file=sys.stderr)
