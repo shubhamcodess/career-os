@@ -43,6 +43,10 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REGISTRY_PATH = os.path.join(ROOT, "config", "companies.json")
 USER_CONFIG_PATH = os.path.join(ROOT, "config", "user.json")
 
+# Below this many matches for a targeted company search, retry under derived
+# name variants before accepting the result.
+LOW_YIELD_THRESHOLD = 3
+
 USER_AGENTS = [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
@@ -235,10 +239,38 @@ def match_company(job: dict, company: str) -> str | None:
     return None
 
 
-async def run_searches(queries: list[tuple[str, str]], location: str,
-                       pages: int) -> list[dict]:
+def variant_queries(company: str) -> list[str]:
+    """
+    Generic fallback search terms for a company, derived from its own name.
+
+    Nothing company-specific is hardcoded here. Many multinationals list on
+    Indian job boards only under a local entity name, so a bare company name
+    returns nothing while "<name> India" returns plenty.
+    """
+    base = company.strip()
+    return [f"{base} India", f"{base} Labs India", f"{base} Technologies"]
+
+
+async def try_variants(company: str, role: str, location: str) -> tuple[str, list[dict]]:
+    """Retry a zero-yield company under derived name variants. Returns (term, jobs)."""
+    for variant in variant_queries(company):
+        query = f"{variant} {role}".strip()
+        try:
+            found = await scrape_naukri(query, location, 1)
+        except Exception:
+            continue
+        kept = [j for j in found if match_company(j, variant) == "exact"]
+        if kept:
+            return variant, kept
+        await asyncio.sleep(random.uniform(3, 5))
+    return "", []
+
+
+async def run_searches(queries: list[tuple[str, str]], location: str, pages: int,
+                       role: str = "", retry_variants: bool = True) -> list[dict]:
     """queries: list of (search_text, company_filter_or_empty)."""
     all_jobs: list[dict] = []
+    suggestions: list[tuple[str, str, int]] = []
     for i, (query, company) in enumerate(queries, 1):
         label = company or query
         print(f"[{i}/{len(queries)}] {label} …", file=sys.stderr)
@@ -262,6 +294,25 @@ async def run_searches(queries: list[tuple[str, str]], location: str,
                 names = sorted({p.get("company", "") for p in partial})
                 note += f"  (+{len(partial)} partial: {', '.join(names)})"
             print(note, file=sys.stderr)
+
+            # Retry on low yield, not just zero. A multinational that really
+            # hires here does not surface one listing — one or two usually means
+            # it lists under a local entity name ("Qualcomm" -> "Qualcomm India"
+            # went from 1 to 7), so a near-miss is worth a second query.
+            if len(kept) < LOW_YIELD_THRESHOLD and retry_variants:
+                term, extra = await try_variants(company, role, location)
+                if extra:
+                    merged = dedupe(kept + extra)
+                    gained = len(merged) - len(kept)
+                    print(f"    -> '{term}' added {gained} more "
+                          f"({len(merged)} total)", file=sys.stderr)
+                    suggestions.append((company, term, len(merged)))
+                    kept = merged
+                elif not kept:
+                    print(f"    no variant worked — '{company}' may be a skill "
+                          f"keyword here rather than an employer name",
+                          file=sys.stderr)
+
             all_jobs.extend(kept + partial)
         else:
             print(f"    {len(found)} jobs", file=sys.stderr)
@@ -269,6 +320,12 @@ async def run_searches(queries: list[tuple[str, str]], location: str,
 
         if i < len(queries):
             await asyncio.sleep(random.uniform(4, 8))
+
+    if suggestions:
+        print("\nAliases worth saving (they are not stored automatically):", file=sys.stderr)
+        for name, term, n in suggestions:
+            print(f'  resolve-ats.py --set-alias "{name}" "{term}"   # {n} jobs',
+                  file=sys.stderr)
     return all_jobs
 
 
@@ -284,6 +341,9 @@ def main():
     p.add_argument("--role", default="", help="Role keywords, e.g. 'Software Engineer'")
     p.add_argument("--location", default="", help="City (defaults to target_locations[0])")
     p.add_argument("--pages", type=int, default=2, help="Pages per search (default 2)")
+    p.add_argument("--no-retry-variants", action="store_true",
+                   help="Don't retry zero-yield companies under derived name variants "
+                        "like '<name> India'")
     args = p.parse_args()
 
     location = args.location or default_location()
@@ -315,7 +375,9 @@ def main():
     print(f"Naukri: {len(queries)} search(es) in {location}, {args.pages} page(s) each",
           file=sys.stderr)
 
-    jobs = dedupe(asyncio.run(run_searches(queries, location, args.pages)))
+    jobs = dedupe(asyncio.run(run_searches(
+        queries, location, args.pages,
+        role=args.role, retry_variants=not args.no_retry_variants)))
 
     print(json.dumps(jobs, ensure_ascii=False, indent=2))
     found_companies = len({j.get("company") for j in jobs})

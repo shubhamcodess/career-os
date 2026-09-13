@@ -271,6 +271,25 @@ python3 scripts/resolve-ats.py --set-alias "ISL" "IBM ISL"
 ```
 
 `--from-unreachable` uses `search_as` when set, and the registry name otherwise.
+Aliases live in `config/companies.json` — **never hardcode a company name or alias in
+a script or in this skill.**
+
+**Aliases are discovered, not hardcoded.** When a targeted search returns fewer than
+three matches, the scraper automatically retries under variants derived from the name
+itself — `"<name> India"`, `"<name> Labs India"`, `"<name> Technologies"`. Many
+multinationals list on Indian boards only under a local entity, so a bare name returns
+almost nothing while the local one returns plenty (Qualcomm went 1 → 5 this way).
+
+Anything that works is **suggested, not saved** — the scraper prints the exact
+`--set-alias` command and leaves the decision to the user. Disable the retry with
+`--no-retry-variants`.
+
+**When the company name is also a skill keyword.** Some names cannot be rescued by any
+alias. Searching Naukri for `SAP` returns TCS, Infosys, Capgemini and PwC hiring SAP
+*consultants* — in the Indian market "SAP" is a skill, not an employer. The matcher
+correctly rejects all of them and the scraper says so explicitly rather than reporting a
+silent zero. Route those companies to their careers page instead; do not invent an alias
+to force a match. The same trap applies to names like Oracle, Salesforce and Workday.
 
 Output is the same JSON shape as the ATS fetcher with `"source": "naukri"`, already
 deduplicated, so it merges straight into Step 3 with no special handling.
