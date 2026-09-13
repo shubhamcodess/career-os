@@ -2,73 +2,80 @@
 """
 Career OS — Job Store
 
-Persistent memory for job listings, so a daily job hunt shows what is actually new
-rather than the same 2,000 rows every morning.
+Persistent memory for job listings, so a daily hunt shows what is actually new
+rather than re-presenting the same few thousand rows every morning.
 
-Without this, `find jobs` is stateless: it re-fetches the whole market each run and
-re-presents everything, including roles already rejected or applied to. The signal
-that matters daily — what appeared since yesterday — is buried.
+DIVISION OF LABOUR — this matters:
 
-What it tracks per listing:
-  first_seen / last_seen   when it entered and was last confirmed live
-  status                   new -> seen -> saved | applied | not_interested | expired
-  seen_count               how many runs it has survived
+  This script owns FACTS, and nothing else. Which listings exist, when each was
+  first and last seen, what the user did with it, whether it is still live. These
+  are objective and must never be guessed at.
 
-Three behaviours fall out of that:
-  Freshness   --new-only returns listings never shown before
-  Lifecycle   applied / not_interested are never shown again
-  Staleness   listings absent from a full run are expired — the feed tracks the
-              live market instead of accumulating dead links
+  Claude owns JUDGEMENT. Whether a role fits, whether it resembles something the
+  user already passed on, whether it is worth surfacing. `context` hands Claude the
+  user's decision history in plain form so it can reason over it. There is
+  deliberately no keyword scoring here: counting title words produced nonsense like
+  treating "engineering" as a dislike because the user dismissed one employer.
 
-It also builds a taste profile from what the user rejects, and downranks similar
-listings. That is a frequency count over rejected companies and title words, not a
-model — it is meant to be inspectable and easy to reset.
+STORAGE LAYOUT
+
+  data/market/
+    job-index.json          slim index: id -> status + dates. Small, rewritten daily.
+    runs/YYYY-MM-DD.json    what was fetched that day. Written once, never modified.
+    jobs/<id>.json          full JD text, cached only for listings engaged with.
+
+  The daily run files exist for git's sake as much as yours. A single index
+  rewritten every day makes git store a fresh copy of the whole thing daily —
+  hundreds of megabytes of history for a few megabytes of content. Immutable
+  per-day files are stored once.
+
+STATUS VOCABULARY
+
+  new         fetched, never shown
+  shown       presented, awaiting a reaction
+  interested  worth pursuing
+  saved       keep for later
+  pinned      keep at the top
+  applied     applied to — kept forever, never pruned
+  stale       user rejected it — never shown again, but the record is kept
+  expired     gone from the market (distinct from stale: nobody rejected it)
 
 Usage:
-  # Ingest a run's results; prints them back annotated with status
-  python3 scripts/find-jobs.py --limit 0 | python3 scripts/job-store.py ingest --full-run
-
-  # Only what the user has never seen
-  cat results.json | python3 scripts/job-store.py ingest --new-only
-
-  # Lifecycle
+  python3 scripts/find-jobs.py --limit 0 | python3 scripts/job-store.py ingest --full-run --new-only --limit 25
   python3 scripts/job-store.py mark applied "Cisco" "Senior Software Engineer"
-  python3 scripts/job-store.py mark not_interested --url "https://..."
-
+  python3 scripts/job-store.py mark stale "Walt Disney" --all
+  python3 scripts/job-store.py context          # decision history, for Claude to reason over
   python3 scripts/job-store.py stats
-  python3 scripts/job-store.py taste
-  python3 scripts/job-store.py forget not_interested     # reset the taste profile
+  python3 scripts/job-store.py runs             # what was fetched on each day
+  python3 scripts/job-store.py prune --days 90
 """
 
 import argparse
 import hashlib
 import json
 import os
-import re
 import sys
 from datetime import date, datetime, timedelta
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-STORE_PATH = os.path.join(ROOT, "data", "market", "job-index.json")
+MARKET = os.path.join(ROOT, "data", "market")
+INDEX_PATH = os.path.join(MARKET, "job-index.json")
+RUNS_DIR = os.path.join(MARKET, "runs")
+JD_DIR = os.path.join(MARKET, "jobs")
 
-ACTIVE = {"new", "seen", "saved"}
-CLOSED = {"applied", "not_interested", "expired"}
+# Never shown again once set.
+HIDDEN = {"applied", "stale", "expired"}
+# Survives every prune — this is the user's application history.
+PERMANENT = {"applied"}
+# User-set states meaning "I want this".
+WANTED = {"interested", "saved", "pinned"}
 
-# A listing absent from this many consecutive full runs is treated as gone.
 EXPIRE_AFTER_MISSES = 2
-# Stop words that carry no signal when learning from rejected titles.
-STOP = {"senior", "sr", "staff", "lead", "principal", "engineer", "software", "i",
-        "ii", "iii", "the", "and", "of", "for", "a", "an", "to", "in", "at", "with"}
+SIZE_WARN_KB = 3000
 
 
 def job_id(job: dict) -> str:
-    """
-    Stable identity for a listing across runs.
-
-    URL is the natural key but arrives with per-connector tracking parameters, so it
-    is stripped to path before hashing. Listings with no URL fall back to
-    company+title, which is weaker but keeps them addressable.
-    """
+    """Stable identity across runs. URL minus tracking params, else company+title."""
     url = (job.get("url") or "").split("?")[0].rstrip("/")
     basis = url or f"{job.get('company','')}|{job.get('title','')}".lower()
     return hashlib.sha1(basis.encode()).hexdigest()[:16]
@@ -76,62 +83,58 @@ def job_id(job: dict) -> str:
 
 def load() -> dict:
     try:
-        with open(STORE_PATH) as f:
+        with open(INDEX_PATH) as f:
             return json.load(f)
     except Exception:
-        return {"version": 1, "runs": 0, "jobs": {}}
+        return {"version": 2, "runs": 0, "jobs": {}}
 
 
 def save(store: dict) -> None:
-    os.makedirs(os.path.dirname(STORE_PATH), exist_ok=True)
-    with open(STORE_PATH, "w") as f:
+    os.makedirs(MARKET, exist_ok=True)
+    with open(INDEX_PATH, "w") as f:
         json.dump(store, f, indent=1, ensure_ascii=False)
         f.write("\n")
 
 
-def title_tokens(title: str) -> list[str]:
-    words = re.split(r"[^a-z0-9+#]+", (title or "").lower())
-    return [w for w in words if len(w) > 2 and w not in STOP]
+def write_run(day: str, payload: dict) -> str:
+    """One immutable file per day. Re-running the same day merges into it."""
+    os.makedirs(RUNS_DIR, exist_ok=True)
+    path = os.path.join(RUNS_DIR, f"{day}.json")
+    existing = {}
+    if os.path.exists(path):
+        try:
+            with open(path) as f:
+                existing = json.load(f)
+        except Exception:
+            existing = {}
+    merged_ids = sorted(set(existing.get("fetched_ids", [])) | set(payload["fetched_ids"]))
+    out = {
+        "date": day,
+        "runs_today": existing.get("runs_today", 0) + 1,
+        "fetched": len(merged_ids),
+        "new_this_day": sorted(set(existing.get("new_this_day", [])) | set(payload["new_this_day"])),
+        "sources": sorted(set(existing.get("sources", [])) | set(payload["sources"])),
+        "fetched_ids": merged_ids,
+    }
+    with open(path, "w") as f:
+        json.dump(out, f, indent=1)
+        f.write("\n")
+    return path
 
 
-def taste_profile(store: dict) -> dict:
-    """
-    Frequency counts over what the user rejected. Deliberately simple.
-
-    Bulk rejections contribute a company signal but NOT title tokens. Rejecting a
-    whole company in one go says "not this employer" — it says nothing about the
-    roles. Counting those titles teaches the opposite: dismissing all 88 Disney
-    listings would learn that "engineering", "product" and "platform" are dislikes,
-    which then penalises every good job elsewhere.
-    """
-    companies: dict[str, int] = {}
-    tokens: dict[str, int] = {}
-    for j in store["jobs"].values():
-        if j.get("status") != "not_interested":
-            continue
-        c = re.sub(r"[^a-z0-9]", "", (j.get("company") or "").lower())
-        if c:
-            companies[c] = companies.get(c, 0) + 1
-        if j.get("bulk_reject"):
-            continue
-        for t in title_tokens(j.get("title", "")):
-            tokens[t] = tokens.get(t, 0) + 1
-    return {"companies": companies, "tokens": tokens}
-
-
-def taste_penalty(job: dict, profile: dict) -> tuple[int, list[str]]:
-    """Score adjustment from learned dislikes. Never hides a job, only downranks it."""
-    pen, why = 0, []
-    comp = re.sub(r"[^a-z0-9]", "", (job.get("company") or "").lower())
-    n = profile["companies"].get(comp, 0)
-    if n:
-        pen += min(30, 10 * n)
-        why.append(f"passed on {job.get('company')} {n}x")
-    hits = [t for t in title_tokens(job.get("title", "")) if profile["tokens"].get(t, 0) >= 2]
-    if hits:
-        pen += min(20, 5 * len(hits))
-        why.append(f"rejected before: {', '.join(hits[:3])}")
-    return pen, why
+def cache_jd(job: dict) -> None:
+    """Keep full JD text only for listings the user engaged with."""
+    desc = (job.get("description") or "").strip()
+    if not desc:
+        return
+    os.makedirs(JD_DIR, exist_ok=True)
+    path = os.path.join(JD_DIR, f"{job_id(job)}.json")
+    with open(path, "w") as f:
+        json.dump({k: job.get(k) for k in
+                   ("title", "company", "location", "url", "source", "posted",
+                    "salary", "experience", "description", "tags")},
+                  f, indent=1, ensure_ascii=False)
+        f.write("\n")
 
 
 def cmd_ingest(args) -> None:
@@ -147,14 +150,15 @@ def cmd_ingest(args) -> None:
         sys.exit(1)
 
     store["runs"] = store.get("runs", 0) + 1
-    profile = taste_profile(store)
     jobs = store["jobs"]
-    seen_ids: set[str] = set()
+    seen_ids, new_ids, sources = set(), [], set()
     fresh, returning, suppressed = [], [], 0
 
     for job in incoming:
         jid = job_id(job)
         seen_ids.add(jid)
+        if job.get("source"):
+            sources.add(job["source"])
         rec = jobs.get(jid)
 
         if rec is None:
@@ -164,37 +168,30 @@ def cmd_ingest(args) -> None:
                    "first_seen": today, "last_seen": today,
                    "status": "new", "seen_count": 0, "misses": 0}
             jobs[jid] = rec
+            new_ids.append(jid)
             is_new = True
         else:
             rec["last_seen"] = today
             rec["misses"] = 0
-            # A listing that reappears after being expired is live again.
-            if rec["status"] == "expired":
-                rec["status"] = "seen"
+            if rec["status"] == "expired":      # reappeared, so it is live again
+                rec["status"] = "shown"
             is_new = rec["status"] == "new"
+
+        if rec["status"] in HIDDEN:
+            suppressed += 1
+            continue
 
         job = dict(job)
         job["id"] = jid
         job["status"] = rec["status"]
         job["first_seen"] = rec["first_seen"]
-
-        if rec["status"] in ("applied", "not_interested"):
-            suppressed += 1
-            continue
-
-        pen, why = taste_penalty(job, profile)
-        if pen:
-            job["score"] = max(0, job.get("score", 0) - pen)
-            job["why"] = (job.get("why") or []) + why
-
         (fresh if is_new else returning).append(job)
 
-    # Anything not in this run is a miss. Only a full run is evidence of absence —
-    # a --limit or --role filtered run legitimately omits most of the market.
+    # Absence is only evidence when the run actually covered the market.
     expired_now = 0
     if args.full_run:
         for jid, rec in jobs.items():
-            if jid in seen_ids or rec["status"] in CLOSED:
+            if jid in seen_ids or rec["status"] in HIDDEN or rec["status"] in WANTED:
                 continue
             rec["misses"] = rec.get("misses", 0) + 1
             if rec["misses"] >= EXPIRE_AFTER_MISSES:
@@ -206,23 +203,37 @@ def cmd_ingest(args) -> None:
     if args.limit:
         out = out[:args.limit]
 
-    # Showing a listing is what makes it no longer new.
     for job in out:
         rec = jobs[job["id"]]
         rec["seen_count"] = rec.get("seen_count", 0) + 1
         if rec["status"] == "new":
-            rec["status"] = "seen"
+            rec["status"] = "shown"
+        cache_jd(job)
 
     save(store)
+    run_path = write_run(today, {"fetched_ids": sorted(seen_ids),
+                                 "new_this_day": new_ids,
+                                 "sources": sorted(sources)})
 
-    print(f"Run #{store['runs']}: {len(incoming)} in -> "
-          f"{len(fresh)} new, {len(returning)} returning, "
-          f"{suppressed} suppressed (applied/not interested)", file=sys.stderr)
+    print(f"Run #{store['runs']} ({today}): {len(incoming)} in -> "
+          f"{len(fresh)} new, {len(returning)} returning, {suppressed} hidden "
+          f"(applied/stale/expired)", file=sys.stderr)
     if args.full_run and expired_now:
         print(f"Expired {expired_now} listings no longer in the market", file=sys.stderr)
-    print(f"Returning {len(out)}"
-          + (" (new only)" if args.new_only else ""), file=sys.stderr)
+    print(f"Returning {len(out)}" + (" (new only)" if args.new_only else "")
+          + f" · day file: {os.path.relpath(run_path, ROOT)}", file=sys.stderr)
+    warn_size()
     print(json.dumps(out, ensure_ascii=False, indent=2))
+
+
+def warn_size() -> None:
+    try:
+        kb = os.path.getsize(INDEX_PATH) / 1024
+    except OSError:
+        return
+    if kb > SIZE_WARN_KB:
+        print(f"\nThe index is {kb/1024:.1f} MB. Consider: "
+              f"job-store.py prune --days 90", file=sys.stderr)
 
 
 def find_records(store: dict, args) -> list[dict]:
@@ -247,19 +258,65 @@ def cmd_mark(args) -> None:
         print("No stored listing matched.", file=sys.stderr)
         sys.exit(1)
     if len(matches) > 1 and not args.all:
-        print(f"{len(matches)} listings matched — narrow it, or pass --all:", file=sys.stderr)
+        print(f"{len(matches)} matched — narrow it, or pass --all:", file=sys.stderr)
         for j in matches[:10]:
             print(f"  {j['company']} — {j['title'][:60]}", file=sys.stderr)
         sys.exit(1)
-    bulk = len(matches) > 1
     for j in matches:
         j["status"] = args.status
         j["status_set"] = date.today().isoformat()
-        if args.status == "not_interested":
-            j["bulk_reject"] = bulk
+        if args.reason:
+            j["reason"] = args.reason
+        j["bulk"] = len(matches) > 1
     save(store)
-    note = "" if not bulk else "  (bulk — company signal only, titles not learned)"
+    note = f" — {args.reason}" if args.reason else ""
     print(f"Marked {len(matches)} listing(s) as {args.status}{note}", file=sys.stderr)
+
+
+def cmd_context(args) -> None:
+    """
+    Emit the user's decision history for Claude to reason over.
+
+    Deliberately raw. No scoring, no keyword counts — Claude reads the actual
+    titles the user accepted and rejected and forms its own view, which is the
+    whole point of keeping judgement out of this script.
+    """
+    store = load()
+    jobs = store["jobs"].values()
+    buckets = {"applied": [], "stale": [], "interested": [], "saved": [], "pinned": []}
+    for j in jobs:
+        s = j.get("status")
+        if s in buckets:
+            buckets[s].append(j)
+
+    if not any(buckets.values()):
+        print("No decisions recorded yet — nothing to learn from.", file=sys.stderr)
+        return
+
+    print("# Decision history\n", file=sys.stderr)
+    for name in ("applied", "interested", "saved", "pinned", "stale"):
+        rows = buckets[name]
+        if not rows:
+            continue
+        bulk = sum(1 for r in rows if r.get("bulk"))
+        hdr = f"## {name} ({len(rows)})"
+        if bulk:
+            hdr += f" — {bulk} from bulk company rejections, weak signal about the role"
+        print(hdr, file=sys.stderr)
+        by_company: dict[str, list[str]] = {}
+        for r in rows:
+            by_company.setdefault(r.get("company", "?"), []).append(r.get("title", ""))
+        for comp, titles in sorted(by_company.items(), key=lambda x: -len(x[1]))[:12]:
+            sample = "; ".join(t[:54] for t in titles[:3])
+            more = f" (+{len(titles)-3} more)" if len(titles) > 3 else ""
+            print(f"  {comp} x{len(titles)}: {sample}{more}", file=sys.stderr)
+        reasons = {r["reason"] for r in rows if r.get("reason")}
+        if reasons:
+            print(f"  reasons given: {'; '.join(sorted(reasons))}", file=sys.stderr)
+        print("", file=sys.stderr)
+
+    print("Use this to judge new listings. A bulk company rejection says "
+          "'not this employer' — it says nothing about the role type.", file=sys.stderr)
 
 
 def cmd_stats(args) -> None:
@@ -268,45 +325,77 @@ def cmd_stats(args) -> None:
     counts: dict[str, int] = {}
     for j in jobs.values():
         counts[j.get("status", "?")] = counts.get(j.get("status", "?"), 0) + 1
-    print(f"Job store — {len(jobs)} listings tracked across {store.get('runs',0)} runs",
+    print(f"Job store — {len(jobs)} listings across {store.get('runs',0)} runs",
           file=sys.stderr)
-    for s in ("new", "seen", "saved", "applied", "not_interested", "expired"):
+    for s in ("new", "shown", "interested", "saved", "pinned", "applied",
+              "stale", "expired"):
         if counts.get(s):
-            print(f"  {s:16} {counts[s]}", file=sys.stderr)
-
+            print(f"  {s:12} {counts[s]}", file=sys.stderr)
     cutoff = (date.today() - timedelta(days=7)).isoformat()
-    recent = [j for j in jobs.values() if j.get("first_seen", "") >= cutoff]
-    print(f"\n  appeared in the last 7 days: {len(recent)}", file=sys.stderr)
-
-
-def cmd_taste(args) -> None:
-    store = load()
-    p = taste_profile(store)
-    rejected = sum(1 for j in store["jobs"].values() if j.get("status") == "not_interested")
-    if not rejected:
-        print("No taste profile yet — nothing marked not_interested.", file=sys.stderr)
-        return
-    print(f"Taste profile — learned from {rejected} rejected listings", file=sys.stderr)
-    if p["companies"]:
-        top = sorted(p["companies"].items(), key=lambda x: -x[1])[:8]
-        print("  companies: " + ", ".join(f"{c} x{n}" for c, n in top), file=sys.stderr)
-    strong = sorted(((t, n) for t, n in p["tokens"].items() if n >= 2),
-                    key=lambda x: -x[1])[:10]
-    if strong:
-        print("  title words: " + ", ".join(f"{t} x{n}" for t, n in strong), file=sys.stderr)
-    print("\n  Applied as a score penalty only — never hides a listing outright.",
+    print(f"\n  first seen in the last 7 days: "
+          f"{sum(1 for j in jobs.values() if j.get('first_seen','') >= cutoff)}",
           file=sys.stderr)
+    try:
+        print(f"  index size: {os.path.getsize(INDEX_PATH)/1024:.0f} KB", file=sys.stderr)
+    except OSError:
+        pass
+    warn_size()
 
 
-def cmd_forget(args) -> None:
+def cmd_runs(args) -> None:
+    if not os.path.isdir(RUNS_DIR):
+        print("No runs recorded yet.", file=sys.stderr)
+        return
+    files = sorted(os.listdir(RUNS_DIR), reverse=True)[:args.limit]
+    print(f"Fetch history — {len(os.listdir(RUNS_DIR))} day(s) recorded", file=sys.stderr)
+    for fn in files:
+        try:
+            with open(os.path.join(RUNS_DIR, fn)) as f:
+                d = json.load(f)
+        except Exception:
+            continue
+        print(f"  {d['date']}  fetched {d['fetched']:>5}  "
+              f"new {len(d.get('new_this_day', [])):>4}  "
+              f"runs {d.get('runs_today',1)}  "
+              f"sources: {', '.join(d.get('sources', []))}", file=sys.stderr)
+
+
+def cmd_prune(args) -> None:
     store = load()
-    n = 0
-    for j in store["jobs"].values():
-        if j.get("status") == args.status:
-            j["status"] = "seen"
-            n += 1
+    cutoff = (date.today() - timedelta(days=args.days)).isoformat()
+    jobs = store["jobs"]
+    removed: dict[str, int] = {}
+    keep: dict[str, dict] = {}
+
+    for jid, j in jobs.items():
+        status = j.get("status", "")
+        last = j.get("status_set") or j.get("last_seen", "")
+        if status in PERMANENT or status in WANTED or last >= cutoff:
+            keep[jid] = j
+            continue
+        if status in ("expired", "stale", "shown", "new"):
+            removed[status] = removed.get(status, 0) + 1
+        else:
+            keep[jid] = j
+
+    if not removed:
+        print(f"Nothing older than {args.days} days to prune.", file=sys.stderr)
+        return
+
+    total = sum(removed.values())
+    detail = ", ".join(f"{k} {v}" for k, v in sorted(removed.items()))
+    if args.dry_run:
+        print(f"Would prune {total} listing(s) older than {args.days} days: {detail}",
+              file=sys.stderr)
+        print("  applied and interested/saved/pinned are never pruned.", file=sys.stderr)
+        return
+
+    store["jobs"] = keep
     save(store)
-    print(f"Reset {n} listing(s) from {args.status} back to seen", file=sys.stderr)
+    print(f"Pruned {total} listing(s) older than {args.days} days: {detail}",
+          file=sys.stderr)
+    print(f"  {len(keep)} kept (applied and wanted listings are never pruned)",
+          file=sys.stderr)
 
 
 def main() -> None:
@@ -314,31 +403,36 @@ def main() -> None:
     sub = p.add_subparsers(dest="cmd", required=True)
 
     i = sub.add_parser("ingest", help="Read jobs JSON on stdin, annotate and persist")
-    i.add_argument("--new-only", action="store_true",
-                   help="Return only listings never shown before")
+    i.add_argument("--new-only", action="store_true")
     i.add_argument("--full-run", action="store_true",
-                   help="This run covered the whole market — absent listings count as "
-                        "missing and eventually expire")
+                   help="Run covered the whole market — absent listings count as missing")
     i.add_argument("--limit", type=int, default=0)
     i.set_defaults(fn=cmd_ingest)
 
-    m = sub.add_parser("mark", help="Set lifecycle status on a listing")
-    m.add_argument("status", choices=["saved", "applied", "not_interested", "seen"])
+    m = sub.add_parser("mark", help="Record a decision on a listing")
+    m.add_argument("status", choices=["interested", "saved", "pinned", "applied",
+                                      "stale", "shown"])
     m.add_argument("company", nargs="?", default="")
     m.add_argument("title", nargs="?", default="")
     m.add_argument("--url")
-    m.add_argument("--all", action="store_true", help="Apply to every match")
+    m.add_argument("--all", action="store_true")
+    m.add_argument("--reason", help="Why, in the user's own words — fed to Claude via `context`")
     m.set_defaults(fn=cmd_mark)
+
+    c = sub.add_parser("context", help="Decision history for Claude to reason over")
+    c.set_defaults(fn=cmd_context)
 
     s = sub.add_parser("stats", help="Counts by status")
     s.set_defaults(fn=cmd_stats)
 
-    t = sub.add_parser("taste", help="Show what has been learned from rejections")
-    t.set_defaults(fn=cmd_taste)
+    r = sub.add_parser("runs", help="What was fetched on each day")
+    r.add_argument("--limit", type=int, default=14)
+    r.set_defaults(fn=cmd_runs)
 
-    f = sub.add_parser("forget", help="Reset a status back to seen")
-    f.add_argument("status", choices=["not_interested", "applied", "saved", "expired"])
-    f.set_defaults(fn=cmd_forget)
+    pr = sub.add_parser("prune", help="Drop old listings (never applied or wanted)")
+    pr.add_argument("--days", type=int, required=True)
+    pr.add_argument("--dry-run", action="store_true")
+    pr.set_defaults(fn=cmd_prune)
 
     args = p.parse_args()
     args.fn(args)

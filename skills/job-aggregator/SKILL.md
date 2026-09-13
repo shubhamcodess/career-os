@@ -25,11 +25,13 @@ against your profile. Single source of live market intelligence.
 | `find [role] jobs` | Search a specific role title |
 | `find jobs at my companies` | `--targeted-only` — configured companies, no discovery |
 | `show me everything` | Skip `--new-only` — include listings already seen |
-| `applied to [company] [role]` | Mark applied — never shown again |
-| `not interested in [company]` | Mark rejected — downranks similar listings in future |
-| `save [company] [role]` | Mark saved for later |
-| `job store stats` | Counts by status; how many appeared in the last 7 days |
-| `what have I passed on` | Show the learned taste profile |
+| `applied to [company] [role]` | Mark applied — never shown again, never pruned |
+| `not interested in [company]` | Mark stale — never shown again, record kept |
+| `save [company] [role]` / `pin ...` | Keep on the shortlist |
+| `job store stats` | Counts by status, index size |
+| `fetch history` | What was fetched on each day |
+| `what have I decided` | Decision history — what you pursued vs passed on |
+| `prune job store [N] days` | Drop old listings; applied and shortlisted are kept |
 | `refresh job feed` | Re-run last search, surface new listings only |
 | `rank my job feed` | Re-score existing feed against latest resume |
 
@@ -131,28 +133,72 @@ Run #7: 2008 in -> 34 new, 1966 returning, 12 suppressed (applied/not interested
 
 Relay that line. "34 new since yesterday" is the useful number; 2008 is noise.
 
-### 4c. Lifecycle and taste
+### 4c. Decisions — and where the judgement actually lives
 
-When the user reacts to a listing, record it — that is what stops the feed repeating
-itself and what teaches it their taste:
+**This script stores facts. You supply the judgement.** There is no keyword scoring in
+the store, deliberately — counting title words produced nonsense, treating "engineering"
+as a dislike because the user dismissed one employer.
+
+Before presenting a feed, read the user's decision history:
+
+```bash
+python3 scripts/job-store.py context
+```
+
+That returns what they applied to, pinned, saved, and rejected — with their own stated
+reasons, and flagged where a rejection was a bulk company dismissal. Read it and judge
+the new listings yourself: does this resemble what they pursued, or what they passed on?
+Say so in plain language when you present the feed.
+
+A bulk company rejection means **"not this employer"**. It says nothing about the role
+type, and the output labels it as weak signal for exactly that reason. Do not infer role
+preferences from it.
+
+Record every reaction, with the reason in their words when they give one:
 
 ```bash
 python3 scripts/job-store.py mark applied "Cisco" "Senior Software Engineer"
-python3 scripts/job-store.py mark not_interested --url "https://..."
-python3 scripts/job-store.py mark not_interested "Walt Disney" --all
-python3 scripts/job-store.py mark saved "Google" "Senior SWE, AI/ML"
+python3 scripts/job-store.py mark pinned "Google" "Senior SWE, AI/ML"
+python3 scripts/job-store.py mark saved --url "https://..."
+python3 scripts/job-store.py mark stale "Walt Disney" --all --reason "not in my radar"
 ```
 
-Rejections build a taste profile that **downranks, never hides**. A user who passed on a
-company three times should see it lower, not lose it silently — their taste can change,
-and a hidden listing cannot be reconsidered.
+| Status | Meaning | Shown again? |
+|---|---|---|
+| `interested` / `saved` / `pinned` | Worth pursuing | Yes, on request |
+| `applied` | Applied to | Never — kept forever, never pruned |
+| `stale` | User rejected it | Never — record kept for `context` |
+| `expired` | Gone from the market | Never — nobody rejected it, it just ended |
 
-Rejecting a whole company with `--all` contributes a company signal but no title
-signal. Dismissing all 88 Disney listings says "not this employer"; it does not mean
-"engineering" and "platform" are dislikes, and learning that would penalise good roles
-everywhere else.
+`stale` and `expired` are different things and must not be conflated. One is a decision,
+the other is the market moving on.
 
-`job-store.py taste` shows what has been learned. `forget not_interested` resets it.
+### 4d. Day-grouped history
+
+Every run writes `data/market/runs/YYYY-MM-DD.json` — which listings were fetched that
+day, which were new, and from which sources. Written once per day and then only appended
+to, so git stores each day once instead of a fresh copy of everything daily.
+
+```bash
+python3 scripts/job-store.py runs      # fetch history by day
+python3 scripts/job-store.py stats     # counts by status, index size
+```
+
+Full JD text is cached to `data/market/jobs/<id>.json`, but only for listings actually
+shown — so you can judge fit from real requirements later without bloating the index.
+
+### 4e. Pruning
+
+Never automatic. When the index passes ~3 MB the store says so, and you offer:
+
+```bash
+python3 scripts/job-store.py prune --days 90 --dry-run
+python3 scripts/job-store.py prune --days 90
+```
+
+Always dry-run first and show the user what would go. `applied` and
+`interested`/`saved`/`pinned` are never pruned at any age — that is their application
+history and their own shortlist.
 
 ### 5. Read the coverage report before reporting anything
 
