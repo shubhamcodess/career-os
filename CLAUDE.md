@@ -448,6 +448,11 @@ git commit -m "market: refreshed job feed — 34 listings, 6 strong matches"
 | `find jobs` | Aggregate live listings across all active sources |
 | `find jobs at [company]` | Filter live search to one company |
 | `refresh job feed` | Re-run last search, surface new listings |
+| `show me everything` | Job search including listings already seen |
+| `applied to [company] [role]` | Mark applied — suppressed from future feeds |
+| `not interested in [company]` | Mark rejected — downranks similar listings |
+| `job store stats` | Job memory: counts by status, what's new this week |
+| `what have I passed on` | Show the learned taste profile |
 | `resolve companies` | Probe all 7 ATS platforms for every company in `target_companies[]`, write `config/companies.json` |
 | `add company [name]` | Resolve one new company and append it to the registry |
 | `refresh companies` | Re-verify every resolved board (run monthly — boards move) |

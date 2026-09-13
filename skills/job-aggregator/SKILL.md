@@ -20,10 +20,16 @@ against your profile. Single source of live market intelligence.
 
 | Command | Action |
 |---|---|
-| `find jobs` | `find-jobs.py` across every source — targeted + discovery |
+| `find jobs` | Full fan-out, then **only listings not seen before** (the daily default) |
 | `find jobs at [company]` | Filter to one company across all sources |
 | `find [role] jobs` | Search a specific role title |
 | `find jobs at my companies` | `--targeted-only` — configured companies, no discovery |
+| `show me everything` | Skip `--new-only` — include listings already seen |
+| `applied to [company] [role]` | Mark applied — never shown again |
+| `not interested in [company]` | Mark rejected — downranks similar listings in future |
+| `save [company] [role]` | Mark saved for later |
+| `job store stats` | Counts by status; how many appeared in the last 7 days |
+| `what have I passed on` | Show the learned taste profile |
 | `refresh job feed` | Re-run last search, surface new listings only |
 | `rank my job feed` | Re-score existing feed against latest resume |
 
@@ -93,6 +99,60 @@ tags each job targeted/discovery, and ranks.
 
 Role and location default to `target_roles[0]` and `target_locations[0]` — override with
 `--role` / `--location`.
+
+### 4b. Pipe through the job store — this is what makes a daily hunt useful
+
+Without it every run re-presents the same ~2,000 listings, and the one thing that
+matters daily — what appeared since yesterday — is invisible.
+
+```bash
+python3 scripts/find-jobs.py --limit 0 --merge /tmp/cojobs/indeed.json \
+  | python3 scripts/job-store.py ingest --full-run --new-only --limit 25
+```
+
+Note `--limit 0` on the entry point: the store needs the **whole** result set to decide
+what is new and what has vanished. Apply the limit at the store, after filtering.
+
+| Flag | Effect |
+|---|---|
+| `--new-only` | Only listings never shown before — the default for a daily hunt |
+| `--full-run` | This run covered the market, so absent listings count as missing |
+| *(omit `--new-only`)* | New + returning, for "show me everything again" |
+
+**Only pass `--full-run` when the run really was unfiltered.** A `--role` or `--limit`
+run legitimately omits most of the market; telling the store otherwise expires live jobs.
+Two consecutive misses expire a listing, so one bad run does not destroy the index.
+
+The store suppresses `applied` and `not_interested` outright, and reports counts:
+
+```
+Run #7: 2008 in -> 34 new, 1966 returning, 12 suppressed (applied/not interested)
+```
+
+Relay that line. "34 new since yesterday" is the useful number; 2008 is noise.
+
+### 4c. Lifecycle and taste
+
+When the user reacts to a listing, record it — that is what stops the feed repeating
+itself and what teaches it their taste:
+
+```bash
+python3 scripts/job-store.py mark applied "Cisco" "Senior Software Engineer"
+python3 scripts/job-store.py mark not_interested --url "https://..."
+python3 scripts/job-store.py mark not_interested "Walt Disney" --all
+python3 scripts/job-store.py mark saved "Google" "Senior SWE, AI/ML"
+```
+
+Rejections build a taste profile that **downranks, never hides**. A user who passed on a
+company three times should see it lower, not lose it silently — their taste can change,
+and a hidden listing cannot be reconsidered.
+
+Rejecting a whole company with `--all` contributes a company signal but no title
+signal. Dismissing all 88 Disney listings says "not this employer"; it does not mean
+"engineering" and "platform" are dislikes, and learning that would penalise good roles
+everywhere else.
+
+`job-store.py taste` shows what has been learned. `forget not_interested` resets it.
 
 ### 5. Read the coverage report before reporting anything
 
