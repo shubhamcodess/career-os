@@ -186,8 +186,27 @@ python3 scripts/resolve-ats.py --from-url "Razorpay" "https://boards.greenhouse.
 This is the highest-value action in the whole skill. One search converts a company from
 permanently invisible to permanently fetchable. **Always try Rung 1 before scraping.**
 
-Also worth fetching the careers page itself and looking at what it loads — the platform
-is usually obvious from the HTML:
+**Automate that with the careers probe.** It fetches the careers page, pulls out any ATS
+board it references, *and* actively tests the careers host for API shapes that JavaScript
+builds at runtime. Every candidate is verified against the live board before being
+reported:
+
+```bash
+python3 scripts/careers-probe.py --company "Adobe"
+python3 scripts/careers-probe.py --all-unreachable          # print findings
+python3 scripts/careers-probe.py --all-unreachable --apply  # pin them
+```
+
+Two real wins from this, both permanent:
+- **Adobe** — careers page is a React shell with no jobs in the HTML, but the HTML names
+  `adobe.wd5.myworkdayjobs.com/external_experienced`. 500 jobs behind a stable API.
+- **Qualcomm** — the endpoint never appears in the page source at all; the page builds
+  `careers.qualcomm.com/api/pcsx/search` in JS. The active host probe found it anyway:
+  1 Naukri match became 396 jobs, 161 in India.
+
+That second case is why the probe tests the host directly instead of only reading HTML.
+
+The same signals read by eye, if you are inspecting a page manually:
 
 | Signal in page source | Platform | Pin with |
 |---|---|---|
@@ -309,9 +328,26 @@ WebSearch: "[company]" "[role]" jobs 2026 -site:indeed.com
 ```
 
 Then `WebFetch` the careers URL from `config/companies.json` and read the listings off
-the page. If it returns thin content because the page renders client-side, use Firecrawl
-if it is connected. If Firecrawl is not connected, say so rather than pretending the
-company has no openings.
+the page.
+
+**When the page is client-rendered and WebFetch returns a shell**, open it in the browser
+tool and read the network requests — that is how Microsoft's and Qualcomm's real
+endpoints were found. The sequence:
+
+1. `navigate` to the careers URL with a role and location in the query string
+2. `read_network_requests` filtered on `api` or `search`
+3. If a JSON endpoint appears, **stop scraping** — pin it with `resolve-ats.py --set` or
+   `--from-url` so the company becomes permanently fetchable
+4. Only if there is genuinely no API, read the rendered listings with `get_page_text`
+
+Always prefer step 3. A pinned board keeps working; a scrape of rendered HTML is a
+snapshot that dies on the next redesign.
+
+**On Firecrawl.** The key in `.env` is set but the account is banned — the API returns
+`403: This account has been banned`. Do not route work to Firecrawl expecting it to
+work, and do not present its absence as the reason a company has no listings. If the
+user wants it back they need a new key from firecrawl.dev. Everything in this ladder
+works without it.
 
 Mark anything from this rung `"source": "websearch"` and flag lower confidence — you are
 reading a rendered page, not a structured feed, so titles and locations may be imprecise
