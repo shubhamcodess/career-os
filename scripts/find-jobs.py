@@ -114,6 +114,27 @@ def dedupe(jobs: list[dict]) -> list[dict]:
     return out
 
 
+def classify_track(job: dict, cfg: dict) -> str:
+    """
+    'targeted' if the employer is one the user actually named; 'discovery' otherwise.
+
+    This is deliberately keyed on the company, not the source. An Indeed result
+    for Cisco is targeted even though Indeed is an open-market connector, and an
+    ATS result would be discovery if that company were dropped from the config.
+    Keeping the two tracks visibly separate stops a feed of 1800 targeted jobs
+    from burying the handful of unfamiliar employers that discovery exists to surface.
+    """
+    targets = [re.sub(r"[^a-z0-9]", "", c.lower())
+               for c in cfg.get("target", {}).get("target_companies", [])]
+    comp = re.sub(r"[^a-z0-9]", "", job.get("company", "").lower())
+    if not comp:
+        return "discovery"
+    for t in targets:
+        if t and (comp.startswith(t) or t.startswith(comp)):
+            return "targeted"
+    return "discovery"
+
+
 def score(job: dict, cfg: dict) -> tuple[int, list[str]]:
     """Score 0-100 against the user's profile. Returns (score, reasons)."""
     target = cfg.get("target", {})
@@ -166,10 +187,8 @@ def score(job: dict, cfg: dict) -> tuple[int, list[str]]:
     return max(0, min(100, pts)), why
 
 
-def to_markdown(jobs: list[dict], sources: list[str]) -> str:
-    now = datetime.now().strftime("%Y-%m-%d %H:%M")
-    lines = ["# Live Job Feed", f"_Last updated: {now}_",
-             f"_Sources: {', '.join(sources) or 'none'}_", ""]
+def _render(jobs: list[dict]) -> list[str]:
+    lines: list[str] = []
     bands = [("🔥 Strong matches (75+)", 75, 101),
              ("✅ Good matches (50–74)", 50, 75),
              ("📋 Worth watching (30–49)", 30, 50)]
@@ -177,10 +196,10 @@ def to_markdown(jobs: list[dict], sources: list[str]) -> str:
         band = [j for j in jobs if lo <= j["score"] < hi]
         if not band:
             continue
-        lines.append(f"## {label}")
+        lines.append(f"### {label}")
         lines.append("")
         for j in band:
-            lines.append(f"### {j['company']} — {j['title']}")
+            lines.append(f"#### {j['company']} — {j['title']}")
             lines.append(f"- Score: {j['score']}/100 · {', '.join(j['why']) or '—'}")
             lines.append(f"- Location: {j['location'] or '—'} | Source: {j['source']}"
                          + (f" | Posted: {j['posted']}" if j["posted"] else ""))
@@ -191,6 +210,29 @@ def to_markdown(jobs: list[dict], sources: list[str]) -> str:
             if j["description"]:
                 lines.append(f"- JD: {j['description'][:300]}")
             lines.append("")
+    return lines
+
+
+def to_markdown(jobs: list[dict], sources: list[str]) -> str:
+    now = datetime.now().strftime("%Y-%m-%d %H:%M")
+    targeted = [j for j in jobs if j["track"] == "targeted"]
+    discovery = [j for j in jobs if j["track"] == "discovery"]
+
+    lines = ["# Live Job Feed", f"_Last updated: {now}_",
+             f"_Sources: {', '.join(sources) or 'none'}_",
+             f"_{len(targeted)} at your target companies · {len(discovery)} from open discovery_",
+             ""]
+
+    lines.append("## 🎯 Your target companies")
+    lines.append("")
+    lines += _render(targeted) or ["_Nothing above the cut-off._", ""]
+
+    lines.append("## 🔎 Discovery — employers you haven't targeted")
+    lines.append("")
+    lines.append("_Open-market results from Indeed, Dice and Naukri. Worth a look for "
+                 "companies worth adding to your target list._")
+    lines.append("")
+    lines += _render(discovery) or ["_Nothing above the cut-off._", ""]
     return "\n".join(lines)
 
 
@@ -206,6 +248,11 @@ def main() -> None:
                    help="JSON file of connector results to fold in (repeatable)")
     p.add_argument("--write-feed", action="store_true",
                    help="Also write data/market/job-feed.md")
+    p.add_argument("--discovery-slots", type=int, default=3,
+                   help="Reserve this many of --limit for open-market discovery "
+                        "results (default 3; 0 disables the reservation)")
+    p.add_argument("--targeted-only", action="store_true",
+                   help="Drop discovery results — only your configured companies")
     args = p.parse_args()
 
     cfg = load_config()
@@ -254,12 +301,29 @@ def main() -> None:
     jobs = dedupe([normalize(j) for j in raw])
     for j in jobs:
         j["score"], j["why"] = score(j, cfg)
+        j["track"] = classify_track(j, cfg)
     jobs.sort(key=lambda j: -j["score"])
 
-    print(f"\n{len(raw)} fetched -> {len(jobs)} after dedupe", file=sys.stderr)
+    n_t = sum(1 for j in jobs if j["track"] == "targeted")
+    print(f"\n{len(raw)} fetched -> {len(jobs)} after dedupe "
+          f"({n_t} targeted, {len(jobs) - n_t} discovery)", file=sys.stderr)
+
     if args.limit:
-        jobs = jobs[:args.limit]
-        print(f"Returning top {len(jobs)}", file=sys.stderr)
+        # Split the limit so a flood of targeted jobs can't crowd discovery out
+        # entirely — the whole point of discovery is surfacing the unfamiliar.
+        if args.discovery_slots and not args.targeted_only:
+            d_want = min(args.discovery_slots, args.limit)
+            disc = [j for j in jobs if j["track"] == "discovery"][:d_want]
+            targ = [j for j in jobs if j["track"] == "targeted"][:args.limit - len(disc)]
+            jobs = sorted(targ + disc, key=lambda j: -j["score"])
+        else:
+            jobs = jobs[:args.limit]
+        n_t = sum(1 for j in jobs if j["track"] == "targeted")
+        print(f"Returning top {len(jobs)} ({n_t} targeted, {len(jobs) - n_t} discovery)",
+              file=sys.stderr)
+
+    if args.targeted_only:
+        jobs = [j for j in jobs if j["track"] == "targeted"]
 
     by_source: dict[str, int] = {}
     for j in jobs:

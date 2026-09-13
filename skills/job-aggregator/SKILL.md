@@ -4,9 +4,11 @@ description: >
   Invoke when searching for live job listings. Triggers on: "find jobs for me",
   "search jobs at [company]", "what roles are open at [company]", "job search",
   "find [role] openings", or as part of `status` dashboard refresh.
-  Fans out to ATS Direct (Greenhouse/Lever), Naukri, and job board MCPs simultaneously,
-  deduplicates results, and ranks by match against master-experience.md.
-  Saves results to data/market/job-feed.md and commits.
+  Single entry point: scripts/find-jobs.py fans out across the ATS registry (9 platforms),
+  Naukri, and the Indeed/Dice/ZipRecruiter connectors, then merges, deduplicates, scores
+  and ranks in one place. Splits results into two tracks — 'targeted' for your configured
+  companies and 'discovery' for open-market employers worth adding.
+  Saves to data/market/job-feed.md and commits.
 ---
 
 # Job Aggregator Skill
@@ -18,9 +20,10 @@ against your profile. Single source of live market intelligence.
 
 | Command | Action |
 |---|---|
-| `find jobs` | Broad search based on target role in config/user.json |
-| `find jobs at [company]` | Filter to specific company across all sources |
-| `find [role] jobs` | Search for specific role title |
+| `find jobs` | `find-jobs.py` across every source — targeted + discovery |
+| `find jobs at [company]` | Filter to one company across all sources |
+| `find [role] jobs` | Search a specific role title |
+| `find jobs at my companies` | `--targeted-only` — configured companies, no discovery |
 | `refresh job feed` | Re-run last search, surface new listings only |
 | `rank my job feed` | Re-score existing feed against latest resume |
 
@@ -35,9 +38,63 @@ Read `config/user.json`:
 - `integrations.naukri_enabled` — whether to include Naukri
 - `integrations.naukri_pages_per_search` — how many pages to scrape
 
-## Step 2 — Fan Out to All Sources
+## Step 2 — Run the Entry Point
 
-Run ALL of these simultaneously. Don't wait for one before starting the next.
+**`find jobs` runs one command.** `scripts/find-jobs.py` fans out, merges, dedupes,
+scores and ranks in a single place, so a listing is shaped the same way regardless of
+which source it came from.
+
+```bash
+python3 scripts/find-jobs.py --limit 25 --write-feed
+```
+
+Role and location default to `target_roles[0]` and `target_locations[0]`. Override with
+`--role` / `--location`. Add `--with-naukri` when the user wants India coverage (slower —
+browser automation).
+
+### The two tracks
+
+Every job is tagged `track`, keyed on the **employer**, not the source:
+
+| Track | Meaning |
+|---|---|
+| `targeted` | A company in `target_companies` — the ATS registry reaches these directly |
+| `discovery` | Any other employer, surfaced by Indeed, Dice or a broad Naukri search |
+
+Both matter, and they are kept visibly separate. Targeted results will outnumber
+discovery by orders of magnitude — a run returning 2206 jobs had 2196 targeted and 10
+discovery — so a plain top-N would bury discovery entirely. `--limit` therefore reserves
+`--discovery-slots` (default 3) for open-market results.
+
+Discovery is how the user finds employers worth *adding* to their target list. When a
+discovery company keeps appearing, say so and offer `add company [name]`.
+
+`--targeted-only` drops discovery when the user wants just their own list.
+
+### Connectors: Claude's half of the fan-out
+
+Indeed, Dice and ZipRecruiter are MCP connectors — a script cannot call them. So:
+
+1. **Check the budget first** (see below) — `mcp-budget.py check indeed`
+2. Call the connectors yourself
+3. Write their results to JSON in the standard shape
+4. Hand them to the entry point: `--merge /tmp/indeed.json --merge /tmp/dice.json`
+
+That keeps dedupe and scoring in one place instead of reimplementing them per source.
+
+**Known geographic limits, verified live:**
+- **ZipRecruiter** returns `UNSUPPORTED_COUNTRY` outside the US and Canada. For an
+  India-based search it contributes nothing — don't spend a budget call on it.
+- **Dice** is US-centric. It accepts an India location but returns US and remote roles,
+  which then score low on location. Treat its output as discovery, never as local supply.
+
+---
+
+## Step 2b — Source Detail
+
+Reference for each source the entry point calls, and what to do when one comes up empty.
+The entry point already runs these — don't invoke them separately unless you are
+debugging a single source.
 
 ---
 
@@ -126,16 +183,20 @@ Then: get_job_details for top 10 results
 
 **ZipRecruiter MCP:**
 ```
-Tool: search_jobs (authless)
-Params: search=[role], location=[location], days_ago=7
+Tool: search_jobs
+Params: job_role=[role], location=[location], country_admin_code=US|CA
 ```
+US and Canada only — any other country returns `UNSUPPORTED_COUNTRY`. Skip it entirely
+for an India-based search rather than spending a budget call to confirm that again.
 
 **Dice MCP:**
 ```
-Tool: search_jobs (authless, tech-focused)
-Params: q=[role], location=[location]
-Best for: engineering, data, product roles at tech companies
+Tool: search_jobs
+Params: keyword=[role], location=[location], jobs_per_page=N, sort=datePosted
+Then: get_job_details on the ones worth keeping — search returns only a summary
 ```
+US-centric. It accepts a non-US location but still returns US and remote roles, so
+treat its output as discovery rather than local supply.
 
 If an MCP connector is unavailable or returns an error, skip it and note in the output.
 MCP sources are best for roles not at the specific companies in `target_companies[]`.
@@ -403,6 +464,11 @@ Never fabricate listings, and never let silence imply there are no jobs.
 
 ## Step 3 — Merge All Results
 
+**`find-jobs.py` already did this.** Steps 3–5 describe what it does internally; they are
+reference, not a second implementation. Don't merge, dedupe, score or rank by hand.
+
+
+
 Collect JSON arrays from ATS fetcher (stdout), Naukri scraper (stdout), and MCP results.
 All three sources use the same field shape:
 ```json
@@ -485,9 +551,15 @@ Slack failing must never fail the job search. Write the file, commit, then try S
 ## Step 7 — Surface Insights
 
 After ranking, tell the user:
-- How many total listings found per source (ATS: N, Naukri: N, MCPs: N)
+- Totals per source, and the targeted/discovery split
 - Which target companies returned jobs vs. which have no reachable board
   (from `config/companies.json` — name them, and give their careers URL)
+- **Discovery companies worth adding.** If an employer the user has never targeted keeps
+  surfacing with strong scores, name it and offer `add company [name]`. That is the
+  feedback loop discovery exists for — otherwise it is just noise in the feed.
+- Any source that returned nothing, and why. A geographic limit
+  (ZipRecruiter outside US/CA) is not the same as a quiet market, and must never be
+  reported as one.
 - How many strong matches
 - Any new companies appearing that aren't in their target list
 - Salary ranges seen (if available) → suggest adding to comp-intel.md
