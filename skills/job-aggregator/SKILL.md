@@ -243,10 +243,25 @@ python3 scripts/naukri-scraper.py --companies IBM Flipkart PhonePe --role "Softw
 ```
 
 **How company targeting works.** Naukri has no company filter parameter, so the company
-name goes into the keyword slug and every result is then verified against the `company`
-field. Fuzzy keyword matches belonging to a different employer are dropped — a search for
-IBM returns desktop-support roles at unrelated vendors, and those must not reach your
-feed. The scraper prints `matched / returned` per company so the filter is visible.
+name goes into the keyword slug and every result is verified against the `company` field
+afterwards. The scraper prints `matched / returned` per company so the filter stays
+visible.
+
+Matching is word-anchored in three tiers:
+
+| Tier | Meaning | Example |
+|---|---|---|
+| exact | Name matches, or the query is the leading word | `Visa Consolidated Support Services India`, `Inter Ikea Group` |
+| partial | Query appears mid-name behind a non-filler word — tagged `"match_confidence": "partial"` | `Skys Adobe Plus` when searching Adobe |
+| dropped | No word-boundary match | `Metamorphosis Consulting` when searching Meta |
+
+Never match on a bare substring or `startswith`. `Meta` prefixes `Metamorphosis
+Consulting` and `SAP` prefixes `Sapient` — both are different employers, and a
+character-level check silently files their jobs under a company you are targeting.
+
+Treat anything carrying `match_confidence: "partial"` as unverified. Show it separately
+in the feed rather than mixing it into the ranked results — a search for Adobe returns
+an interior-design firm whose openings are for civil engineers and corporate lawyers.
 
 **Search aliases.** Some registry names mean nothing to a job board. `ISL` is IBM
 Software Labs; searching Naukri for "ISL" returns noise. Give those entries an alias once:

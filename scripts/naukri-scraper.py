@@ -186,11 +186,53 @@ def dedupe(jobs: list[dict]) -> list[dict]:
     return out
 
 
-def matches_company(job: dict, company: str) -> bool:
-    """Naukri keyword search is fuzzy — verify the listing is really this company."""
-    a = re.sub(r"[^a-z]", "", (job.get("company") or "").lower())
+_NOISE_WORDS = {"india", "pvt", "private", "ltd", "limited", "llp", "inc", "corp",
+                "technologies", "technology", "services", "solutions", "group",
+                "labs", "software", "systems", "global", "international",
+                "inter", "the"}
+
+
+def match_company(job: dict, company: str) -> str | None:
+    """
+    Classify a Naukri result against the company we searched for.
+
+    Returns "exact", "partial", or None.
+
+    Plain substring matching is not enough: searching for Adobe returns
+    "Skys Adobe Plus" and "Felicity Adobe Llp", which merely contain the word
+    and are unrelated employers. But it cannot be tightened to prefix-only
+    either — "Inter IKEA Group" and "Visa Consolidated Support Services India"
+    are genuine subsidiary entities that must be kept.
+
+    So: anchored matches are exact, mid-name word matches are partial and get
+    surfaced for review rather than silently trusted or silently dropped.
+    """
+    raw = (job.get("company") or "").lower()
+    a = re.sub(r"[^a-z]", "", raw)
     b = re.sub(r"[^a-z]", "", company.lower())
-    return bool(a and b) and (b in a or a in b)
+    if not a or not b:
+        return None
+
+    if a == b:
+        return "exact"
+
+    # Matching must be word-anchored, never character-anchored: a plain
+    # startswith makes "Meta" match "Metamorphosis Consulting" and "SAP" match
+    # "Sapient", both of which are different employers entirely.
+    words = [w for w in re.split(r"[^a-z]+", raw) if w]
+    if not words:
+        return None
+    target = re.sub(r"[^a-z]", "", company.lower().split()[0])
+    if not target:
+        return None
+
+    for i, w in enumerate(words):
+        if w != target:
+            continue
+        # Preceded only by filler like "Inter" or "The" is still effectively anchored.
+        lead = [x for x in words[:i] if x not in _NOISE_WORDS]
+        return "exact" if not lead else "partial"
+    return None
 
 
 async def run_searches(queries: list[tuple[str, str]], location: str,
@@ -207,9 +249,20 @@ async def run_searches(queries: list[tuple[str, str]], location: str,
             continue
 
         if company:
-            kept = [j for j in found if matches_company(j, company)]
-            print(f"    {len(kept)} matched / {len(found)} returned", file=sys.stderr)
-            all_jobs.extend(kept)
+            kept, partial = [], []
+            for j in found:
+                verdict = match_company(j, company)
+                if verdict == "exact":
+                    kept.append(j)
+                elif verdict == "partial":
+                    j["match_confidence"] = "partial"
+                    partial.append(j)
+            note = f"    {len(kept)} matched / {len(found)} returned"
+            if partial:
+                names = sorted({p.get("company", "") for p in partial})
+                note += f"  (+{len(partial)} partial: {', '.join(names)})"
+            print(note, file=sys.stderr)
+            all_jobs.extend(kept + partial)
         else:
             print(f"    {len(found)} jobs", file=sys.stderr)
             all_jobs.extend(found)
