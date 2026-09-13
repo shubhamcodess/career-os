@@ -129,10 +129,24 @@ Best for: engineering, data, product roles at tech companies
 If an MCP connector is unavailable or returns an error, skip it and note in the output.
 MCP sources are best for roles not at the specific companies in `target_companies[]`.
 
-**Check these are actually connected before relying on them.** Indeed, ZipRecruiter and
-Dice are declared in `mcp/.mcp.json`, but a declaration is not a connection. If their
-tools are absent from the session, say so plainly and fall through to Source D — do not
-silently return fewer results and let the user think the market is quiet.
+**`mcp/.mcp.json` is not how these get connected.** All three are first-party connectors
+in the Claude directory. Declaring a URL in `mcp/.mcp.json` does nothing in the desktop
+app — the user must install them under **Settings → Connectors**:
+
+| Connector | Tools | Auth |
+|---|---|---|
+| Dice | `search_jobs`, `get_job_details`, `get_company` | None — works immediately |
+| Indeed | `search_jobs`, `get_job_details` | Required |
+| ZipRecruiter | `search_jobs` | Required; aggressively rate-limited without it |
+
+Before relying on any of them, check whether their tools exist in the session. If they
+are absent, say so plainly and fall through to Source D. Never let a missing connector
+read as "the market is quiet".
+
+Dice is tech-focused and the best of the three for engineering roles. Its `search_jobs`
+takes `keyword`, `location`, `radius`, `jobs_per_page`, `page_number`, `sort`,
+`posted_date`, `workplace_types`, `employment_types`. Use `get_job_details` on the top
+results to pull full JD text — the search response carries only a summary.
 
 ---
 
@@ -171,7 +185,28 @@ is usually obvious from the HTML:
 | `myworkdayjobs.com` | workday | `--from-url` |
 | `eightfold-font`, `/api/apply/v2/` | eightfold | `--from-url` |
 | `ashbyhq`, `smartrecruiters`, `recruitee`, `workable` | as named | `--from-url` |
+| `/api/pcsx/search` | pcsx (Microsoft-style Eightfold) | `--from-url` |
 | `icims.com`, `phenompeople`, `successfactors` | not supported yet | careers_url + Rung 3 |
+
+**Mega-cap careers portals.** Three of the biggest employers need bespoke adapters
+because they run their own portals rather than a third-party ATS:
+
+| Company | Platform | Pin with |
+|---|---|---|
+| Google | `google` — server-rendered HTML scrape, slug is `"query\|location"` | `--set "Google" google "software engineer\|India"` |
+| Microsoft | `pcsx` — real JSON API | `--set "Microsoft" pcsx "apply.careers.microsoft.com\|microsoft.com"` |
+| Amazon | `amazon` — public search JSON, slug is a query hint | `--set "Amazon" amazon "software engineer"` |
+
+The `google` adapter is an HTML scraper, not a feed. It will break when Google reskins
+the page — the symptom is a sudden drop to zero jobs, not an error. Re-check the
+selectors rather than assuming Google stopped hiring. Because its slug embeds the
+query and location, it returns a *pre-filtered* set: re-pin with a different slug to
+search different roles or geographies.
+
+**Meta is deliberately not supported.** `metacareers.com` serves jobs only through
+POST GraphQL calls keyed by rotating internal `doc_id` values — a private API with no
+stable contract. Route Meta through Rung 2/3 and say so honestly rather than shipping
+an adapter that breaks weekly.
 
 **Rung 2 — Naukri, for anything hiring in India.**
 

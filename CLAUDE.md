@@ -180,6 +180,14 @@ GitHub, job boards, or external services — check which connectors are active.
 | Naukri (script, not MCP) | naukri-scraper skill | No key, but fragile |
 | Slack connector | slack-bridge skill — push results, read `!os` commands | No key — OAuth in Settings → Connectors |
 | Gmail connector | gmail-tracker skill — draft outreach, scan for replies | No key — OAuth in Settings → Connectors |
+| Dice connector | job-aggregator — `search_jobs`, `get_job_details`, `get_company` | No auth — Settings → Connectors |
+| Indeed connector | job-aggregator — `search_jobs`, `get_job_details` | Auth — Settings → Connectors |
+| ZipRecruiter connector | job-aggregator — `search_jobs` | Auth — Settings → Connectors |
+
+**The job-board entries in `mcp/.mcp.json` do not connect anything in the desktop app.**
+Indeed, ZipRecruiter and Dice are first-party connectors installed under
+Settings → Connectors. Before using them, check their tools are actually present in the
+session; if not, say so and fall through to the Source D ladder in `job-aggregator`.
 
 **Slack and Gmail are OAuth connectors, not API keys.** Nothing goes in `.env` or
 `.claude/settings.json` for them. Only channel IDs and preferences live in

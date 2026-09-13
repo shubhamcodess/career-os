@@ -330,6 +330,129 @@ def _fetch_amazon(slug: str) -> list[dict] | None:
     return out
 
 
+# ---------------------------------------------------------------------------
+# Eightfold PCSX — the newer Eightfold API shape, used by Microsoft careers.
+# Same compound slug as `eightfold`: "host|domain".
+# ---------------------------------------------------------------------------
+
+PCSX_PAGE = 50
+PCSX_MAX = 500
+
+
+def _fetch_pcsx(slug: str) -> list[dict] | None:
+    if "|" not in (slug or ""):
+        return None
+    host, domain = slug.split("|", 1)
+    out: list[dict] = []
+    start = 0
+    while start < PCSX_MAX:
+        url = (f"https://{host}/api/pcsx/search?domain={domain}&query=&location="
+               f"&start={start}&num={PCSX_PAGE}")
+        data = http_json(url)
+        if not isinstance(data, dict):
+            return out if out else None
+        payload = data.get("data") or {}
+        page = payload.get("positions") or []
+        if not page:
+            break
+        for j in page:
+            locs = j.get("locations") or j.get("standardizedLocations") or []
+            loc = ", ".join(str(x) for x in locs[:2]) if isinstance(locs, list) else str(locs)
+            jid = j.get("id") or j.get("displayJobId") or ""
+            out.append({
+                "title": j.get("name", ""),
+                "location": loc,
+                "description": strip_html(j.get("job_description", "")),
+                "posted": str(j.get("postedTs", "")),
+                "tags": [t for t in [j.get("department"), j.get("workLocationOption")] if t],
+                "url": f"https://{host.replace('apply.', 'jobs.')}/global/en/job/{jid}" if jid else "",
+            })
+        start += len(page)
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Google Careers — no public API, but the results page is server-rendered, so a
+# plain GET with browser headers returns every listing. HTML, so treat it as a
+# scraper: it is more fragile than a JSON feed and will break when Google
+# reskins the page. Compound slug: "query|location".
+# ---------------------------------------------------------------------------
+
+GOOGLE_RESULTS = ("https://www.google.com/about/careers/applications/jobs/results/"
+                  "?q={q}&location={loc}&page={page}")
+GOOGLE_MAX_PAGES = 10
+
+BROWSER_HEADERS = {
+    "User-Agent": ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+                   "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"),
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Site": "none",
+    "Sec-Fetch-Dest": "document",
+}
+
+
+def http_text(url: str, timeout: int = 25) -> str | None:
+    """GET a page as text with browser-like headers. Google resets bare requests."""
+    try:
+        req = urllib.request.Request(url, headers=BROWSER_HEADERS)
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            return r.read().decode("utf-8", "replace")
+    except Exception:
+        return None
+
+
+# Title and href MUST come from the same anchor tag. Collecting them as two
+# independent lists and zipping by index silently pairs each title with the
+# NEXT job's URL when the page emits one extra aria-label — which it does.
+# A wrong link is worse than a missing one, so they are captured together.
+_G_CARD = re.compile(
+    r'href="(jobs/results/[^"]+)"\s+aria-label="Learn more about ([^"]+)"')
+# Location sits in its own element just before the anchor within the same card.
+_G_LOC_THEN_HREF = re.compile(
+    r'class="r0wTof\s*">([^<]+)<.*?href="(jobs/results/[^"]+)"', re.S)
+
+
+def _fetch_google(slug: str) -> list[dict] | None:
+    query, _, location = (slug or "").partition("|")
+    q = urllib.parse.quote_plus(query or "engineer")
+    loc = urllib.parse.quote_plus(location or "")
+
+    out: list[dict] = []
+    seen: set[str] = set()
+    for page in range(1, GOOGLE_MAX_PAGES + 1):
+        html_text = http_text(GOOGLE_RESULTS.format(q=q, loc=loc, page=page))
+        if not html_text:
+            return out if out else None
+
+        cards = _G_CARD.findall(html_text)
+        if not cards:
+            break
+
+        # Location keyed by href, so it can never drift onto another job.
+        loc_by_href = {href: loc.strip()
+                       for loc, href in _G_LOC_THEN_HREF.findall(html_text)}
+
+        for href, title in cards:
+            url = "https://www.google.com/about/careers/applications/" + html.unescape(href)
+            key = url.split("?")[0]
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append({
+                "title": html.unescape(title).strip(),
+                "location": loc_by_href.get(href, location),
+                "description": "",
+                "posted": "",
+                "tags": [],
+                "url": url,
+            })
+        if len(cards) < 20:
+            break
+    return out
+
+
 def discover_workday(company: str) -> str | None:
     """Probe the Workday host/site matrix. Returns a compound slug or None."""
     from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -435,6 +558,25 @@ PLATFORMS: dict[str, dict] = {
         "parse": None,
         "fetch": _fetch_amazon,
         "board_url_fn": lambda slug: "https://www.amazon.jobs",
+    },
+    "pcsx": {
+        # Eightfold's newer API shape (Microsoft careers). Slug: "host|domain".
+        "url": None,
+        "parse": None,
+        "fetch": _fetch_pcsx,
+        "board_url_fn": lambda slug: (
+            f"https://{slug.split('|')[0].replace('apply.', 'jobs.')}/global/en/search"
+            if "|" in slug else ""),
+    },
+    "google": {
+        # HTML scrape of the server-rendered results page. Slug: "query|location".
+        # Fragile by nature — flagged as a scraper, not a feed.
+        "url": None,
+        "parse": None,
+        "scraper": True,
+        "fetch": _fetch_google,
+        "board_url_fn": lambda slug: (
+            "https://www.google.com/about/careers/applications/jobs/results/"),
     },
 }
 

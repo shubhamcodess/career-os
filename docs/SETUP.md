@@ -83,9 +83,20 @@ is added, `profile-intelligence` builds its picture from GitHub public data and 
 search instead — still useful, just less granular on the people-search side. See
 `skills/profile-intelligence/SKILL.md` for exactly how to plug a provider in later.
 
-### Indeed, ZipRecruiter, Dice
-No keys needed — these MCP connectors work immediately once connected in Claude's
-connector directory (or configured in `mcp/.mcp.json` if using Claude Code directly).
+### Indeed, ZipRecruiter, Dice — install as connectors, not via `mcp/.mcp.json`
+
+All three are first-party connectors in the Claude directory. **Editing `mcp/.mcp.json`
+does not connect them in the desktop app** — install them under
+**Settings → Connectors**, same as Slack.
+
+| Connector | Tools | Auth | Notes |
+|---|---|---|---|
+| **Dice** | `search_jobs`, `get_job_details`, `get_company` | None | Best of the three for engineering roles |
+| **Indeed** | `search_jobs`, `get_job_details` | Required | Broadest coverage |
+| **ZipRecruiter** | `search_jobs` | Required | Rate-limits hard without auth |
+
+These matter most for companies with no reachable ATS board — they cover listings that
+never appear on a public job board API.
 
 ### Slack and Gmail — no keys, OAuth only
 
@@ -145,6 +156,24 @@ Workday slugs are compound — `tenant/wdNumber/site`:
 python3 scripts/resolve-ats.py --set "Walt Disney" workday "disney/wd5/disneycareer"
 python3 scripts/resolve-ats.py --set "Stripe" greenhouse stripe
 ```
+
+**Mega-caps need a pinned adapter.** Google, Microsoft and Amazon run their own portals
+rather than a third-party ATS, so auto-discovery can't find them. Pin them directly:
+
+```bash
+python3 scripts/resolve-ats.py --set "Google" google "software engineer|India"
+python3 scripts/resolve-ats.py --set "Microsoft" pcsx "apply.careers.microsoft.com|microsoft.com"
+python3 scripts/resolve-ats.py --set "Amazon" amazon "software engineer"
+```
+
+The Google slug embeds the query and location (`"role|location"`), so it returns a
+pre-filtered set — re-pin with a different slug to target a different role or city.
+It is an HTML scraper rather than a JSON feed, so it will break when Google reskins
+their careers page; the symptom is a drop to zero jobs, not an error.
+
+Meta has no supported adapter: `metacareers.com` serves jobs only via POST GraphQL
+keyed by rotating internal IDs. Give it a `careers_url` and let the job search route
+it through Naukri or web search.
 
 Anything flagged **LOW CONFIDENCE** is worth opening in a browser before trusting.
 ATS slugs are first-come-first-served: `google.recruitee.com` is a demo account owned
