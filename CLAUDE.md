@@ -35,14 +35,37 @@ At the start of EVERY session, do this in order before responding:
 3. Read `checkpoints/interview-state.md` — where we are in the intake process
 4. Check if `data/master-experience.md` has content — if yes, you have their full story
 5. Read ALL `skills/*/SKILL.md` files — know what tools are available
-6. Read `mcp/.mcp.json` — know which MCP connectors are configured
-7. Briefly confirm: *"Personal mode. Loaded: [X checkpoints], [Y resumes], master doc
-   [exists/empty], [N] MCP connectors active, Naukri [enabled/disabled], Vault
-   [configured/not set]. Ready."*
+6. **Check the company registry** — does `config/companies.json` exist, and how many
+   entries are fetchable? This is cheap: one read, no probing.
+7. **Check live connector status** — call `session_connectors_status`. Do **not** infer
+   connectors from `mcp/.mcp.json`; that file does not reflect what is actually connected
+   in the desktop app, and trusting it will have you promising Indeed or Slack when
+   neither is live.
+8. Briefly confirm: *"Personal mode. Loaded: [X checkpoints], [Y resumes], master doc
+   [exists/empty], registry [N fetchable / M total], connectors [names], Naukri
+   [enabled/disabled], Vault [configured/not set]. Ready."*
 
-If `config/user.json` doesn't exist: `cp config/user.example.json config/user.json`
-If `PRIVATE_REPO_URL` is empty in `.env`: remind the user to create a private GitHub repo
-and paste the SSH clone URL as `PRIVATE_REPO_URL`.
+### Setup gate — check before offering to do work
+
+Setup tools (`resolve-ats.py`, `careers-probe.py`) are **not** run on startup — probing
+every platform for every company takes minutes and the answers rarely change. But their
+*output* is checked above, and a missing result must stop you from pretending the system
+is ready.
+
+If any of these is true, say so in your opening line and offer `setup`:
+
+| Condition | What it means |
+|---|---|
+| `config/user.json` missing | Nothing is configured. `cp config/user.example.json config/user.json` |
+| `target_companies` empty | Job search has no targets and will return nothing |
+| `config/companies.json` missing | Registry never built — **job search cannot fetch anything** |
+| Registry exists but 0 fetchable | Every company needs a careers URL or a pinned board |
+| No job connectors live | Discovery is off; only the ATS registry works |
+| `PRIVATE_REPO_URL` empty | Personal data has no backup |
+
+**Never start an intake interview or a job search against an unconfigured system** —
+a job search with an empty registry returns nothing, and that reads as "no jobs out
+there" rather than "not set up".
 
 ---
 
@@ -55,8 +78,9 @@ docs. You are NOT the user's personal career coach in this mode.
 
 1. Read `.env` — confirm `PERSONALIZE=false`
 2. Read ALL `skills/*/SKILL.md` files — understand what exists
-3. Read `mcp/.mcp.json` — know which connectors are configured
-4. Confirm: *"Framework mode. [N] skills loaded, [N] MCP connectors configured."*
+3. Call `session_connectors_status` for live connector state — not `mcp/.mcp.json`,
+   which does not reflect what is actually connected
+4. Confirm: *"Framework mode. [N] skills loaded, connectors: [names]."*
 
 **What to do in Framework mode:**
 - Help improve skill files, scripts, templates, docs
@@ -83,49 +107,62 @@ career-os/
 ├── .env.example                  ← Template (committed)
 ├── config/
 │   ├── user.json                 ← My personal config (gitignored)
-│   └── user.example.json         ← Template (committed)
+│   ├── user.example.json         ← Template (committed)
+│   ├── companies.json            ← Resolved ATS registry (gitignored) — built by resolve-ats.py
+│   └── companies.example.json    ← Registry shape + docs (committed)
 ├── .claude/settings.json         ← Claude Code permissions
-├── mcp/.mcp.json                 ← All MCP connector configs
+├── mcp/.mcp.json                 ← Local MCP servers only. Indeed/Dice/Slack/Gmail are
+│                                   first-party connectors and are NOT configured here.
 ├── skills/                       ← All capabilities. Read before any relevant task.
+│   ├── setup/                    ← Guided first-run onboarding + connector install cards
 │   ├── job-search-command-center/    ← Master orchestrator
-│   │   ├── SKILL.md
-│   │   └── references/phases.md
+│   ├── job-aggregator/           ← Live job search — entry point is scripts/find-jobs.py
+│   ├── naukri-scraper/           ← Naukri via Playwright (India coverage)
+│   ├── profile-intelligence/     ← Who works at target companies (GitHub + web)
+│   ├── github-market-map/        ← What people in a role actually build
+│   ├── jd-analyzer/              ← Red/yellow/green verdict on a JD
 │   ├── resume-builder/           ← Structure, bullets, length standards
 │   ├── resume-ats-optimizer/     ← ATS scoring, keyword match
 │   ├── resume-tailoring/         ← JD-specific tailoring, company research
 │   ├── resume-humanizer/         ← AI-to-human pass
-│   ├── pdf-export/               ← Puppeteer HTML→PDF rendering
+│   ├── cover-letter/             ← Cover letter generation
+│   ├── cold-outreach/            ← Cold email + LinkedIn variants
+│   ├── gmail-tracker/            ← Draft outreach in Gmail, scan inbox for replies
+│   ├── slack-bridge/             ← Push results to Slack, read !os commands back
 │   ├── profile-optimizer/        ← Naukri, LinkedIn, Instahyre, Wellfound
-│   ├── job-aggregator/           ← Live job search: Indeed + ZipRecruiter + Dice + Crustdata
-│   ├── profile-intelligence/     ← Who works at target companies (Crustdata + GitHub)
-│   ├── github-market-map/        ← What people in target role actually build (GitHub API)
-│   └── naukri-scraper/           ← Optional: Naukri.com via Playwright
+│   ├── pdf-export/               ← Puppeteer HTML→PDF rendering
+│   └── dashboard/                ← help / status widget
 ├── templates/
 │   ├── resume-templates/         ← HTML/CSS templates for PDF rendering
 │   └── cover-letter-templates/
 ├── data/                         ← My personal data (gitignored except structure)
-│   ├── master-experience.md
+│   ├── master-experience.md      ← Single source of truth for every resume
 │   ├── star-stories.md
 │   ├── version-registry.md
 │   ├── portfolio-brief.md
 │   ├── job-tracker.md
 │   ├── comp-intel.md
-│   ├── logs/                     ← Scraper failures, errors
+│   ├── outreach/                 ← Saved cold outreach drafts
+│   ├── logs/                     ← Scraper failures; connector-usage.json budget ledger
 │   └── market/                   ← Live market intelligence (auto-generated)
-│       ├── job-feed.md
+│       ├── job-feed.md           ← Ranked feed: targeted + discovery tracks
 │       ├── job-feed-archive/
 │       ├── company-intel/        ← One file per researched company
 │       └── role-portraits/       ← One file per GitHub market map
 ├── resumes/                      ← Generated resumes
-│   └── [Company]_[Role]_[date]_v[N]/
-│       ├── resume.md
-│       ├── resume.html
-│       └── resume.pdf
+│   └── [Company]_[Role]_[date]_v[N]/{resume.md,resume.html,resume.pdf}
 ├── checkpoints/interview-state.md
 ├── exports/portfolio-brief.json
 ├── scripts/
+│   ├── find-jobs.py              ← ENTRY POINT for `find jobs` — fans out, merges, ranks
+│   ├── ats_platforms.py          ← All 9 ATS platform adapters in one place
+│   ├── ats-fetcher.py            ← Fetch jobs from the registry
+│   ├── resolve-ats.py            ← Build/refresh the registry (setup tool)
+│   ├── careers-probe.py          ← Find the ATS behind a careers page (setup tool)
+│   ├── naukri-scraper.py         ← Naukri via Playwright
+│   ├── mcp-budget.py             ← Connector usage ledger + cap enforcement
+│   ├── sync-vault.sh             ← Personal data backup to the private repo
 │   ├── export-pdf.js
-│   ├── naukri-scraper.py
 │   └── requirements.txt
 └── docs/
     ├── SETUP.md
