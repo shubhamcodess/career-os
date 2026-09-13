@@ -1,6 +1,32 @@
 # Setup Guide
 
-Full walkthrough for getting Career OS running, including API keys and fork strategy.
+---
+
+## Fastest path: let Claude do it
+
+Open Career OS in Claude and say:
+
+```
+setup
+```
+
+That runs `skills/setup/SKILL.md` — a guided walkthrough that creates your config files,
+takes your target companies **as names**, builds the ATS registry, and **renders
+one-click install cards** for the job-board connectors instead of sending you into a
+settings menu. It verifies each phase before moving on and ends by telling you exactly
+what's working and what's still open.
+
+`setup` is safe to re-run any time. It never overwrites your config or registry — it
+re-checks and reports what's left. Also answers "what's left to set up".
+
+The rest of this document is the manual version, and the reference for what each piece
+actually does.
+
+**Two things must be true before Career OS is useful:**
+1. It knows which companies you care about — `target_companies` in `config/user.json`
+2. It can reach them — `config/companies.json`, built by `resolve-ats.py`
+
+Everything else is optional.
 
 ---
 
@@ -86,7 +112,13 @@ search instead — still useful, just less granular on the people-search side. S
 ### Indeed, ZipRecruiter, Dice — install as connectors, not via `mcp/.mcp.json`
 
 All three are first-party connectors in the Claude directory. **Editing `mcp/.mcp.json`
-does not connect them in the desktop app** — install them under
+does not connect them in the desktop app.**
+
+Easiest way — ask Claude:
+```
+connect my job boards
+```
+It renders one-click install cards inline. Otherwise install them under
 **Settings → Connectors**, same as Slack.
 
 | Connector | Tools | Auth | Notes |

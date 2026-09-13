@@ -38,6 +38,9 @@ Before rendering, read these sources:
 | Job feed status | `data/market/job-feed.md` frontmatter date; missing → "Never run" |
 | Last commit | `git log -1 --format="%s"` |
 | Setup checks | read `.env` keys, `config/user.json` exists, `node_modules/` exists, `exports/test-render.pdf` exists |
+| Company registry | `python3 scripts/resolve-ats.py --list` — count by status; missing file → "not built" |
+| Connector state | `session_connectors_status` — live, never assumed |
+| Connector budgets | `python3 scripts/mcp-budget.py status` |
 | Vault sync date | `git -C .personal-worktree log -1 --format="%ar" 2>/dev/null` or "never" |
 | Outreach files | `ls data/outreach/*.md 2>/dev/null | wc -l` |
 
@@ -241,8 +244,26 @@ body{font-family:var(--font-mono);font-size:12px;color:var(--text-primary);line-
 
 <!-- SETUP TAB -->
 <div id="setup" class="panel">
+  <div class="sg">SETUP</div>
+  <div class="cr"><span class="cc">setup</span><span class="cd">Guided first-run setup — config, companies, connector cards, budgets. Safe to re-run</span><button class="rb" onclick="sendPrompt('setup')">run ↗</button></div>
+  <div class="cr"><span class="cc">what's left to set up</span><span class="cd">Re-check and report only what's still open</span><button class="rb" onclick="sendPrompt(&quot;what's left to set up&quot;)">run ↗</button></div>
+  <div class="div"></div>
   <div class="sg">SETUP CHECKLIST</div>
   {{SETUP_CHECKLIST_ROWS}}
+  <div class="div"></div>
+  <div class="sg">COMPANIES — no company is hardcoded</div>
+  <div class="cr"><span class="cc">resolve companies</span><span class="cd">Probe 9 ATS platforms for every company in target_companies[]</span><button class="rb" onclick="sendPrompt('resolve companies')">run ↗</button></div>
+  <div class="cr"><span class="cc">show companies</span><span class="cd">{{REGISTRY_SUMMARY}}</span><button class="rb" onclick="sendPrompt('show companies')">run ↗</button></div>
+  <div class="cr"><span class="cc">add company [name]</span><span class="cd">Resolve one new company and append it to the registry</span></div>
+  <div class="cr"><span class="cc">pin board [company] [url]</span><span class="cd">Pin a board found via web search — platform and slug read off the URL</span></div>
+  <div class="cr"><span class="cc">refresh companies</span><span class="cd">Re-verify every board — run monthly, boards move</span><button class="rb" onclick="sendPrompt('refresh companies')">run ↗</button></div>
+  <div class="div"></div>
+  <div class="sg">CONNECTORS — {{CONNECTOR_SUMMARY}}</div>
+  {{CONNECTOR_ROWS}}
+  <div class="cr"><span class="cc">connect job boards</span><span class="cd">Render one-click install cards for Dice, Indeed, ZipRecruiter, Gmail</span><button class="rb" onclick="sendPrompt('connect my job boards')">run ↗</button></div>
+  <div class="div"></div>
+  <div class="sg">BUDGETS — Indeed/ZipRecruiter run on your own account</div>
+  {{BUDGET_ROWS}}
   <div class="div"></div>
   <div class="sg">SYSTEM</div>
   <div class="cr"><span class="cc">add skill [name]</span><span class="cd">Scaffold a new skill in skills/[name]/SKILL.md</span></div>
@@ -288,8 +309,28 @@ document.getElementById('tabs').addEventListener('click',function(e){
 | `{{FEED_FRESHNESS}}` | e.g. `Never run` or `34 listings · last run: 2026-09-10` |
 | `{{VAULT_SYNC}}` | e.g. `2 days ago` or `never` |
 | `{{OUTREACH_COUNT}}` | integer |
-| `{{SETUP_CHECKLIST_ROWS}}` | `.ck-r` rows — 9 items, each ✓ / ⚠ / ○ based on live checks |
+| `{{SETUP_CHECKLIST_ROWS}}` | `.ck-r` rows — each ✓ / ⚠ / ○ based on live checks |
+| `{{REGISTRY_SUMMARY}}` | e.g. `11 of 25 fetchable · 2,586 jobs · 2 need a careers URL` |
+| `{{CONNECTOR_SUMMARY}}` | e.g. `4 live, 1 missing` |
+| `{{CONNECTOR_ROWS}}` | one `.cr` per connector, live state from `session_connectors_status` |
+| `{{BUDGET_ROWS}}` | one `.cr` per metered connector, from `mcp-budget.py status` |
 | `{{LAST_COMMIT}}` | output of `git log -1 --format="%s"` |
+
+### Connector and budget row templates
+
+Connector rows reflect **live** state — call `session_connectors_status`, never assume:
+
+```html
+<div class="cr"><span class="cc">Dice</span><span class="cd">✓ connected · 3 tools · no auth needed</span></div>
+<div class="cr"><span class="cc" style="color:var(--text-muted)">Gmail</span><span class="cd">○ not connected — outreach drafting and reply tracking are off</span></div>
+```
+
+Budget rows come from `python3 scripts/mcp-budget.py status`:
+
+```html
+<div class="cr"><span class="cc">indeed</span><span class="cd">12/60 used today · 60% of assumed 100/day</span></div>
+<div class="cr"><span class="cc">dice</span><span class="cd">unmetered — no auth, no cap</span></div>
+```
 
 ### Setup checklist row template
 
@@ -314,6 +355,13 @@ Use `✓` for passing, `⚠` (with `style="color:#c9993a"`) for partial/warning,
 
 - Call `show_widget` — never output plain ASCII for help/status.
 - After the widget, output nothing (or at most one sentence).
+- **If setup is incomplete, say so in that one sentence and point at `setup`.** A user
+  whose registry is empty or who has no job connectors will otherwise read a dashboard
+  full of zeroes as "no jobs out there" rather than "not configured yet".
+- When the user asks to connect something from the setup tab, call
+  `mcp__mcp-registry__suggest_connectors` to render install cards — never tell them to
+  edit `mcp/.mcp.json`, which connects nothing in the desktop app. See
+  `skills/setup/SKILL.md` for the UUIDs.
 - If any file read fails, use graceful defaults: `—` for missing values, `dot-n` for missing data.
 - In Framework mode (`PERSONALIZE=false`): set all state cells to `dot-n` / `—`. Skip personal data rows in the sync tab.
 - The `run ↗` buttons use `sendPrompt()` only for commands that need no parameters. Commands requiring `[Company]`, `[name]`, etc. have no run button.

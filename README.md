@@ -41,6 +41,29 @@ targeted, and continuously improved as you learn more about what works.
 
 ## Quick Start
 
+### The short version
+
+```bash
+git clone https://github.com/yourusername/career-os.git
+cd career-os
+```
+
+Open the folder in Claude and say:
+
+```
+setup
+```
+
+Claude walks you through everything below — config files, your target companies, the
+ATS registry — and **renders one-click install cards** for the job-board connectors
+rather than sending you into a settings menu. It verifies each step and ends by telling
+you how many companies are reachable and what's still open. Safe to re-run any time.
+
+Two things must be true before Career OS is useful: it knows which companies you want
+(names only — it works out the rest), and it can reach them. Everything else is optional.
+
+The manual version follows.
+
 ### 1. Clone and configure
 
 ```bash
@@ -169,22 +192,38 @@ What's live vs. workaround, so you know what you're getting.
 
 | Source | Status | Notes |
 |---|---|---|
-| **ATS Direct** (Greenhouse + Lever) | ✅ Live JSON API | Free, no auth, no scraping. Covers hundreds of companies. Add any company's slug to `scripts/ats-fetcher.py` to include it. |
-| Indeed | ✅ Live MCP | Free, works out of the box |
-| ZipRecruiter | ✅ Live MCP | Free, authless |
-| Dice | ✅ Live MCP | Free, authless, tech-focused |
+| **ATS Direct** (9 platforms) | ✅ Live JSON API | Free, no auth, no scraping. Greenhouse, Lever, Ashby, Recruitee, Workable, SmartRecruiters, Workday, Eightfold/pcsx, plus adapters for Google and Amazon. |
+| Dice | ✅ Connector | No auth — best of the three for engineering roles |
+| Indeed | ✅ Connector | Auth required. Broadest coverage. Runs on **your** account, so usage is capped at 60% |
+| ZipRecruiter | ✅ Connector | Auth required; rate-limits hard without it. Also capped |
 | GitHub | ✅ Live REST API | Free, public data, 5,000 req/hr with a free personal access token |
 | Built-in WebSearch / WebFetch | ✅ Always on | No key, no quota — the web layer for JD fetching, company intel and research |
 | Naukri | ⚠️ Scraper | No official API. Uses Playwright + system Chrome (bypasses Akamai WAF). Free but fragile — may break if Naukri updates their DOM or anti-bot rules. Best for Indian market. |
 | LinkedIn direct | ❌ Not possible | Scraping violates ToS — never attempted |
 | LinkedIn-layer data (Crustdata) | 🔜 Not included | Richer people-search by company/role, but requires a paid plan. `profile-intelligence` runs on GitHub + web search instead. See that skill's file for how to add a provider later. |
 
-**ATS Direct known companies (sample):**
-Greenhouse — Stripe, Databricks, Cloudflare, Coinbase, Reddit, Discord, Airbnb, Figma,
-Anthropic, OpenAI, HashiCorp, Groww, Postman.
-Lever — Meesho, Cred, Freshworks, Netflix, Lyft, Vercel.
-Internal ATS (auto-skipped with careers page URL) — Google, Amazon, Microsoft, Meta,
-Apple, Nvidia, Razorpay, PhonePe, Flipkart, Walmart, and others.
+**No company is hardcoded.** You supply names in `config/user.json`; a resolver probes
+every platform and writes `config/companies.json`:
+
+```bash
+python3 scripts/resolve-ats.py --from-config     # probe and build the registry
+python3 scripts/resolve-ats.py --list            # who's fetchable, who isn't
+python3 scripts/resolve-ats.py --company "Anthropic"   # add one later
+```
+
+When a company has no public board, the escalation ladder takes over:
+
+1. **`careers-probe.py`** reads the careers page for the ATS behind it, and actively
+   tests the host for APIs that JavaScript mounts at runtime. This is how Adobe
+   (`adobe.wd5.myworkdayjobs.com`) and Qualcomm (`/api/pcsx/search`) were recovered —
+   neither is discoverable from the company name alone.
+2. **Naukri** — `--from-unreachable` covers every remaining company in one sweep. The
+   strongest source for an India-based search.
+3. **Web search** on the careers page, tagged lower-confidence.
+4. **Report the gap honestly**, with the careers URL — never imply there are no openings.
+
+Some companies genuinely have no reachable feed (Meta serves jobs only via private
+rotating GraphQL). The system says so rather than returning a silent zero.
 
 ---
 
@@ -193,15 +232,25 @@ Apple, Nvidia, Razorpay, PhonePe, Flipkart, Walmart, and others.
 Quick highlights — see [docs/SKILLS.md](docs/SKILLS.md) for the full reference.
 
 ```
+setup                             Guided first-run setup — safe to re-run any time
+what's left to set up             Re-check and report only what's still open
+connect my job boards             Render one-click install cards for the connectors
+
+add company [name]                Resolve one company and add it to the registry
+show companies                    Who's fetchable, who needs a careers URL
+refresh companies                 Re-verify every board — run monthly, boards move
+
 begin intake interview            Start capturing your professional story
 resume interview                  Continue from your last checkpoint
 make resume for [Company/Role]    Generate a tailored, ATS-checked, PDF-exported resume
-find jobs                         Aggregate live listings (ATS Direct + Naukri + MCPs)
+find jobs                         Aggregate live listings across every source
 find jobs at [company]            Fetch openings at one specific company
+jd check [url]                    Red/yellow/green verdict before you invest time
 profile intel for [Company]       Map who works there and what they know
 github market map for [Role]      See what people in this role actually build
+draft outreach for [Company]      Personalized cold email — drafted, never auto-sent
 prep for [Company] interview      STAR story matching + mock behavioral Q&A
-status                            Full dashboard
+help / status                     Interactive dashboard: state, setup, connectors, budgets
 backup                            Sync personal data to your private vault repo
 ```
 

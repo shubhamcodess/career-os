@@ -140,6 +140,7 @@ career-os/
 
 | Task | Read This Skill First |
 |---|---|
+| First-run setup, adding companies, connecting job boards | `skills/setup/SKILL.md` |
 | Resume generation (structure/bullets) | `skills/resume-builder/SKILL.md` |
 | ATS scoring | `skills/resume-ats-optimizer/SKILL.md` |
 | Tailoring resume to a JD | `skills/resume-tailoring/SKILL.md` |
@@ -217,6 +218,22 @@ If a task needs a connector whose key is missing from `.env`, tell me clearly wh
 is missing and what it's for — don't fail silently or skip without explanation.
 
 ---
+
+## New User? Run Setup First
+
+If `config/user.json` is missing, or `target.target_companies` is empty, or
+`config/companies.json` does not exist — **read `skills/setup/SKILL.md` and run the
+guided setup before anything else.** Don't start an intake interview or a job search
+against an unconfigured system.
+
+The two things that must be true before Career OS is useful:
+1. It knows which companies the user cares about (`target_companies`, names only)
+2. It can reach them (`config/companies.json`, built by `resolve-ats.py`)
+
+**When the user needs a connector, render the install cards.** Call
+`mcp__mcp-registry__suggest_connectors` rather than telling them to open settings or
+edit `mcp/.mcp.json` — that file connects nothing in the desktop app. UUIDs and the
+full flow are in the setup skill.
 
 ## Connector Budgets
 
@@ -378,6 +395,8 @@ git commit -m "market: refreshed job feed — 34 listings, 6 strong matches"
 
 | Command | Action |
 |---|---|
+| `setup` | Guided first-run setup — config, companies, connector install cards, budgets. Safe to re-run |
+| `what's left to set up` | Re-check setup state, report only what's still open |
 | `pause interview` | Save checkpoint, commit, stop |
 | `resume interview` | Read state, recap, continue exactly |
 | `show checkpoints` | Display checkpoint log |

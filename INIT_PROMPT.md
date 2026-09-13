@@ -1,84 +1,39 @@
 # Career OS — Init Prompt
 
-Paste this as your FIRST message after running `claude` inside your cloned repo.
+Paste this as your FIRST message after opening Career OS in Claude.
 
 ---
 
-I've cloned Career OS and I'm running you inside it with `claude`. Complete the setup
-and confirm everything is ready before we begin.
+I've just cloned Career OS. Read `skills/setup/SKILL.md` and run the guided setup with me.
 
-## Step 1 — Verify config files exist
+Work through it one phase at a time — verify each before moving to the next, and tell me
+what actually worked rather than assuming. Specifically:
 
-Check for `config/user.json` and `.env`. If either is missing, tell me to run:
-```bash
-cp config/user.example.json config/user.json
-cp .env.example .env
-```
-Then stop and wait for me to fill them in before continuing.
+1. **Config files** — create `config/user.json` and `.env` from the examples if they're
+   missing. Don't overwrite anything that already exists. Ask me for `PERSONALIZE`.
 
-## Step 2 — Verify structure
+2. **My profile and targets** — ask me for my name, email, location, LinkedIn, GitHub,
+   target roles, target locations and years of experience. For companies, just take
+   **names** — you work out the rest.
 
-Run `find . -not -path './node_modules/*' -not -path './.git/*' | sort` and confirm
-all expected files exist per the structure in `CLAUDE.md`. Flag anything missing.
+3. **Company registry** — run `resolve-ats.py --from-config`, then
+   `careers-probe.py --all-unreachable --apply` to recover anything it missed. Show me
+   the result by status and tell me which companies still need a careers URL. Flag
+   anything marked LOW CONFIDENCE so I can verify it.
 
-## Step 3 — Install dependencies
+4. **Connectors** — check what's already connected, then **render the one-click install
+   cards** for whatever is missing (Dice, Indeed, ZipRecruiter, Gmail, Slack). Don't
+   send me into a settings menu, and don't tell me to edit `mcp/.mcp.json`.
 
-```bash
-npm install
-```
+5. **Optional extras** — ask whether I want Naukri (India job board), Slack
+   notifications, Gmail outreach drafting, a GitHub token, and a private vault repo for
+   backups. Any of these can be skipped.
 
-If `config/user.json` has `naukri_enabled: true`:
-```bash
-pip install -r scripts/requirements.txt
-playwright install chromium
-```
+6. **Budgets** — show me the Indeed/ZipRecruiter caps and explain why they exist.
 
-## Step 4 — Check .env keys
+7. **Verify** — `npm install`, then report real numbers: how many companies are
+   fetchable, how many jobs are reachable, which connectors are live, and what's still
+   open. Finish with the single next action.
 
-Read `.env` (don't print values, just confirm presence) and tell me which of these
-are set vs. missing:
-- `GITHUB_PERSONAL_ACCESS_TOKEN` (required, free to create)
-- no web key needed — Claude's built-in WebSearch/WebFetch cover JD fetching, company profiling and research
-
-For any missing required keys, point me to the relevant section in `docs/SETUP.md`.
-
-## Step 5 — Configure MCP paths
-
-Open `mcp/.mcp.json`. Confirm the `${CAREER_OS_ROOT}` variable resolves correctly —
-if not using env var substitution, replace it with the absolute path from `pwd`.
-
-## Step 6 — Test PDF export
-
-```bash
-node scripts/export-pdf.js templates/resume-templates/default.html exports/test-render.pdf
-```
-
-Confirm success and report file size.
-
-## Step 7 — Read all skills
-
-Read every `SKILL.md` file in `skills/`. Confirm which are ready to use and which need
-missing API keys (note them, don't block on them — skills degrade gracefully when
-optional connectors like Naukri are disabled).
-
-## Step 8 — Initial commit
-
-```bash
-git add -A
-git commit -m "init: Career OS fully initialized and ready"
-git push origin main
-```
-
-## Step 9 — Confirm ready
-
-Show me:
-1. Full folder tree
-2. Which `.env` keys are set
-3. Which skills are fully ready vs. degraded (missing optional keys)
-4. Puppeteer PDF status
-5. Naukri scraper status (enabled/disabled)
-
-Then say: **"Career OS is ready. Say 'begin intake interview' to start, or 'find jobs'
-to see what's live in the market first."**
-
-Do NOT begin the interview until I tell you to.
+If anything fails, tell me exactly what and why — don't report success you haven't
+verified, and don't invent values for anything you should be asking me about.

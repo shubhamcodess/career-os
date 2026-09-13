@@ -1,5 +1,25 @@
 # Skills Reference
 
+## setup
+
+**Trigger:** `setup`, `/setup`, "get me started", "what's left to set up",
+"connect my job boards", or automatically when `config/user.json` is missing or
+`target_companies` is empty.
+
+Guided first-run onboarding. Six phases, each verified before the next: config files →
+profile and targets → company registry → connectors → optional extras → budgets.
+
+Two things it exists to make true: Career OS knows which companies you want (names only),
+and it can reach them. Renders **one-click connector install cards** rather than sending
+you into a settings menu — editing `mcp/.mcp.json` connects nothing in the desktop app.
+
+Safe to re-run. Never overwrites config or the registry; re-checks and reports what's open.
+
+**Scripts it drives:** `resolve-ats.py`, `careers-probe.py`, `mcp-budget.py`
+
+---
+
+
 Full documentation of every skill in Career OS — what it does, when it triggers, and
 what commands drive it.
 
