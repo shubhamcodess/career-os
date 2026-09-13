@@ -32,6 +32,12 @@ against your profile. Single source of live market intelligence.
 | `fetch history` | What was fetched on each day |
 | `what have I decided` | Decision history — what you pursued vs passed on |
 | `prune job store [N] days` | Drop old listings; applied and shortlisted are kept |
+| `show current feed` | `view` — latest collection, undecided jobs only. **No fetch** |
+| `show my shortlist` | `view --filter shortlist` — pinned, interested, saved |
+| `show stale jobs` | `view --filter stale` — what you passed on, with reasons |
+| `show applied` | `view --filter applied` |
+| `show expired` | `view --filter expired` — jobs the market dropped |
+| `show all jobs` | `view --filter all` — everything collected, with status |
 | `refresh job feed` | Re-run last search, surface new listings only |
 | `rank my job feed` | Re-score existing feed against latest resume |
 
@@ -172,6 +178,32 @@ python3 scripts/job-store.py mark stale "Walt Disney" --all --reason "not in my 
 
 `stale` and `expired` are different things and must not be conflated. One is a decision,
 the other is the market moving on.
+
+### Show vs find — never mix these up
+
+**`show …` reads what is already collected. `find …` is the only thing that fetches.**
+
+A `show` command never runs `find-jobs.py`, never calls Indeed, Dice or ZipRecruiter,
+never spends budget, and never changes a listing's status. It is instant and free:
+
+```bash
+python3 scripts/job-store.py view                          # current feed
+python3 scripts/job-store.py view --filter shortlist       # pinned / interested / saved
+python3 scripts/job-store.py view --filter stale           # passed on, with reasons
+python3 scripts/job-store.py view --filter applied
+python3 scripts/job-store.py view --filter expired
+python3 scripts/job-store.py view --filter all
+python3 scripts/job-store.py view --filter all --company cisco --limit 50
+```
+
+"Current feed" means the most recent collection minus anything already decided on.
+If the user says "show" and the store is empty, say so and offer `find jobs`. Don't
+quietly fetch.
+
+`view` prints the heading + markdown table format, so the same output goes straight to
+Slack when asked. Pinned sorts first, then interested, then saved, then by score.
+
+`--format json` is for when you need to reason over the rows yourself.
 
 ### 4d. Day-grouped history
 

@@ -54,6 +54,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import sys
 from datetime import date, datetime, timedelta
 
@@ -194,6 +195,10 @@ def cmd_ingest(args) -> None:
             if rec["status"] == "expired":      # reappeared, so it is live again
                 rec["status"] = "shown"
             is_new = rec["status"] == "new"
+
+        # Kept so `view` can rank and split the collected feed without re-fetching.
+        rec["score"] = job.get("score", rec.get("score", 0))
+        rec["track"] = job.get("track", rec.get("track", ""))
 
         if rec["status"] in HIDDEN:
             suppressed += 1
@@ -361,6 +366,116 @@ def cmd_stats(args) -> None:
     warn_size()
 
 
+VIEW_FILTERS = {
+    "feed": "Current feed",
+    "shortlist": "Shortlist",
+    "stale": "Stale — passed on",
+    "applied": "Applied",
+    "expired": "Expired — gone from the market",
+    "all": "All collected jobs",
+}
+
+
+def _cell(text, width: int) -> str:
+    s = " ".join(str(text or "").split()).replace("|", "\\|")
+    return s if len(s) <= width else s[:width - 1].rstrip() + "…"
+
+
+def cmd_view(args) -> None:
+    """
+    Read-only view of what is already collected. Never fetches, never spends a
+    connector call, never changes status — only `find jobs` gathers new listings.
+    """
+    store = load()
+    jobs = list(store["jobs"].values())
+    if not jobs:
+        print("Nothing collected yet — run `find jobs` first.", file=sys.stderr)
+        return
+
+    latest = max(j.get("last_seen", "") for j in jobs)
+    f = args.filter
+    if f == "feed":
+        # The most recent collection, minus anything already decided on.
+        rows = [j for j in jobs if j.get("status") in ("new", "shown")
+                and j.get("last_seen") == latest]
+    elif f == "shortlist":
+        rows = [j for j in jobs if j.get("status") in WANTED]
+    elif f == "all":
+        rows = jobs
+    else:
+        rows = [j for j in jobs if j.get("status") == f]
+
+    if args.company:
+        c = args.company.lower()
+        rows = [j for j in rows if c in (j.get("company") or "").lower()]
+
+    pin_first = {"pinned": 0, "interested": 1, "saved": 2}
+    rows.sort(key=lambda j: (pin_first.get(j.get("status"), 3), -(j.get("score") or 0)))
+    total = len(rows)
+    rows = rows[:args.limit] if args.limit else rows
+
+    if args.format == "json":
+        print(json.dumps(rows, ensure_ascii=False, indent=2))
+        return
+
+    jd_days: dict[str, dict] = {}
+
+    def requirements(j: dict) -> str:
+        day = j.get("jd_day")
+        if not day:
+            return ""
+        if day not in jd_days:
+            try:
+                with open(os.path.join(JD_DIR, f"{day}.json")) as fh:
+                    jd_days[day] = json.load(fh)
+            except Exception:
+                jd_days[day] = {}
+        text = (jd_days[day].get(j["id"]) or {}).get("description", "") or ""
+        # Older cache entries hold a bare requisition ID instead of JD text.
+        return text if re.search(r"[A-Za-z]{3,}\s+[A-Za-z]{2,}", text) else ""
+
+    show_status = f in ("shortlist", "all")
+    detail_hdr = "Reason" if f == "stale" else "Key requirements"
+
+    def table(items: list[dict]) -> list[str]:
+        hdr = ["#", "Score", "Role", "Company", "Location"]
+        if show_status:
+            hdr.append("Status")
+        hdr += [detail_hdr, "Apply"]
+        out = ["| " + " | ".join(hdr) + " |", "|" + "---|" * len(hdr)]
+        for i, j in enumerate(items, 1):
+            detail = j.get("reason", "") if f == "stale" else requirements(j)
+            cells = [str(i), str(j.get("score") or "—"), _cell(j.get("title"), 40),
+                     _cell(j.get("company"), 22), _cell(j.get("location"), 24)]
+            if show_status:
+                cells.append(j.get("status", ""))
+            cells += [_cell(detail, 70) or "—",
+                      f"[Apply]({j['url']})" if j.get("url") else "—"]
+            out.append("| " + " | ".join(cells) + " |")
+        return out
+
+    label = VIEW_FILTERS[f]
+    shown = f"{len(rows)} of {total}" if len(rows) < total else str(total)
+    lines = [f"## {label} — {shown} jobs · collected as of {latest}", ""]
+
+    if not rows:
+        lines.append("_Nothing here._")
+    elif f == "feed" and any(j.get("track") for j in rows):
+        for track, title in (("targeted", "🎯 Your target companies"),
+                             ("discovery", "🔎 Discovery")):
+            part = [j for j in rows if j.get("track") == track]
+            if part:
+                lines += [f"### {title}", ""] + table(part) + [""]
+        untracked = [j for j in rows if not j.get("track")]
+        if untracked:
+            lines += ["### Unclassified — collected before tracks were recorded", ""] \
+                     + table(untracked) + [""]
+    else:
+        lines += table(rows)
+
+    print("\n".join(lines).rstrip())
+
+
 def cmd_runs(args) -> None:
     if not os.path.isdir(RUNS_DIR):
         print("No runs recorded yet.", file=sys.stderr)
@@ -443,6 +558,13 @@ def main() -> None:
 
     s = sub.add_parser("stats", help="Counts by status")
     s.set_defaults(fn=cmd_stats)
+
+    v = sub.add_parser("view", help="Show collected jobs — read-only, never fetches")
+    v.add_argument("--filter", choices=list(VIEW_FILTERS), default="feed")
+    v.add_argument("--company", default="")
+    v.add_argument("--limit", type=int, default=25)
+    v.add_argument("--format", choices=["md", "json"], default="md")
+    v.set_defaults(fn=cmd_view)
 
     r = sub.add_parser("runs", help="What was fetched on each day")
     r.add_argument("--limit", type=int, default=14)

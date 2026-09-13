@@ -320,6 +320,14 @@ capability — it is a transport.
 | `!os profile intel for Nvidia` | `profile intel for Nvidia` |
 | `!os status` | dashboard state as a digest |
 | `!os job tracker` | tracker summary |
+| `!os show feed` | `job-store.py view` — collected feed, no fetch |
+| `!os show shortlist` | `job-store.py view --filter shortlist` |
+| `!os show stale` | `job-store.py view --filter stale` |
+| `!os show applied` | `job-store.py view --filter applied` |
+| `!os show all` | `job-store.py view --filter all` |
+
+`show` commands post the `view` output as-is: it already prints the heading + table
+format. They never fetch. Only `!os find jobs` gathers new listings.
 | `!os approve outreach` | proceed with the pending outreach draft |
 | `!os help` | list these commands |
 

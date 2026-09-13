@@ -232,9 +232,12 @@ def _fetch_workday(slug: str) -> list[dict] | None:
             out.append({
                 "title": j.get("title", ""),
                 "location": _first_nonempty(j.get("locationsText"), j.get("location")),
-                "description": " ".join(j.get("bulletFields") or []),
+                # Workday's search response has no JD text. bulletFields holds the
+                # requisition ID, which previously leaked into "description" and
+                # showed up as a requirement. The full JD needs the per-job endpoint.
+                "description": "",
                 "posted": j.get("postedOn", ""),
-                "tags": [t for t in (j.get("bulletFields") or []) if t][:3],
+                "tags": [],
                 "url": f"{base}{path}" if path else base,
             })
         if len(page) < WORKDAY_PAGE:
