@@ -94,11 +94,22 @@ python3 scripts/naukri-scraper.py \
   --pages [naukri_pages_per_search]
 ```
 
-For `find jobs at [company]`: Naukri does not support single-company filtering
-via URL. Run normally and post-filter results by `company` field in the JSON.
+**For `find jobs at [company]`** — target it directly; the scraper verifies every
+result against the company field, so fuzzy keyword matches from other employers
+are dropped:
+```bash
+python3 scripts/naukri-scraper.py --company "[company]" --role "[role]"
+```
 
-If Naukri is disabled or returns 0 results, continue without it — ATS + MCPs
-are sufficient. See `skills/naukri-scraper/SKILL.md` for troubleshooting.
+**Always also run the unreachable sweep.** This is what makes Naukri worth having —
+it covers every company the ATS layer cannot reach:
+```bash
+python3 scripts/naukri-scraper.py --from-unreachable --role "[first target_role]"
+```
+
+If Naukri is disabled, continue without it. If it is enabled but returns 0 across
+every company, that is a selector break, not an empty market — say so rather than
+reporting no results. See `skills/naukri-scraper/SKILL.md` for troubleshooting.
 
 ---
 
@@ -210,16 +221,48 @@ an adapter that breaks weekly.
 
 **Rung 2 — Naukri, for anything hiring in India.**
 
-This is the strongest fallback for a Bangalore-based search, and it covers exactly the
-companies that are hardest to reach by API: Flipkart, PhonePe, Walmart India, Visa India,
-Qualcomm India, SAP Labs, Adobe India, IKEA India. Requires `naukri_enabled: true`.
+The strongest fallback for a Bangalore-based search. It covers exactly the companies
+that are hardest to reach by API — Flipkart, PhonePe, Walmart India, Visa India,
+Qualcomm India, SAP Labs, Adobe India, IBM. Requires `naukri_enabled: true` in
+`config/user.json`.
 
+**The one command that closes the coverage gap:**
 ```bash
-python3 scripts/naukri-scraper.py --role "[role]" --location "[city]" --pages [N]
+python3 scripts/naukri-scraper.py --from-unreachable --role "[role]"
 ```
 
-Naukri cannot filter by a single company via URL. Run it broadly and post-filter the
-JSON on the `company` field against your unreachable list.
+That reads `config/companies.json`, takes every company with no fetchable ATS board, and
+runs a company-targeted search for each. Location defaults to `target_locations[0]`.
+Run it after every `resolve-ats.py` pass.
+
+Other modes:
+```bash
+python3 scripts/naukri-scraper.py --role "Software Engineer" --location Bangalore --pages 2
+python3 scripts/naukri-scraper.py --company "IBM" --role "Software Engineer"
+python3 scripts/naukri-scraper.py --companies IBM Flipkart PhonePe --role "Software Engineer"
+```
+
+**How company targeting works.** Naukri has no company filter parameter, so the company
+name goes into the keyword slug and every result is then verified against the `company`
+field. Fuzzy keyword matches belonging to a different employer are dropped — a search for
+IBM returns desktop-support roles at unrelated vendors, and those must not reach your
+feed. The scraper prints `matched / returned` per company so the filter is visible.
+
+**Search aliases.** Some registry names mean nothing to a job board. `ISL` is IBM
+Software Labs; searching Naukri for "ISL" returns noise. Give those entries an alias once:
+
+```bash
+python3 scripts/resolve-ats.py --set-alias "ISL" "IBM ISL"
+```
+
+`--from-unreachable` uses `search_as` when set, and the registry name otherwise.
+
+Output is the same JSON shape as the ATS fetcher with `"source": "naukri"`, already
+deduplicated, so it merges straight into Step 3 with no special handling.
+
+Naukri is a scraper, not a feed: it needs system Chrome, it self-throttles 4–8s between
+company searches, and Naukri changes its DOM periodically. If it returns zero across
+every company, suspect a selector break before concluding nobody is hiring.
 
 **Rung 3 — Web search the careers page directly.**
 

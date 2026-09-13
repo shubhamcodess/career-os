@@ -211,6 +211,25 @@ Then in `config/user.json`, set:
 }
 ```
 
+Naukri needs **system Chrome** (`/Applications/Google Chrome.app`) — the bundled
+Chromium gets blocked by Naukri's WAF on TLS fingerprint.
+
+Naukri is the main reason a job search in India works at all. Most large employers
+here expose nothing by API but list heavily on Naukri, so run the unreachable sweep
+after every registry pass:
+
+```bash
+python3 scripts/naukri-scraper.py --from-unreachable --role "Software Engineer"
+```
+
+That covers every company in `config/companies.json` with no fetchable ATS board.
+For entries whose name means nothing to a job board — `ISL` is IBM Software Labs —
+give them a search alias once:
+
+```bash
+python3 scripts/resolve-ats.py --set-alias "ISL" "IBM ISL"
+```
+
 ---
 
 ## 5. Start Claude Code

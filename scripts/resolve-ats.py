@@ -285,6 +285,9 @@ def main() -> None:
                    help="Manually pin a company to a platform+slug")
     g.add_argument("--set-careers", nargs=2, metavar=("NAME", "URL"),
                    help="Set the careers page URL for a company with no public ATS")
+    g.add_argument("--set-alias", nargs=2, metavar=("NAME", "SEARCH_AS"),
+                   help="Set the name to search job boards under, when it differs from "
+                        "the registry name. e.g. --set-alias \"ISL\" \"IBM ISL\"")
     g.add_argument("--from-url", nargs=2, metavar=("NAME", "URL"),
                    help="Pin a company from a pasted ATS board URL — platform and slug "
                         "are read straight off the URL. Use this when auto-discovery "
@@ -320,6 +323,20 @@ def main() -> None:
         save_registry(reg)
         verdict = f"{count} jobs" if count is not None else "board did not respond — pinned anyway"
         print(f"Pinned {name} -> {platform}:{slug} ({verdict})", file=sys.stderr)
+        return
+
+    if args.set_alias:
+        name, alias = args.set_alias
+        companies = reg.setdefault("companies", {})
+        entry = companies.get(key_of(name), {
+            "name": name, "platform": "none", "slug": "",
+            "status": "unresolved", "jobs_seen": 0, "board_url": "", "careers_url": "",
+        })
+        entry["search_as"] = alias
+        entry["verified_at"] = today
+        companies[key_of(name)] = entry
+        save_registry(reg)
+        print(f"{name} will be searched on job boards as '{alias}'", file=sys.stderr)
         return
 
     if args.from_url:

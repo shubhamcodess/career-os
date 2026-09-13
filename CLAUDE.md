@@ -360,6 +360,8 @@ git commit -m "market: refreshed job feed — 34 listings, 6 strong matches"
 | `add company [name]` | Resolve one new company and append it to the registry |
 | `refresh companies` | Re-verify every resolved board (run monthly — boards move) |
 | `show companies` | Print the registry: who is fetchable, who needs a careers URL |
+| `pin board [company] [url]` | `resolve-ats.py --from-url` — pin a board found via web search |
+| `search naukri for unreachable` | `naukri-scraper.py --from-unreachable` — cover every company with no ATS board |
 | `send to slack` | Post the last result to the configured Slack channel |
 | `check slack` | Read `!os` commands from Slack and run them |
 | `mirror job tracker to slack` | Create/sync the Slack List version of the job tracker |
