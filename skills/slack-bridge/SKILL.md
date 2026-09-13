@@ -132,22 +132,45 @@ Match the format to the payload:
 Post the summary as a message, and link the Canvas from it. People read the message;
 they open the Canvas only if the summary earns it.
 
-### Digest format
+### Digest format — a heading and a table, nothing else
 
-Every notification follows the same shape so it is scannable on a phone lock screen:
+**Anything with more than two rows of data goes to Slack as a markdown table.** One
+heading line, then the table. No preamble, no commentary between rows, no trailing
+explanation. Slack renders markdown tables natively — use them.
 
 ```
-*[Event]* — [one-line outcome]
+## Job feed — 12 Sep, 34 listings
 
-[2–5 bullets of the actual substance, most important first]
-
-[Link to Canvas / file / job URL if there is one]
-
-_Next:_ [the single next action, phrased as a command you can reply with]
+| # | Role | Company | Location | Key requirements | Apply |
+|---|------|---------|----------|------------------|-------|
+| 1 | Senior SWE, AI/ML | Google | Bangalore | Python, GenAI, code review | [Apply](url) |
 ```
 
-Lead with the outcome, not the process. `*Job feed* — 6 strong matches, 2 new companies`
-is useful. `*Job feed* — finished running` is not.
+Rules that keep it readable on a phone:
+
+- **The heading carries the context.** `## Job feed — 12 Sep, 34 listings` says what and
+  when. Don't repeat it in a sentence above the table.
+- **Never escape the structural `|`.** Only escape a literal pipe inside a cell value.
+- **Trim cell text to fit** — roles to ~40 chars, requirements to ~70. A wrapped cell
+  destroys the table.
+- **Links go in the cell** as `[Apply](url)`, never a bare URL — bare URLs are long
+  enough to blow out the column.
+- **One table per message.** Two tracks (targeted vs discovery) means two messages or
+  two headings in one message, never interleaved rows.
+- **At most one line after the table**, and only when there is a genuine next action.
+  Status notes, caveats and source counts belong in a second table or not at all.
+
+Lead with the outcome in the heading, not the process. `## Job feed — 6 strong matches,
+2 new companies` is useful. `## Job feed — finished running` is not.
+
+For a single-item notification (one JD verdict, one resume ready), a table is overkill —
+use a short block instead:
+
+```
+## JD analysis — 🟢 GREEN (81/100)
+*Senior SWE at Nvidia* · Bangalore · [JD](url)
+Comp range disclosed · team size stated · ⚠️ "8+ yrs Kubernetes" is unrealistic
+```
 
 ### Event templates
 

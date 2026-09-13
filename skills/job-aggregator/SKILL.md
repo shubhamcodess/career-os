@@ -543,8 +543,15 @@ git commit -m "data: refreshed job feed — [N] listings, [N] strong matches"
 
 If `integrations.slack.enabled` is true in `config/user.json` and `job_feed` is in
 `notify_on`, post the digest after `job-feed.md` is written and committed.
-Read `skills/slack-bridge/SKILL.md` for format. Post the summary as a message and
-the full ranked feed as a Canvas — never dump the whole feed into chat.
+
+**Post it as two markdown tables — targeted first, then discovery — with a heading each
+and nothing else.** No preamble, no commentary between rows. Columns:
+`# | Score | Role | Company | Location | Key requirements | Apply`, with the link as
+`[Apply](url)` inside the cell. Trim roles to ~40 chars and requirements to ~70 so cells
+don't wrap. Full format rules in `skills/slack-bridge/SKILL.md`.
+
+If the feed is long, cap each table at ~10 rows and put the full ranked list in a Canvas,
+linked from a single line under the tables.
 
 Slack failing must never fail the job search. Write the file, commit, then try Slack.
 
