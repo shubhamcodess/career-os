@@ -184,7 +184,9 @@ python3 scripts/job-store.py runs      # fetch history by day
 python3 scripts/job-store.py stats     # counts by status, index size
 ```
 
-Full JD text is cached to `data/market/jobs/<id>.json`, but only for listings actually
+Full JD text is cached to `data/market/jobs/YYYY-MM-DD.json` — one file per day, keyed
+by job id and sorted by company, so a day's jobs read in one place. Each index entry
+records `jd_day` so a listing's JD can be found again. Cached only for listings actually
 shown — so you can judge fit from real requirements later without bloating the index.
 
 ### 4e. Pruning

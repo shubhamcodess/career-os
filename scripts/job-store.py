@@ -22,7 +22,7 @@ STORAGE LAYOUT
   data/market/
     job-index.json          slim index: id -> status + dates. Small, rewritten daily.
     runs/YYYY-MM-DD.json    what was fetched that day. Written once, never modified.
-    jobs/<id>.json          full JD text, cached only for listings engaged with.
+    jobs/YYYY-MM-DD.json    full JD text for listings shown that day, keyed by id.
 
   The daily run files exist for git's sake as much as yours. A single index
   rewritten every day makes git store a fresh copy of the whole thing daily —
@@ -122,19 +122,37 @@ def write_run(day: str, payload: dict) -> str:
     return path
 
 
-def cache_jd(job: dict) -> None:
-    """Keep full JD text only for listings the user engaged with."""
-    desc = (job.get("description") or "").strip()
-    if not desc:
-        return
+JD_FIELDS = ("title", "company", "location", "url", "source", "posted",
+             "salary", "experience", "description", "tags")
+
+
+def cache_jds(shown: list[dict], day: str) -> set[str]:
+    """
+    Keep full JD text for listings shown on a given day, in one file per day.
+
+    One file per job named by hash was unbrowsable — twelve Cisco roles became
+    twelve opaque filenames. A day file lines up with runs/YYYY-MM-DD.json, reads
+    in one place, and git still stores each day once. Returns the ids cached.
+    """
+    rows = {j["id"]: {k: j.get(k) for k in JD_FIELDS}
+            for j in shown if (j.get("description") or "").strip()}
+    if not rows:
+        return set()
     os.makedirs(JD_DIR, exist_ok=True)
-    path = os.path.join(JD_DIR, f"{job_id(job)}.json")
+    path = os.path.join(JD_DIR, f"{day}.json")
+    existing = {}
+    if os.path.exists(path):
+        try:
+            with open(path) as f:
+                existing = json.load(f)
+        except Exception:
+            existing = {}
+    existing.update(rows)
     with open(path, "w") as f:
-        json.dump({k: job.get(k) for k in
-                   ("title", "company", "location", "url", "source", "posted",
-                    "salary", "experience", "description", "tags")},
+        json.dump(dict(sorted(existing.items(), key=lambda kv: (kv[1].get("company") or "", kv[1].get("title") or ""))),
                   f, indent=1, ensure_ascii=False)
         f.write("\n")
+    return set(rows)
 
 
 def cmd_ingest(args) -> None:
@@ -208,7 +226,8 @@ def cmd_ingest(args) -> None:
         rec["seen_count"] = rec.get("seen_count", 0) + 1
         if rec["status"] == "new":
             rec["status"] = "shown"
-        cache_jd(job)
+    for jid in cache_jds(out, today):
+        jobs[jid]["jd_day"] = today
 
     save(store)
     run_path = write_run(today, {"fetched_ids": sorted(seen_ids),
