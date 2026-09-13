@@ -118,6 +118,7 @@ career-os/
 │   ├── job-search-command-center/    ← Master orchestrator
 │   ├── job-aggregator/           ← Live job search — entry point is scripts/find-jobs.py
 │   ├── naukri-scraper/           ← Naukri via Playwright (India coverage)
+│   ├── careers-crawler/          ← Careers pages via Playwright: find the real ATS, else scrape
 │   ├── profile-intelligence/     ← Who works at target companies (GitHub + web)
 │   ├── github-market-map/        ← What people in a role actually build
 │   ├── jd-analyzer/              ← Red/yellow/green verdict on a JD
@@ -160,6 +161,7 @@ career-os/
 │   ├── ats-fetcher.py            ← Fetch jobs from the registry
 │   ├── resolve-ats.py            ← Build/refresh the registry (setup tool)
 │   ├── careers-probe.py          ← Find the ATS behind a careers page (setup tool)
+│   ├── careers-crawler.py        ← Browser discovery (on demand) + recipe extraction (daily)
 │   ├── naukri-scraper.py         ← Naukri via Playwright
 │   ├── mcp-budget.py             ← Connector usage ledger + cap enforcement
 │   ├── sync-vault.sh             ← Personal data backup to the private repo
@@ -193,6 +195,7 @@ career-os/
 | Researching who works at a target company | `skills/profile-intelligence/SKILL.md` |
 | Understanding what people in a role actually build | `skills/github-market-map/SKILL.md` |
 | Naukri-specific scraping | `skills/naukri-scraper/SKILL.md` |
+| Jobs from a careers page with no ATS / connector / API | `skills/careers-crawler/SKILL.md` |
 | Posting results to Slack / reading commands from Slack | `skills/slack-bridge/SKILL.md` |
 | Drafting outreach into Gmail, scanning inbox for replies | `skills/gmail-tracker/SKILL.md` |
 | Any job search task, general orchestration | `skills/job-search-command-center/SKILL.md` |
@@ -469,6 +472,8 @@ git commit -m "market: refreshed job feed — 34 listings, 6 strong matches"
 | `show companies` | Print the registry: who is fetchable, who needs a careers URL |
 | `pin board [company] [url]` | `resolve-ats.py --from-url` — pin a board found via web search |
 | `search naukri for unreachable` | `naukri-scraper.py --from-unreachable` — cover every company with no ATS board |
+| `discover careers page for [company]` | Browser watches the careers page for the real job system behind it; pins it, else saves a scrape recipe. On demand |
+| `crawl unreachable companies` | Discovery for every company with no fetchable board |
 | `send to slack` | Post the last result to the configured Slack channel |
 | `check slack` | Read `!os` commands from Slack and run them |
 | `mirror job tracker to slack` | Create/sync the Slack List version of the job tracker |

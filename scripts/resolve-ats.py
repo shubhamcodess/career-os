@@ -203,6 +203,11 @@ def merge(reg: dict, resolved: dict[str, dict], preserve_manual: bool = True) ->
                 continue
             if existing.get("careers_url") and not entry.get("careers_url"):
                 entry["careers_url"] = existing["careers_url"]
+            # Hand-set search aliases and careers-crawler recipes must survive a refresh;
+            # replacing the entry wholesale used to erase them.
+            for keep in ("search_as", "scrape"):
+                if existing.get(keep) and keep not in entry:
+                    entry[keep] = existing[keep]
         companies[k] = entry
     return reg
 

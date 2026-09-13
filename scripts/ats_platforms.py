@@ -194,8 +194,8 @@ WD_SITE_PATTERNS = [
 
 
 def parse_workday_slug(slug: str) -> tuple[str, str, str] | None:
-    """'nvidia/wd5/NvidiaExternalCareerSite' -> ('nvidia', 'wd5', 'Nvidia…')"""
-    parts = [p for p in (slug or "").split("/") if p]
+    """'nvidia/wd5/NvidiaExternalCareerSite|Bengaluru;Bangalore' -> ('nvidia', 'wd5', 'Nvidia…')"""
+    parts = [p for p in (slug or "").split("|", 1)[0].split("/") if p]
     if len(parts) != 3:
         return None
     return parts[0], parts[1], parts[2]
@@ -209,41 +209,60 @@ def workday_url(slug: str) -> str:
     return f"https://{tenant}.{wd}.myworkdayjobs.com/wday/cxs/{tenant}/{site}/jobs"
 
 
+def workday_queries(slug: str) -> list[str]:
+    """Search terms after '|', ';'-separated. An empty list means an unfiltered fetch."""
+    _, _, q = (slug or "").partition("|")
+    return [t.strip() for t in q.split(";") if t.strip()]
+
+
 def _fetch_workday(slug: str) -> list[dict] | None:
+    """
+    Fetch a Workday board, optionally restricted by search terms after '|'.
+
+    Large boards run to thousands of postings and this adapter stops at WORKDAY_MAX,
+    so an unfiltered fetch silently drops most of them. Measured on real boards, a
+    capped unfiltered fetch found 16 Bengaluru roles at Nvidia against 202 on the
+    board, and 62 at Cisco against 271. Querying by location returns that slice in
+    full. Boards spell cities their own way ("Bengaluru" matched 0 at Cisco while
+    "Bangalore" matched 271), so every term is queried and the results are unioned.
+    """
     url = workday_url(slug)
     if not url:
         return None
-    parsed = parse_workday_slug(slug)
-    tenant, wd, site = parsed
+    tenant, wd, site = parse_workday_slug(slug)
     base = f"https://{tenant}.{wd}.myworkdayjobs.com/en-US/{site}"
 
-    out: list[dict] = []
-    offset = 0
-    while offset < WORKDAY_MAX:
-        data = post_json(url, {"appliedFacets": {}, "limit": WORKDAY_PAGE,
-                               "offset": offset, "searchText": ""})
-        if not isinstance(data, dict) or "jobPostings" not in data:
-            return out if out else None
-        page = data.get("jobPostings") or []
-        if not page:
-            break
-        for j in page:
-            path = j.get("externalPath", "")
-            out.append({
-                "title": j.get("title", ""),
-                "location": _first_nonempty(j.get("locationsText"), j.get("location")),
-                # Workday's search response has no JD text. bulletFields holds the
-                # requisition ID, which previously leaked into "description" and
-                # showed up as a requirement. The full JD needs the per-job endpoint.
-                "description": "",
-                "posted": j.get("postedOn", ""),
-                "tags": [],
-                "url": f"{base}{path}" if path else base,
-            })
-        if len(page) < WORKDAY_PAGE:
-            break
-        offset += WORKDAY_PAGE
-    return out
+    out: dict[str, dict] = {}
+    responded = False
+    for text in workday_queries(slug) or [""]:
+        offset = 0
+        while offset < WORKDAY_MAX:
+            data = post_json(url, {"appliedFacets": {}, "limit": WORKDAY_PAGE,
+                                   "offset": offset, "searchText": text})
+            if not isinstance(data, dict) or "jobPostings" not in data:
+                break
+            responded = True
+            page = data.get("jobPostings") or []
+            if not page:
+                break
+            for j in page:
+                path = j.get("externalPath", "")
+                job_url = f"{base}{path}" if path else base
+                out.setdefault(job_url, {
+                    "title": j.get("title", ""),
+                    "location": _first_nonempty(j.get("locationsText"), j.get("location")),
+                    # Workday's search response has no JD text. bulletFields holds the
+                    # requisition ID, which previously leaked into "description" and
+                    # showed up as a requirement. The full JD needs the per-job endpoint.
+                    "description": "",
+                    "posted": j.get("postedOn", ""),
+                    "tags": [],
+                    "url": job_url,
+                })
+            if len(page) < WORKDAY_PAGE:
+                break
+            offset += WORKDAY_PAGE
+    return list(out.values()) if responded else None
 
 
 # ---------------------------------------------------------------------------

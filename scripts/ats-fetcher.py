@@ -52,6 +52,34 @@ def load_registry() -> dict:
         return json.load(f)
 
 
+CITY_ALIASES = [("bengaluru", "bangalore"), ("gurugram", "gurgaon"), ("mumbai", "bombay"),
+                ("chennai", "madras"), ("kolkata", "calcutta"), ("thiruvananthapuram", "trivandrum")]
+
+
+def location_terms() -> list[str]:
+    """
+    Search terms for large boards, from config target_locations plus alternate city
+    spellings. Boards disagree on 'Bengaluru' vs 'Bangalore', and querying only one
+    spelling returned zero at Cisco and at Nvidia respectively.
+    """
+    try:
+        with open(USER_CONFIG_PATH) as f:
+            locs = json.load(f).get("target", {}).get("target_locations", []) or []
+    except Exception:
+        return []
+    terms: list[str] = []
+    for loc in locs:
+        city = loc.split(",")[0].strip()
+        if not city:
+            continue
+        terms.append(city)
+        low = city.lower()
+        for a, b in CITY_ALIASES:
+            if low in (a, b):
+                terms.append((b if low == a else a).title())
+    return list(dict.fromkeys(terms))
+
+
 def load_target_companies() -> list[str]:
     try:
         with open(USER_CONFIG_PATH) as f:
@@ -73,6 +101,12 @@ def fetch_company(entry: dict, role_filter: str) -> list[dict]:
     name = entry.get("name", "?")
     platform = entry.get("platform", "none")
     slug = entry.get("slug", "")
+    # Big Workday boards exceed the fetch cap, so restrict them to the user's
+    # locations unless the pin already carries its own search terms.
+    if platform == "workday" and slug and "|" not in slug:
+        terms = location_terms()
+        if terms:
+            slug = f"{slug}|{';'.join(terms)}"
 
     if platform == "none" or not slug:
         careers = entry.get("careers_url")

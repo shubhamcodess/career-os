@@ -75,6 +75,28 @@ project's practice), with source links at the end of the skill.
 
 ---
 
+### careers-crawler
+
+**Trigger:** `discover careers page for [company]`, `crawl unreachable companies`, or
+any company in the registry with no fetchable board.
+
+For companies with no ATS board, no connector and no API. Uses Playwright on the
+company's own careers page in two stages:
+
+- **Discover (on demand):** watches the page's network calls, links and embedded
+  apply URLs for a real job system behind it, and pins it permanently. Lowe's, Visa,
+  PhonePe and IKEA all looked unreachable and all turned out to be Workday or
+  SmartRecruiters underneath.
+- **Extract (daily, inside `find jobs`):** where no job system exists, replays a saved
+  scrape recipe (listing URL + job-link prefix) and reports as `Careers pages` in the
+  coverage line.
+
+Behaves like an ordinary browser: no stealth, polite delays, a page cap, no logins, and
+it stops for any company that blocks it. Private-API sites (Walmart, Meta) are reported
+as unreachable rather than forced.
+
+---
+
 ## Market Intelligence Layer
 
 ### job-aggregator

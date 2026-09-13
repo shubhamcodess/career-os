@@ -67,7 +67,7 @@ cd "$WORKTREE"
 git merge main --no-edit -m "merge: framework from main — $TIMESTAMP" 2>/dev/null || true
 
 # ── Copy personal data files into worktree ────────────────────────────────────
-PERSONAL_PATHS=("checkpoints" "data" "resumes" "config/user.json")
+PERSONAL_PATHS=("checkpoints" "data" "resumes" "config/user.json" "config/companies.json")
 for path in "${PERSONAL_PATHS[@]}"; do
   src="$REPO_ROOT/$path"
   dst_dir="$(dirname "$WORKTREE/$path")"
@@ -79,7 +79,7 @@ done
 
 # ── Stage everything (force-add gitignored personal files) ────────────────────
 git add -A
-git add -f checkpoints data resumes config/user.json 2>/dev/null || true
+git add -f checkpoints data resumes config/user.json config/companies.json 2>/dev/null || true
 
 if git diff --cached --quiet; then
   echo "Nothing changed — vault already up to date."

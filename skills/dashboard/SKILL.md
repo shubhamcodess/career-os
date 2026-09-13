@@ -259,6 +259,8 @@ body{font-family:var(--font-mono);font-size:12px;color:var(--text-primary);line-
   <div class="cr"><span class="cc">add company [name]</span><span class="cd">Resolve one new company and append it to the registry</span></div>
   <div class="cr"><span class="cc">pin board [company] [url]</span><span class="cd">Pin a board found via web search — platform and slug read off the URL</span></div>
   <div class="cr"><span class="cc">refresh companies</span><span class="cd">Re-verify every board — run monthly, boards move</span><button class="rb" onclick="sendPrompt('refresh companies')">run ↗</button></div>
+  <div class="cr"><span class="cc">crawl unreachable companies</span><span class="cd">Browser finds the job system behind careers pages; pins it or saves a scrape recipe</span><button class="rb" onclick="sendPrompt('crawl unreachable companies')">run ↗</button></div>
+  <div class="cr"><span class="cc">discover careers page for [company]</span><span class="cd">Same, for one company (paste a search-results URL for best results)</span></div>
   <div class="div"></div>
   <div class="sg">CONNECTORS — {{CONNECTOR_SUMMARY}}</div>
   {{CONNECTOR_ROWS}}

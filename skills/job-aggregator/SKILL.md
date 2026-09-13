@@ -338,6 +338,14 @@ have no public ATS *that we know of yet*. The fetcher prints their `careers_url`
 instead of returning jobs. Never report these as "no openings" — they are almost
 always hiring. Run them through the escalation ladder in **Source D** below.
 
+**Large Workday boards are filtered by your location.** Workday boards run to thousands
+of postings (Lowe's has 12,392) and the adapter stops at 500, so an unfiltered fetch
+silently drops most of them. Measured before the fix: 16 Bengaluru roles found at
+Nvidia against 202 on the board, and 62 at Cisco against 271. `ats-fetcher.py` now
+queries each Workday board with the cities from `target_locations`, plus alternate
+spellings, because boards disagree ("Bengaluru" returned 0 at Cisco while "Bangalore"
+returned 271). A pin can carry its own terms instead: `tenant/wdN/site|term1;term2`.
+
 **Registry hygiene.** ATS boards move. If a company that used to return jobs suddenly
 returns none, re-verify before assuming the market went quiet:
 ```bash
@@ -536,6 +544,23 @@ search different roles or geographies.
 POST GraphQL calls keyed by rotating internal `doc_id` values — a private API with no
 stable contract. Route Meta through Rung 2/3 and say so honestly rather than shipping
 an adapter that breaks weekly.
+
+**Rung 1b — Watch the careers page in a real browser.**
+
+When `careers-probe.py` finds nothing in the static HTML, use the careers crawler. It
+loads the page in Playwright and watches its network calls and apply links for a job
+system hidden behind it, then pins that board permanently. Lowe's, Visa and PhonePe all
+looked unreachable and all turned out to be Workday or SmartRecruiters underneath.
+
+```bash
+python3 scripts/careers-crawler.py discover --all-unreachable          # report
+python3 scripts/careers-crawler.py discover --company "Apple" --url "<search URL>" --apply
+```
+
+If there's no job system, it saves a scrape recipe instead, which `find-jobs.py` then
+extracts daily and reports as the `Careers pages` coverage line. It behaves like an
+ordinary browser and stops if a site blocks it. Full rules in
+`skills/careers-crawler/SKILL.md`.
 
 **Rung 2 — Naukri, for anything hiring in India.**
 

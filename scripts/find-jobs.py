@@ -246,6 +246,8 @@ def main() -> None:
     p.add_argument("--no-naukri", action="store_true",
                    help="Skip Naukri (it is ON by default when naukri_enabled is true)")
     p.add_argument("--no-ats", action="store_true", help="Skip the ATS registry")
+    p.add_argument("--no-careers", action="store_true",
+                   help="Skip careers-page recipes (careers-crawler.py extract)")
     p.add_argument("--merge", action="append", default=[], metavar="FILE",
                    help="JSON file of connector results to fold in (repeatable)")
     p.add_argument("--write-feed", action="store_true",
@@ -294,6 +296,25 @@ def main() -> None:
         coverage.append(("Naukri", "ran" if jobs else "failed", f"{len(jobs)} jobs"))
         if jobs:
             sources.append("Naukri")
+        raw += jobs
+
+    try:
+        with open(os.path.join(ROOT, "config", "companies.json")) as f:
+            recipes = [c for c in json.load(f).get("companies", {}).values() if c.get("scrape")]
+    except Exception:
+        recipes = []
+    if args.no_careers:
+        coverage.append(("Careers pages", "skipped", "--no-careers"))
+    elif not recipes:
+        coverage.append(("Careers pages", "skipped",
+                         "no scrape recipes — run careers-crawler.py discover"))
+    else:
+        jobs = run_script([os.path.join(ROOT, "scripts", "careers-crawler.py"),
+                           "extract", "--all", "--role", role], "Careers pages")
+        coverage.append(("Careers pages", "ran" if jobs else "failed",
+                         f"{len(jobs)} jobs from {len(recipes)} site(s)"))
+        if jobs:
+            sources.append("Careers")
         raw += jobs
 
     for path in args.merge:
