@@ -80,20 +80,25 @@ project's practice), with source links at the end of the skill.
 **Trigger:** `discover careers page for [company]`, `crawl unreachable companies`, or
 any company in the registry with no fetchable board.
 
-For companies with no ATS board, no connector and no API. Uses Playwright on the
-company's own careers page in two stages:
+For companies with no ATS board, no connector and no API. Works on **any** careers
+website, since nothing in it is company-specific. Uses Playwright in two stages:
 
-- **Discover (on demand):** watches the page's network calls, links and embedded
-  apply URLs for a real job system behind it, and pins it permanently. Lowe's, Visa,
-  PhonePe and IKEA all looked unreachable and all turned out to be Workday or
-  SmartRecruiters underneath.
-- **Extract (daily, inside `find jobs`):** where no job system exists, replays a saved
-  scrape recipe (listing URL + job-link prefix) and reports as `Careers pages` in the
-  coverage line.
+- **Discover (on demand):** watches the page's network calls, JSON responses, links,
+  iframes and embedded page data. In order of preference it will:
+  1. pin a real job system permanently (Lowe's, Visa, PhonePe and IKEA all turned out to
+     be Workday or SmartRecruiters underneath);
+  2. save the JSON API the page itself calls;
+  3. save JSON-LD / embedded job data;
+  4. save a job-link pattern.
+  Systems it recognises without an adapter (iCIMS, Taleo, Oracle HCM, Phenom, Jobvite…)
+  are named in the report.
+- **Extract (daily, inside `find jobs`):** replays saved recipes (`api`, `jsonld`,
+  `embedded`, `links`), clicking "load more" and following pages, and reports as
+  `Careers pages` in the coverage line.
 
-Behaves like an ordinary browser: no stealth, polite delays, a page cap, no logins, and
-it stops for any company that blocks it. Private-API sites (Walmart, Meta) are reported
-as unreachable rather than forced.
+Behaves like an ordinary browser: no stealth, polite delays, a page cap, no logins, never
+LinkedIn, and it stops for any company that blocks it. Private or signed-API sites are
+reported as unreachable rather than forced.
 
 ---
 
