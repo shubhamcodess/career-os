@@ -289,6 +289,9 @@ def cmd_mark(args) -> None:
     for j in matches:
         j["status"] = args.status
         j["status_set"] = date.today().isoformat()
+        if args.status in ("new", "shown"):
+            # Not a decision: drop any reason left over from one.
+            j.pop("reason", None)
         if args.reason:
             j["reason"] = args.reason
         j["bulk"] = len(matches) > 1
@@ -545,7 +548,8 @@ def main() -> None:
 
     m = sub.add_parser("mark", help="Record a decision on a listing")
     m.add_argument("status", choices=["interested", "saved", "pinned", "applied",
-                                      "stale", "shown"])
+                                      "stale", "shown", "new"],
+                   help="'new' undoes a decision recorded by mistake")
     m.add_argument("company", nargs="?", default="")
     m.add_argument("title", nargs="?", default="")
     m.add_argument("--url")
