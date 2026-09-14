@@ -131,7 +131,9 @@ career-os/
 │   ├── cold-outreach/            ← Cold email + LinkedIn variants
 │   ├── gmail-tracker/            ← Draft outreach in Gmail, scan inbox for replies
 │   ├── slack-bridge/             ← Push results to Slack, read !os commands back
-│   ├── profile-optimizer/        ← Naukri, LinkedIn, Instahyre, Wellfound
+│   ├── profile-optimizer/        ← Instahyre, Wellfound, Cutshort (defers for Naukri/LinkedIn)
+│   ├── linkedin-profile/         ← LinkedIn from screenshots: exact fields, refresh, content engine
+│   ├── naukri-profile/           ← Naukri 100% score, JD keywords, freshness routine, calls funnel
 │   ├── pdf-export/               ← Puppeteer HTML→PDF rendering
 │   └── dashboard/                ← help / status widget
 ├── templates/
@@ -190,7 +192,9 @@ career-os/
 | Cover letter generation | `skills/cover-letter/SKILL.md` |
 | JD quality check / red flag analysis | `skills/jd-analyzer/SKILL.md` |
 | Cold outreach email to recruiter/hiring manager | `skills/cold-outreach/SKILL.md` |
-| Naukri/LinkedIn/Instahyre profile optimization | `skills/profile-optimizer/SKILL.md` |
+| LinkedIn profile polish, refresh, post ideas / content calendar | `skills/linkedin-profile/SKILL.md` |
+| Naukri profile: 100% score, visibility, getting calls | `skills/naukri-profile/SKILL.md` |
+| Instahyre/Wellfound/Cutshort profile optimization | `skills/profile-optimizer/SKILL.md` |
 | Live job search across sources (Indeed/ZipRecruiter/Dice) | `skills/job-aggregator/SKILL.md` |
 | Researching who works at a target company | `skills/profile-intelligence/SKILL.md` |
 | Understanding what people in a role actually build | `skills/github-market-map/SKILL.md` |
@@ -455,7 +459,12 @@ git commit -m "market: refreshed job feed — 34 listings, 6 strong matches"
 | `export pdf` | Generate PDF from latest resume |
 | `use template [name]` | Switch active resume template |
 | `ats check` | Full ATS audit on latest resume |
-| `optimize profile for [platform]` | Naukri / LinkedIn / Instahyre / Wellfound optimization |
+| `optimize profile for [platform]` | Instahyre / Wellfound / Cutshort optimization (Naukri and LinkedIn route to their own skills) |
+| `polish my linkedin` + screenshots | Transcribe → audit → exact headline, About, Experience blocks, Skills, Featured → save |
+| `linkedin refresh` | Only the LinkedIn fields that changed since last sync |
+| `what should I post` / `draft post #N` / `content calendar` | Content engine: story bank × fresh web research → ranked post ideas, drafts, 4-week plan |
+| `polish my naukri` + screenshots | Naukri 100% profile: JD-derived keywords, exact output for every section |
+| `naukri refresh` / `log naukri stats` / `why no naukri calls` | Weekly genuine update, funnel tracking, diagnosis |
 | `find jobs` | Aggregate live listings across all active sources |
 | `find jobs at [company]` | Filter live search to one company |
 | `refresh job feed` | Re-run last search, surface new listings |

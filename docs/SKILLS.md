@@ -158,12 +158,43 @@ Failures are logged to `data/logs/naukri-scraper.log` and don't block other sour
 
 ## Profile & Outreach
 
+### linkedin-profile
+Polishes a LinkedIn profile from **screenshots or pasted text**. LinkedIn is never
+scraped or logged into. Transcribes every field, has you confirm it, scores each area,
+then gives exact paste-ready blocks with character counts:
+- headline and About
+- every Experience entry (title, employment type, dates, location, description, per-role skills)
+- Skills order, Featured, Open to Work, custom URL, banner and recommendation asks
+
+Keywords come from your real target JDs, and the timeline is checked against your resume
+and Naukri. `linkedin refresh` returns only what changed.
+
+Includes a **content recommendation engine**:
+1. A story bank mined from your master experience doc.
+2. Web research on what's new in your field.
+3. Ranked idea cards that each pair a fresh trigger with your own proof: hooks, format,
+   outline and closing question.
+4. Full drafts, a 4-week calendar, and a learning loop from your post analytics.
+
+Reach heuristics are labelled as heuristics.
+
+**Triggers:** `polish my linkedin`, `linkedin refresh`, `what should I post`, `draft post #N`, `content calendar`
+
+### naukri-profile
+Takes a Naukri profile to 100% and optimises for being **found → noticed → called**:
+- keywords ranked by how often they appear in your target JDs
+- exact output for every Naukri section: headline, key skills, employment, IT skills,
+  projects, summary, accomplishments, career profile, personal details
+- a weekly freshness routine of genuine edits
+- a views → recruiter actions → calls funnel log with diagnosis
+
+**Triggers:** `polish my naukri`, `naukri keywords`, `naukri refresh`, `log naukri stats`, `why no naukri calls`
+
 ### profile-optimizer
-Platform-specific profile optimization for Naukri, LinkedIn, Instahyre, Wellfound, Cutshort.
+Platform-specific profile optimization for Instahyre, Wellfound, Cutshort. Defers to
+`naukri-profile` and `linkedin-profile` for those platforms.
 
 **Triggers:** `optimize profile for [platform]`
-
-**Note:** No LinkedIn MCP exists. Paste your profile URL or exported data for LinkedIn audits.
 
 ---
 
