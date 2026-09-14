@@ -1,0 +1,235 @@
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-mono);font-size:12px;color:var(--text-primary);line-height:1.5}
+.w{border:0.5px solid var(--border);border-radius:8px;overflow:hidden;background:var(--surface-1)}
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:var(--surface-2);border-bottom:0.5px solid var(--border)}
+.title{font-size:12px;font-weight:500}
+.title .sub{font-weight:400;color:var(--text-muted)}
+.hint{font-size:10px;color:var(--text-muted)}
+.tabs{display:flex;border-bottom:0.5px solid var(--border);background:var(--surface-2);overflow-x:auto;padding:0 6px}
+.tab{font-size:11px;color:var(--text-muted);padding:7px 10px;cursor:pointer;border-bottom:1.5px solid transparent;white-space:nowrap;user-select:none}
+.tab:hover{color:var(--text-secondary)}
+.tab.on{color:var(--text-primary);border-bottom-color:var(--text-primary)}
+.panel{display:none;padding-bottom:4px}
+.panel.on{display:block}
+.sg{padding:7px 12px 3px;font-size:10px;letter-spacing:.5px;color:var(--text-muted)}
+.cr{display:flex;align-items:center;padding:4px 12px;gap:6px}
+.cr:hover{background:var(--surface-2)}
+.cc{color:var(--text-secondary);min-width:230px;flex-shrink:0;font-size:11px}
+.cd{color:var(--text-muted);font-size:11px;flex:1;font-family:var(--font-sans)}
+.rb{font-family:var(--font-mono);font-size:10px;color:var(--text-muted);background:none;border:0.5px solid var(--border);border-radius:3px;padding:1px 5px;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.rb:hover{color:var(--text-primary);border-color:var(--border-strong)}
+.div{height:0.5px;background:var(--border);margin:5px 0}
+.sk{color:var(--text-primary)}
+.ft{padding:6px 12px;border-top:0.5px solid var(--border);font-size:10px;color:var(--text-muted)}
+</style>
+
+<div class="w">
+<div class="hdr">
+  <span class="title">career-os <span class="sub">· help</span></span>
+  <span class="hint">type <b>status</b> for live progress · commands in [brackets] need details</span>
+</div>
+
+<div class="tabs" id="tabs">
+  <div class="tab on" data-t="start">start</div>
+  <div class="tab" data-t="jobs">jobs</div>
+  <div class="tab" data-t="resume">resume</div>
+  <div class="tab" data-t="profiles">profiles</div>
+  <div class="tab" data-t="outreach">outreach</div>
+  <div class="tab" data-t="intel">intel &amp; interview</div>
+  <div class="tab" data-t="setup">setup &amp; system</div>
+  <div class="tab" data-t="skills">all skills</div>
+</div>
+
+<!-- START -->
+<div id="start" class="panel on">
+  <div class="sg">DAILY LOOP</div>
+  <div class="cr"><span class="cc">find jobs</span><span class="cd">Fetch new jobs from every source, rank them, show only what's new</span><button class="rb" onclick="sendPrompt('find jobs')">run ↗</button></div>
+  <div class="cr"><span class="cc">show current feed</span><span class="cd">Collected jobs you haven't decided on — reads the store, no fetching</span><button class="rb" onclick="sendPrompt('show current feed')">run ↗</button></div>
+  <div class="cr"><span class="cc">applied to [company] [role]</span><span class="cd">Record an application — hidden from future feeds</span></div>
+  <div class="cr"><span class="cc">make resume for [Company/Role]</span><span class="cd">Tailored resume → ATS check → humanize → PDF</span></div>
+  <div class="cr"><span class="cc">draft outreach for [company]</span><span class="cd">Personalised cold email + LinkedIn note</span></div>
+  <div class="cr"><span class="cc">what should I post</span><span class="cd">LinkedIn post ideas from your experience × what's new in your field</span><button class="rb" onclick="sendPrompt('what should I post')">run ↗</button></div>
+  <div class="cr"><span class="cc">naukri refresh</span><span class="cd">This week's genuine Naukri update to stay visible</span><button class="rb" onclick="sendPrompt('naukri refresh')">run ↗</button></div>
+  <div class="div"></div>
+  <div class="sg">INTAKE INTERVIEW</div>
+  <div class="cr"><span class="cc">begin intake interview</span><span class="cd">Build your master experience doc from scratch</span><button class="rb" onclick="sendPrompt('begin intake interview')">run ↗</button></div>
+  <div class="cr"><span class="cc">resume interview</span><span class="cd">Continue from the last checkpoint</span><button class="rb" onclick="sendPrompt('resume interview')">run ↗</button></div>
+  <div class="cr"><span class="cc">pause interview</span><span class="cd">Save checkpoint and stop</span></div>
+  <div class="cr"><span class="cc">show checkpoints</span><span class="cd">Checkpoint log</span><button class="rb" onclick="sendPrompt('show checkpoints')">run ↗</button></div>
+  <div class="cr"><span class="cc">rewind to [CP-N]</span><span class="cd">Go back to a checkpoint and edit it</span></div>
+  <div class="cr"><span class="cc">update master</span><span class="cd">Re-interview to update master-experience.md</span></div>
+</div>
+
+<!-- JOBS -->
+<div id="jobs" class="panel">
+  <div class="sg">FIND — the only commands that fetch</div>
+  <div class="cr"><span class="cc">find jobs</span><span class="cd">ATS boards + careers pages + Naukri + Indeed/Dice, merged and ranked</span><button class="rb" onclick="sendPrompt('find jobs')">run ↗</button></div>
+  <div class="cr"><span class="cc">find jobs at [company]</span><span class="cd">One company only</span></div>
+  <div class="cr"><span class="cc">refresh job feed</span><span class="cd">Re-run the last search, surface new listings</span><button class="rb" onclick="sendPrompt('refresh job feed')">run ↗</button></div>
+  <div class="cr"><span class="cc">search naukri for unreachable</span><span class="cd">Naukri for every company with no board</span><button class="rb" onclick="sendPrompt('search naukri for unreachable')">run ↗</button></div>
+  <div class="div"></div>
+  <div class="sg">SHOW — read collected jobs, never fetch</div>
+  <div class="cr"><span class="cc">show current feed</span><span class="cd">Undecided jobs</span><button class="rb" onclick="sendPrompt('show current feed')">run ↗</button></div>
+  <div class="cr"><span class="cc">show my shortlist</span><span class="cd">Interested, saved, pinned</span><button class="rb" onclick="sendPrompt('show my shortlist')">run ↗</button></div>
+  <div class="cr"><span class="cc">show applied / show stale jobs / show all jobs</span><span class="cd">Other filtered views</span></div>
+  <div class="cr"><span class="cc">show me everything</span><span class="cd">Search including jobs already seen</span></div>
+  <div class="cr"><span class="cc">send to slack</span><span class="cd">Post the last result as a table to your Slack channel</span><button class="rb" onclick="sendPrompt('send to slack')">run ↗</button></div>
+  <div class="div"></div>
+  <div class="sg">DECIDE — only you mark these</div>
+  <div class="cr"><span class="cc">applied to [company] [role]</span><span class="cd">Hidden from feeds, kept forever</span></div>
+  <div class="cr"><span class="cc">pin / save / interested [company] [role]</span><span class="cd">Goes to your shortlist</span></div>
+  <div class="cr"><span class="cc">not interested in [company]</span><span class="cd">Marked stale — never shown again, record kept</span></div>
+  <div class="div"></div>
+  <div class="sg">MEMORY &amp; TRACKING</div>
+  <div class="cr"><span class="cc">job store stats</span><span class="cd">Counts by status, new this week</span><button class="rb" onclick="sendPrompt('job store stats')">run ↗</button></div>
+  <div class="cr"><span class="cc">what have I decided</span><span class="cd">Decision history: pursued vs passed</span><button class="rb" onclick="sendPrompt('what have I decided')">run ↗</button></div>
+  <div class="cr"><span class="cc">jd check</span><span class="cd">Red/yellow/green verdict on a JD</span></div>
+  <div class="cr"><span class="cc">job tracker</span><span class="cd">Applications, status, next action</span><button class="rb" onclick="sendPrompt('job tracker')">run ↗</button></div>
+  <div class="cr"><span class="cc">mirror job tracker to slack</span><span class="cd">Sync the tracker to a Slack List</span></div>
+  <div class="cr"><span class="cc">check slack</span><span class="cd">Run !os commands posted in Slack</span><button class="rb" onclick="sendPrompt('check slack')">run ↗</button></div>
+</div>
+
+<!-- RESUME -->
+<div id="resume" class="panel">
+  <div class="sg">GENERATE</div>
+  <div class="cr"><span class="cc">make resume for [Company/Role]</span><span class="cd">Intel → tailor → build → ATS → humanize → PDF → commit</span></div>
+  <div class="cr"><span class="cc">make resume for Google [role]</span><span class="cd">Google: application budget → MQ gate → X-Y-Z bullets → pre-submit check</span></div>
+  <div class="cr"><span class="cc">google mq check [url]</span><span class="cd">Can this role pass Google's minimum-qualifications screen?</span></div>
+  <div class="cr"><span class="cc">google application budget</span><span class="cd">Google applications in the rolling 30 days (limit 3)</span><button class="rb" onclick="sendPrompt('google application budget')">run ↗</button></div>
+  <div class="cr"><span class="cc">make cover letter for [Company/Role]</span><span class="cd">From the tailored resume + master doc → humanized PDF</span></div>
+  <div class="div"></div>
+  <div class="sg">CHECK &amp; EXPORT</div>
+  <div class="cr"><span class="cc">ats check</span><span class="cd">ATS audit on the latest resume</span><button class="rb" onclick="sendPrompt('ats check')">run ↗</button></div>
+  <div class="cr"><span class="cc">humanize this</span><span class="cd">AI-to-human rewrite pass</span></div>
+  <div class="cr"><span class="cc">export pdf</span><span class="cd">Re-render PDF from the latest resume.html</span><button class="rb" onclick="sendPrompt('export pdf')">run ↗</button></div>
+  <div class="cr"><span class="cc">use template [name] / add template [name]</span><span class="cd">Switch or add an HTML resume template</span></div>
+  <div class="cr"><span class="cc">version log</span><span class="cd">Every resume version</span><button class="rb" onclick="sendPrompt('version log')">run ↗</button></div>
+  <div class="cr"><span class="cc">diff [company] v1 v2</span><span class="cd">Compare two versions</span></div>
+</div>
+
+<!-- PROFILES -->
+<div id="profiles" class="panel">
+  <div class="sg">LINKEDIN — paste screenshots, never scraped</div>
+  <div class="cr"><span class="cc">polish my linkedin</span><span class="cd">Exact headline, About, every Experience entry, Skills, Featured, Open to Work</span><button class="rb" onclick="sendPrompt('polish my linkedin')">run ↗</button></div>
+  <div class="cr"><span class="cc">linkedin headline / rewrite my about</span><span class="cd">One field, 3 options with character counts</span></div>
+  <div class="cr"><span class="cc">linkedin experience for [company]</span><span class="cd">Exact Experience block for one employer</span></div>
+  <div class="cr"><span class="cc">linkedin audit</span><span class="cd">Scores + top 5 fixes</span><button class="rb" onclick="sendPrompt('linkedin audit')">run ↗</button></div>
+  <div class="cr"><span class="cc">linkedin refresh</span><span class="cd">Only what changed since the last sync</span><button class="rb" onclick="sendPrompt('linkedin refresh')">run ↗</button></div>
+  <div class="div"></div>
+  <div class="sg">LINKEDIN CONTENT ENGINE</div>
+  <div class="cr"><span class="cc">what should I post</span><span class="cd">Ranked idea cards: fresh trigger × your proof, hooks, format, outline</span><button class="rb" onclick="sendPrompt('what should I post')">run ↗</button></div>
+  <div class="cr"><span class="cc">draft post #N</span><span class="cd">Full post or carousel slides for an idea</span></div>
+  <div class="cr"><span class="cc">content calendar</span><span class="cd">4-week posting plan</span><button class="rb" onclick="sendPrompt('content calendar')">run ↗</button></div>
+  <div class="cr"><span class="cc">log post performance</span><span class="cd">Paste analytics — future ideas learn from it</span></div>
+  <div class="div"></div>
+  <div class="sg">NAUKRI — found → noticed → called</div>
+  <div class="cr"><span class="cc">polish my naukri</span><span class="cd">100% profile: exact text for every section, JD-derived keywords</span><button class="rb" onclick="sendPrompt('polish my naukri')">run ↗</button></div>
+  <div class="cr"><span class="cc">naukri headline / summary / key skills</span><span class="cd">One section, 2–3 options</span></div>
+  <div class="cr"><span class="cc">naukri keywords</span><span class="cd">Ranked keywords from your target JDs</span><button class="rb" onclick="sendPrompt('naukri keywords')">run ↗</button></div>
+  <div class="cr"><span class="cc">naukri refresh</span><span class="cd">This week's genuine update</span><button class="rb" onclick="sendPrompt('naukri refresh')">run ↗</button></div>
+  <div class="cr"><span class="cc">log naukri stats / why no naukri calls</span><span class="cd">Views → actions → calls funnel and diagnosis</span></div>
+  <div class="div"></div>
+  <div class="sg">OTHER PLATFORMS</div>
+  <div class="cr"><span class="cc">optimize profile for [platform]</span><span class="cd">Instahyre, Wellfound, Cutshort</span></div>
+</div>
+
+<!-- OUTREACH -->
+<div id="outreach" class="panel">
+  <div class="sg">DRAFT</div>
+  <div class="cr"><span class="cc">draft outreach for [company] [role]</span><span class="cd">Cold email + LinkedIn variants: one hook, one achievement, humanized</span></div>
+  <div class="cr"><span class="cc">cold email to [name] at [company]</span><span class="cd">Personalised to a named recruiter or hiring manager</span></div>
+  <div class="cr"><span class="cc">LinkedIn message to [name]</span><span class="cd">Connection note (≤280 chars) + DM version</span></div>
+  <div class="cr"><span class="cc">connection request for [company]</span><span class="cd">Just the connection note</span></div>
+  <div class="cr"><span class="cc">save this outreach / follow-up version</span><span class="cd">Persist drafts · 2-sentence follow-up after 7 days</span></div>
+  <div class="div"></div>
+  <div class="sg">GMAIL — drafts only, never sends</div>
+  <div class="cr"><span class="cc">draft this in gmail</span><span class="cd">Turn the current draft into a Gmail draft</span></div>
+  <div class="cr"><span class="cc">check my email</span><span class="cd">Classify replies, invites, rejections; update the tracker</span><button class="rb" onclick="sendPrompt('check my email')">run ↗</button></div>
+  <div class="cr"><span class="cc">who hasn't replied?</span><span class="cd">Stale threads past your follow-up window</span><button class="rb" onclick="sendPrompt(&quot;who hasn't replied?&quot;)">run ↗</button></div>
+  <div class="cr"><span class="cc">follow up with [company]</span><span class="cd">Threaded follow-up draft</span></div>
+</div>
+
+<!-- INTEL -->
+<div id="intel" class="panel">
+  <div class="sg">MARKET INTELLIGENCE</div>
+  <div class="cr"><span class="cc">profile intel for [company]</span><span class="cd">Who works there, engineering culture, what they value</span></div>
+  <div class="cr"><span class="cc">github market map for [role]</span><span class="cd">What people in this role actually build</span></div>
+  <div class="cr"><span class="cc">research comp for [role/company]</span><span class="cd">Salary, equity, negotiation position</span></div>
+  <div class="div"></div>
+  <div class="sg">INTERVIEW</div>
+  <div class="cr"><span class="cc">prep for [company] interview</span><span class="cd">STAR stories matched to the JD + mock Q&amp;A</span></div>
+  <div class="cr"><span class="cc">export portfolio brief</span><span class="cd">exports/portfolio-brief.json from the master doc</span><button class="rb" onclick="sendPrompt('export portfolio brief')">run ↗</button></div>
+</div>
+
+<!-- SETUP -->
+<div id="setup" class="panel">
+  <div class="sg">SETUP</div>
+  <div class="cr"><span class="cc">setup</span><span class="cd">Guided setup — config, companies, connector cards, budgets. Safe to re-run</span><button class="rb" onclick="sendPrompt('setup')">run ↗</button></div>
+  <div class="cr"><span class="cc">what's left to set up</span><span class="cd">Only what's still open</span><button class="rb" onclick="sendPrompt(&quot;what's left to set up&quot;)">run ↗</button></div>
+  <div class="cr"><span class="cc">connect my job boards</span><span class="cd">One-click install cards for Dice, Indeed, ZipRecruiter, Gmail</span><button class="rb" onclick="sendPrompt('connect my job boards')">run ↗</button></div>
+  <div class="div"></div>
+  <div class="sg">COMPANIES — nothing hardcoded</div>
+  <div class="cr"><span class="cc">resolve companies</span><span class="cd">Find the job board for every target company</span><button class="rb" onclick="sendPrompt('resolve companies')">run ↗</button></div>
+  <div class="cr"><span class="cc">add company [name]</span><span class="cd">Resolve one company and add it</span></div>
+  <div class="cr"><span class="cc">show companies</span><span class="cd">Who is reachable and how</span><button class="rb" onclick="sendPrompt('show companies')">run ↗</button></div>
+  <div class="cr"><span class="cc">pin board [company] [url]</span><span class="cd">Pin a board URL found by web search</span></div>
+  <div class="cr"><span class="cc">refresh companies</span><span class="cd">Re-verify every board (monthly)</span><button class="rb" onclick="sendPrompt('refresh companies')">run ↗</button></div>
+  <div class="cr"><span class="cc">discover careers page for [company]</span><span class="cd">Any careers site: finds its job system, API, page data or job links</span></div>
+  <div class="cr"><span class="cc">add [company] from its careers page</span><span class="cd">Discover + save + add to targets</span></div>
+  <div class="cr"><span class="cc">crawl unreachable companies</span><span class="cd">Discovery for every company with no board</span><button class="rb" onclick="sendPrompt('crawl unreachable companies')">run ↗</button></div>
+  <div class="div"></div>
+  <div class="sg">SYSTEM</div>
+  <div class="cr"><span class="cc">status</span><span class="cd">Live dashboard: progress, jobs, profiles, connectors, budgets, backup</span><button class="rb" onclick="sendPrompt('status')">run ↗</button></div>
+  <div class="cr"><span class="cc">backup</span><span class="cd">Sync personal data to your private vault repo</span><button class="rb" onclick="sendPrompt('backup')">run ↗</button></div>
+  <div class="cr"><span class="cc">add skill [name] / add template [name]</span><span class="cd">Scaffold a skill or save a resume template</span></div>
+</div>
+
+<!-- SKILLS -->
+<div id="skills" class="panel">
+  <div class="sg">JOB SEARCH</div>
+  <div class="cr"><span class="cc sk">job-search-command-center</span><span class="cd">Master orchestrator for the whole search, phase by phase</span></div>
+  <div class="cr"><span class="cc sk">job-aggregator</span><span class="cd">find jobs — fans out to every source, ranks, remembers what you've seen</span></div>
+  <div class="cr"><span class="cc sk">careers-crawler</span><span class="cd">Any company careers site via a real browser — job system, API, page data or links</span></div>
+  <div class="cr"><span class="cc sk">naukri-scraper</span><span class="cd">Naukri listings for India coverage</span></div>
+  <div class="cr"><span class="cc sk">jd-analyzer</span><span class="cd">Red/yellow/green verdict on a JD</span></div>
+  <div class="div"></div>
+  <div class="sg">RESUME &amp; APPLICATION</div>
+  <div class="cr"><span class="cc sk">resume-tailoring</span><span class="cd">JD parsing, company research, experience-to-JD mapping</span></div>
+  <div class="cr"><span class="cc sk">google-resume</span><span class="cd">Google-only: MQ gate, X-Y-Z bullets, 3-per-30-days budget</span></div>
+  <div class="cr"><span class="cc sk">resume-builder</span><span class="cd">Structure, bullets, length standards</span></div>
+  <div class="cr"><span class="cc sk">resume-ats-optimizer</span><span class="cd">ATS scoring and keyword gaps</span></div>
+  <div class="cr"><span class="cc sk">resume-humanizer</span><span class="cd">Removes AI-sounding phrasing</span></div>
+  <div class="cr"><span class="cc sk">cover-letter</span><span class="cd">Cover letters from the tailored resume</span></div>
+  <div class="cr"><span class="cc sk">pdf-export</span><span class="cd">HTML → PDF rendering</span></div>
+  <div class="div"></div>
+  <div class="sg">PROFILES &amp; BRAND</div>
+  <div class="cr"><span class="cc sk">linkedin-profile</span><span class="cd">LinkedIn from screenshots: exact fields, refresh, content engine</span></div>
+  <div class="cr"><span class="cc sk">naukri-profile</span><span class="cd">Naukri 100% score, JD keywords, freshness routine, calls funnel</span></div>
+  <div class="cr"><span class="cc sk">profile-optimizer</span><span class="cd">Instahyre, Wellfound, Cutshort</span></div>
+  <div class="div"></div>
+  <div class="sg">OUTREACH &amp; INTEGRATIONS</div>
+  <div class="cr"><span class="cc sk">cold-outreach</span><span class="cd">Personalised cold email and LinkedIn variants</span></div>
+  <div class="cr"><span class="cc sk">gmail-tracker</span><span class="cd">Gmail drafts, reply scanning, follow-ups</span></div>
+  <div class="cr"><span class="cc sk">slack-bridge</span><span class="cd">Tables to Slack, !os commands from Slack</span></div>
+  <div class="div"></div>
+  <div class="sg">INTELLIGENCE</div>
+  <div class="cr"><span class="cc sk">profile-intelligence</span><span class="cd">Who works at a target company and what they know</span></div>
+  <div class="cr"><span class="cc sk">github-market-map</span><span class="cd">What people in a role actually build</span></div>
+  <div class="div"></div>
+  <div class="sg">SYSTEM</div>
+  <div class="cr"><span class="cc sk">setup</span><span class="cd">Guided onboarding and connector install cards</span></div>
+  <div class="cr"><span class="cc sk">dashboard</span><span class="cd">This help screen and the live status dashboard</span></div>
+</div>
+
+<div class="ft">Everything personal stays in gitignored files and your private vault · Claude drafts, you send</div>
+</div>
+
+<script>
+document.getElementById('tabs').addEventListener('click',function(e){
+  var t=e.target.closest('.tab');if(!t)return;
+  document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('on')});
+  document.querySelectorAll('.panel').forEach(function(x){x.classList.remove('on')});
+  t.classList.add('on');document.getElementById(t.dataset.t).classList.add('on');
+});
+</script>
