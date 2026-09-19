@@ -1,7 +1,7 @@
 {
   "name": "career-os",
   "version": "1.0.0",
-  "description": "Career OS — Job search system powered by Claude Code",
+  "description": "Career OS \u2014 Job search system powered by Claude Code",
   "private": true,
   "scripts": {
     "export-pdf": "node scripts/export-pdf.js",
@@ -13,5 +13,6 @@
   "notes": {
     "puppeteer": "Used by pdf-export skill to render HTML/CSS resume templates to PDF",
     "setup": "Run 'npm install' once after cloning the repo"
-  }
+  },
+  "license": "MIT"
 }

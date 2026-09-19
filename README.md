@@ -1,295 +1,329 @@
-# Career OS
+# 🧭 career-os
 
-**A complete, AI-driven job search system built on Claude Code.**
+**Your next unfair advantage in the career leap.**
 
-Career OS turns your job search into a structured, versioned, data-driven pipeline —
-from capturing your professional story once, to generating tailored resumes for every
-application, to understanding what people who actually get hired look like, to building
-your portfolio website. All powered by Claude Code, git, and a set of composable skills.
+A job hunt that runs like a system instead of a scramble: one source of truth for your
+story, live openings pulled straight from company job boards every morning, resumes
+tailored per application, profiles that recruiters actually find, and a memory that
+knows what you have already seen and decided.
 
----
+Built as a set of skills for [Claude Code](https://claude.com/claude-code). Every file
+is markdown or JSON, every change is a git commit, and nothing about you leaves your
+machine except what you choose to send.
 
-## What It Does
-
-- **Captures your complete professional story once** through a structured, resumable interview
-- **Generates tailored resumes** for any company/role in seconds — ATS-optimized, fact-checked, humanized
-- **Exports pixel-perfect PDFs** via Puppeteer — not generic markdown-to-PDF garbage
-- **Fetches live jobs directly from company ATS boards** (Greenhouse + Lever) — no scraping,
-  pure JSON APIs covering hundreds of companies (Stripe, Anthropic, Groww, Meesho, Postman, and more)
-- **Aggregates job listings** from Indeed, ZipRecruiter, and Dice simultaneously
-- **Scrapes Naukri.com** (optional) for Indian market listings not on international boards
-- **Maps what people in your target role actually built** using public GitHub data — informs what
-  projects to add to your portfolio
-- **Researches who works at your target company** using GitHub + web search — informs resume framing and outreach
-- **Tracks every application, resume version, and interview** with full git history
-- **Prepares STAR stories** for behavioral rounds
-- **Researches compensation** and helps you build a negotiation position
-- **Backs up your personal data** to your own private GitHub repo — you own your data, always
-
-Every file is markdown or JSON. Every change is git-committed. Nothing lives in a black box.
+![Skills](https://img.shields.io/badge/skills-22-6b5bd6)
+![Job platforms](https://img.shields.io/badge/ATS%20platforms-11-1d9e75)
+![Sources](https://img.shields.io/badge/sources-boards%20%C2%B7%20careers%20pages%20%C2%B7%20connectors%20%C2%B7%20Naukri-378add)
+![Hardcoded companies](https://img.shields.io/badge/hardcoded%20companies-0-444441)
+![Built for Claude Code](https://img.shields.io/badge/built%20for-Claude%20Code-d4a27f)
+![License](https://img.shields.io/badge/license-MIT-639922)
 
 ---
 
-## Why This Exists
+## What this is
 
-Most resume tools optimize the document. This optimizes the **outcome** — the offer.
-That means treating your job search as a system: one source of truth, informed by real
-market data, producing artifacts (resumes, outreach, prep material) that are honest,
-targeted, and continuously improved as you learn more about what works.
+Most tools optimise the document. This optimises the outcome — the offer.
+
+The bet: a job search fails on logistics far more often than on talent. You apply late
+because you saw the posting late. You send the same resume everywhere because tailoring
+by hand costs an hour. Your profile sits invisible because you never worked out which
+keywords recruiters actually search. You lose track of what you already rejected.
+
+career-os turns each of those into a step a machine can do well and you can check:
+
+- **It knows your story.** A resumable interview captures your career once, in depth,
+  into `data/master-experience.md`. Every resume, bullet and post is generated from it —
+  never invented.
+- **It finds the jobs.** Company boards, careers pages, job-board connectors and Naukri,
+  merged and de-duplicated, with only what is new since last time shown to you.
+- **It remembers your judgement.** Applied, shortlisted and rejected are recorded once
+  and respected forever. Nothing is ever marked on your behalf.
+- **It writes what you send.** Tailored resumes, ATS checks, cover letters, cold emails,
+  LinkedIn and Naukri profile text — drafted, humanised, always yours to send.
 
 ---
 
-## Quick Start
+## Quick start
 
-### The short version
+### 1. Get Claude Code and clone
 
 ```bash
-git clone https://github.com/yourusername/career-os.git
+npm install -g @anthropic-ai/claude-code
+git clone https://github.com/shubhamcodess/career-os.git
 cd career-os
+npm install
 ```
 
-Open the folder in Claude and say:
-
-```
-setup
-```
-
-Claude walks you through everything below — config files, your target companies, the
-ATS registry — and **renders one-click install cards** for the job-board connectors
-rather than sending you into a settings menu. It verifies each step and ends by telling
-you how many companies are reachable and what's still open. Safe to re-run any time.
-
-Two things must be true before Career OS is useful: it knows which companies you want
-(names only — it works out the rest), and it can reach them. Everything else is optional.
-
-The manual version follows.
-
-### 1. Clone and configure
+### 2. Create your config files
 
 ```bash
-git clone https://github.com/yourusername/career-os.git
-cd career-os
 cp config/user.example.json config/user.json
 cp .env.example .env
 ```
 
-### 2. Flip the personalize switch
+### 3. Flip the personalize switch
 
-Open `.env` and set:
+In `.env`:
 
 ```env
 PERSONALIZE=true
-PRIVATE_REPO_URL=git@github.com:yourusername/career-os-private.git
+PRIVATE_REPO_URL=git@github.com:you/career-os-private.git
 ```
 
-- **`PERSONALIZE=true`** — activates personal career OS mode. When false (the default),
-  Claude treats this as a framework contribution session and won't ask personal questions.
-- **`PRIVATE_REPO_URL`** — your private GitHub repo for personal data backup (resumes,
-  interview notes, job tracker). Create a new private repo on GitHub first, then paste
-  the SSH clone URL here. Run `bash scripts/sync-vault.sh` after any personal data session.
+`PERSONALIZE=true` runs career-os as *your* career system. Left `false`, Claude treats
+the repo as an open-source project you are contributing to and never asks personal
+questions. `PRIVATE_REPO_URL` is your own private GitHub repo — where your data is
+backed up, and the only remote it is ever pushed to.
 
-Then fill in `config/user.json` with your target roles, companies, and preferences.
-Add your API keys to `.env` (see [Setup Guide](docs/SETUP.md)).
+### 4. Name your targets
 
-### 3. Install dependencies
+In `config/user.json`, fill in your target roles, locations and the companies you want
+to work at. **Company names only.** career-os works out where each one posts its jobs;
+no slug, URL or platform is ever hardcoded anywhere in this repo.
 
-```bash
-npm install
-```
-
-For ATS Direct job fetching (no extra setup — pure HTTP, works immediately):
-```bash
-# Already works — scripts/ats-fetcher.py uses only Python stdlib
-python3 scripts/ats-fetcher.py --company Stripe --role "Engineer"
-```
-
-For Naukri scraper (optional, Indian market listings):
-```bash
-pip3 install playwright playwright-stealth --break-system-packages
-python3 -m playwright install chromium
-# System Chrome (/Applications/Google Chrome.app) must also be installed —
-# bundled Chromium is blocked by Naukri's WAF; real Chrome is not.
-```
-
-### 4. Start Claude Code
+### 5. Let Claude finish the setup
 
 ```bash
 claude
 ```
 
-Paste the contents of `INIT_PROMPT.md` as your first message. Claude Code will verify
-the setup, test PDF export, and confirm which integrations are active.
-
-### 5. Begin
+Then type:
 
 ```
-begin intake interview
+setup
 ```
 
-That's it. Claude Code reads `CLAUDE.md` automatically every session — it always knows
-which mode you're in and where you left off.
+Setup builds the company registry, renders one-click install cards for the job-board
+connectors, sets usage budgets, and ends by telling you how many companies are reachable
+and what is still open. It is safe to re-run any time. `what's left to set up` re-checks
+just the gaps.
+
+### 6. Begin
+
+```
+begin intake interview      # capture your story — pausable, resumable, checkpointed
+find jobs                   # first live pull across every source
+```
+
+Full walkthrough with troubleshooting: [docs/SETUP.md](docs/SETUP.md).
 
 ---
 
-## Project Structure
+## How a day goes
 
 ```
-career-os/
-├── CLAUDE.md                    ← Claude Code's persistent instructions (read every session)
-├── INIT_PROMPT.md               ← One-time setup prompt
-├── config/
-│   ├── user.json                ← Your personal config (gitignored)
-│   └── user.example.json        ← Template for others
-├── .env                         ← API keys + PERSONALIZE flag (gitignored)
-├── .env.example                 ← Template for others
-├── mcp/.mcp.json                ← MCP connector configuration
-├── skills/                      ← All capabilities, as Claude Code skills
-│   ├── job-search-command-center/   ← Master orchestrator
-│   ├── pdf-export/                  ← Puppeteer-based PDF generation
-│   ├── profile-optimizer/           ← Naukri/LinkedIn/Instahyre profile optimization
-│   ├── resume-ats-optimizer/        ← ATS scoring
-│   ├── resume-builder/              ← Structure and bullet standards
-│   ├── resume-humanizer/            ← AI-to-human pass
-│   ├── resume-tailoring/            ← JD-specific tailoring
-│   ├── job-aggregator/              ← Live job search across all sources
-│   ├── profile-intelligence/        ← Who works at target companies
-│   ├── github-market-map/           ← What people in your role actually build
-│   └── naukri-scraper/              ← Optional Naukri.com integration
-├── templates/
-│   ├── resume-templates/            ← HTML/CSS templates for PDF rendering
-│   └── cover-letter-templates/
-├── data/                         ← Your personal data (gitignored except structure)
-│   ├── master-experience.md
-│   ├── star-stories.md
-│   ├── version-registry.md
-│   ├── portfolio-brief.md
-│   ├── job-tracker.md
-│   ├── comp-intel.md
-│   └── market/                   ← Live market intelligence (auto-generated)
-│       ├── job-feed.md
-│       ├── company-intel/
-│       └── role-portraits/
-├── resumes/                      ← Generated resumes (md + html + pdf per version)
-├── checkpoints/                  ← Interview state, resumable at any point
-├── exports/                      ← Portfolio JSON, misc exports
-├── scripts/
-│   ├── export-pdf.js              ← Puppeteer PDF renderer
-│   ├── ats-fetcher.py             ← Fetches jobs from Greenhouse + Lever APIs (no auth)
-│   ├── naukri-scraper.py          ← Optional Naukri.com integration (Playwright)
-│   ├── sync-vault.sh              ← Backs up personal data to your private repo
-│   └── requirements.txt
-└── docs/
-    ├── SETUP.md                   ← Full setup walkthrough
-    └── SKILLS.md                  ← Detailed skill documentation
+  find jobs ──► only what's NEW since last run ──► you decide
+                                                      │
+        ┌─────────────────────────────────────────────┤
+        │                                             │
+    shortlist                                  not interested
+        │                                             │
+        ▼                                             ▼
+  make resume for [Company/Role]              never shown again,
+        │                                     record kept
+        ├── tailored to the JD
+        ├── ATS-checked
+        ├── humanised
+        └── PDF exported
+        │
+        ▼
+  draft outreach for [Company] ──► Gmail draft ──► you send
+        │
+        ▼
+  applied to [Company] [Role] ──► tracked, hidden from future feeds
 ```
+
+Nothing in that loop fetches unless you ask it to. `find jobs` fetches; every `show`
+command reads what has already been collected.
 
 ---
 
-## Data Sources
+## Features, and how to try each one
 
-What's live vs. workaround, so you know what you're getting.
-**This setup uses free sources only — no paid API keys required for core functionality.**
+| Feature | What it does | Try it | Skill |
+|---|---|---|---|
+| **Guided setup** | Config, registry, connectors, budgets — verified step by step | `setup` | [setup](skills/setup/SKILL.md) |
+| **Intake interview** | Captures your full career into one master document, checkpoint by checkpoint | `begin intake interview` | [job-search-command-center](skills/job-search-command-center/SKILL.md) |
+| **Job aggregation** | Every source in one command, merged, de-duplicated, ranked, new-only | `find jobs` | [job-aggregator](skills/job-aggregator/SKILL.md) |
+| **Company registry** | Finds each target company's real job board; no hardcoding | `resolve companies` · `show companies` | [setup](skills/setup/SKILL.md) |
+| **Careers-page crawler** | For companies with no reachable board: finds the job system, the page's own data feed, or its job links | `discover careers page for [company]` | [careers-crawler](skills/careers-crawler/SKILL.md) |
+| **Naukri coverage** | India listings for companies international boards miss | `search naukri for unreachable` | [naukri-scraper](skills/naukri-scraper/SKILL.md) |
+| **Job memory** | Day-grouped store of every listing, with your decisions kept permanently | `show current feed` · `job store stats` | [job-aggregator](skills/job-aggregator/SKILL.md) |
+| **JD verdict** | Red/yellow/green read on a posting before you spend an evening on it | `jd check` + URL | [jd-analyzer](skills/jd-analyzer/SKILL.md) |
+| **Tailored resumes** | JD-mapped resume → ATS score → humanised → PDF, versioned per application | `make resume for [Company/Role]` | [resume-tailoring](skills/resume-tailoring/SKILL.md) |
+| **Google pipeline** | Google's own rules: minimum-qualification gate, X-Y-Z bullets, 3-per-30-days budget | `make resume for Google [role]` | [google-resume](skills/google-resume/SKILL.md) |
+| **LinkedIn profile** | From screenshots: exact headline, About, every role block, skills order, Featured | `polish my linkedin` | [linkedin-profile](skills/linkedin-profile/SKILL.md) |
+| **Content engine** | Post ideas pairing something new in your field with something you actually built | `what should I post` · `content calendar` | [linkedin-profile](skills/linkedin-profile/SKILL.md) |
+| **Naukri profile** | 100% profile score, keywords taken from your real target JDs, weekly freshness routine | `polish my naukri` · `why no naukri calls` | [naukri-profile](skills/naukri-profile/SKILL.md) |
+| **Cold outreach** | One hook, one achievement, humanised — as a Gmail draft, never auto-sent | `draft outreach for [company]` | [cold-outreach](skills/cold-outreach/SKILL.md) |
+| **Inbox tracking** | Classifies replies, invites and rejections; updates the tracker | `check my email` · `who hasn't replied?` | [gmail-tracker](skills/gmail-tracker/SKILL.md) |
+| **Slack bridge** | Results as clean tables in your channel; `!os` commands read back | `send to slack` · `check slack` | [slack-bridge](skills/slack-bridge/SKILL.md) |
+| **Company intel** | Who works there, what that team values, before you tailor or reach out | `profile intel for [company]` | [profile-intelligence](skills/profile-intelligence/SKILL.md) |
+| **Role portrait** | What people in your target role actually build, from public GitHub | `github market map for [role]` | [github-market-map](skills/github-market-map/SKILL.md) |
+| **Interview prep** | STAR stories matched to the JD, then mock rounds | `prep for [company] interview` | [job-search-command-center](skills/job-search-command-center/SKILL.md) |
+| **Help and status** | Static command reference; live dashboard of everything above | `help` · `status` | [dashboard](skills/dashboard/SKILL.md) |
 
-| Source | Status | Notes |
+Full reference: [docs/SKILLS.md](docs/SKILLS.md).
+
+---
+
+## Where the jobs come from
+
+| Source | How | Notes |
 |---|---|---|
-| **ATS Direct** (9 platforms) | ✅ Live JSON API | Free, no auth, no scraping. Greenhouse, Lever, Ashby, Recruitee, Workable, SmartRecruiters, Workday, Eightfold/pcsx, plus adapters for Google and Amazon. |
-| Dice | ✅ Connector | No auth — best of the three for engineering roles |
-| Indeed | ✅ Connector | Auth required. Broadest coverage. Runs on **your** account, so usage is capped at 60% |
-| ZipRecruiter | ✅ Connector | Auth required; rate-limits hard without it. Also capped |
-| GitHub | ✅ Live REST API | Free, public data, 5,000 req/hr with a free personal access token |
-| Built-in WebSearch / WebFetch | ✅ Always on | No key, no quota — the web layer for JD fetching, company intel and research |
-| Naukri | ⚠️ Scraper | No official API. Uses Playwright + system Chrome (bypasses Akamai WAF). Free but fragile — may break if Naukri updates their DOM or anti-bot rules. Best for Indian market. |
-| LinkedIn direct | ❌ Not possible | Scraping violates ToS — never attempted |
-| LinkedIn-layer data (Crustdata) | 🔜 Not included | Richer people-search by company/role, but requires a paid plan. `profile-intelligence` runs on GitHub + web search instead. See that skill's file for how to add a provider later. |
+| **Company job boards** (11 platforms) | Public JSON APIs | Greenhouse, Lever, Ashby, Workable, SmartRecruiters, Recruitee, Workday, Eightfold, pcsx, plus Amazon and Google adapters. No auth, no scraping, full depth |
+| **Careers pages** | Real browser (Playwright) | For companies with no reachable board. Finds the job system behind the page, its data feed, or its job links |
+| **Dice** | Connector | No auth |
+| **Indeed / ZipRecruiter** | Connector | Run on *your* account, so career-os caps its own usage at 60% of an assumed daily limit and refuses to exceed it |
+| **Naukri** | Playwright | No official API. Best India coverage; fragile by nature, and says so when it breaks |
+| **Web search / fetch** | Built in | The research layer: JDs, careers pages, company intel, what's new in your field |
+| **LinkedIn** | Never | Not scraped, not automated, not logged into. Profile work runs from screenshots you paste |
 
-**No company is hardcoded.** You supply names in `config/user.json`; a resolver probes
-every platform and writes `config/companies.json`:
+**Nothing is hardcoded.** You name companies; `resolve-ats.py` probes every platform and
+writes `config/companies.json`. When a company has no public board, the ladder runs:
+careers-page discovery → Naukri → web search → and if all of those fail, it tells you so
+plainly with the careers URL, rather than returning a silent zero.
 
 ```bash
-python3 scripts/resolve-ats.py --from-config     # probe and build the registry
-python3 scripts/resolve-ats.py --list            # who's fetchable, who isn't
-python3 scripts/resolve-ats.py --company "Anthropic"   # add one later
+python3 scripts/resolve-ats.py --from-config     # build the registry
+python3 scripts/resolve-ats.py --list            # who's reachable, who isn't
+python3 scripts/careers-crawler.py discover --company "Acme" --url "https://careers.acme.com/search"
 ```
 
-When a company has no public board, the escalation ladder takes over:
+---
 
-1. **`careers-probe.py`** reads the careers page for the ATS behind it, and actively
-   tests the host for APIs that JavaScript mounts at runtime. This is how Adobe
-   (`adobe.wd5.myworkdayjobs.com`) and Qualcomm (`/api/pcsx/search`) were recovered —
-   neither is discoverable from the company name alone.
-2. **Naukri** — `--from-unreachable` covers every remaining company in one sweep. The
-   strongest source for an India-based search.
-3. **Web search** on the careers page, tagged lower-confidence.
-4. **Report the gap honestly**, with the careers URL — never imply there are no openings.
+## What accumulates
 
-Some companies genuinely have no reachable feed (Meta serves jobs only via private
-rotating GraphQL). The system says so rather than returning a silent zero.
+```
+data/
+├── master-experience.md          your career, in full — the source of every document
+├── star-stories.md               behavioural stories, tagged by competency
+├── job-tracker.md                applications, status, next action
+├── version-registry.md           every resume version and where it went
+├── profile-linkedin.md           your current LinkedIn copy + audit
+├── profile-naukri.md             your Naukri copy, keywords and views→calls funnel
+├── content/                      story bank, post ideas, calendar, performance log
+└── market/
+    ├── job-index.json            every listing ever seen, with your decisions
+    ├── runs/YYYY-MM-DD.json      what was fetched each day
+    ├── jobs/YYYY-MM-DD.json      job descriptions, cached by day
+    ├── company-intel/            per-company research
+    └── role-portraits/           per-role GitHub portraits
+
+resumes/[Company]_[Role]_[date]_v[N]/{resume.md, resume.html, resume.pdf}
+checkpoints/interview-state.md    where the intake got to
+```
+
+The longer you use it, the better it gets: the store learns what you have seen, the
+decision history informs what gets surfaced next, and your keyword lists follow the JDs
+you are actually chasing.
+
+---
+
+## Your data stays yours
+
+Three layers, by design:
+
+1. **Gitignored.** `data/`, `resumes/`, `checkpoints/`, `config/user.json` and `.env`
+   never enter the public repo.
+2. **Your own vault.** `bash scripts/sync-vault.sh -m "what changed"` pushes your personal
+   data to *your* private GitHub repo. That is the only remote it goes to.
+3. **Nothing sent on your behalf.** Emails are drafted, never sent. Profiles are written
+   for you to paste. Slack posts go only to the channel you configured.
+
+---
+
+## Honest limitations
+
+- **Some companies cannot be reached.** A few serve jobs through private or signed APIs
+  with no public links. career-os reports that instead of pretending there are no openings.
+- **Scrapers break.** Naukri and careers-page recipes depend on page structure. When one
+  returns nothing, you get a warning to re-discover, not a false "no jobs".
+- **Sites that block a normal browser stay blocked.** No stealth, no fingerprint games,
+  no logins. If a site says no, that's the end of it.
+- **Connector quotas are real.** Indeed and ZipRecruiter authenticate as you, so usage is
+  capped and the cap is never worked around.
+- **Reach advice is a heuristic.** Profile and content guidance is grounded in published
+  limits and current observation — not a promise of views, calls or virality.
+- **Nothing is invented.** If your master document doesn't support a claim, it doesn't get
+  written. That is a feature, and it means the intake interview is worth your time.
+
+---
+
+## Under the hood
+
+| Script | Job |
+|---|---|
+| `find-jobs.py` | Entry point for `find jobs`: fans out to every source, merges, de-duplicates, ranks, reports coverage |
+| `ats_platforms.py` | All 11 job-board adapters in one file — add a platform by appending one entry |
+| `resolve-ats.py` | Builds and refreshes the company registry |
+| `careers-crawler.py` | Browser discovery of any careers site + daily replay of saved recipes |
+| `job-store.py` | Persistent job memory: day-grouped runs, statuses, decision history, pruning |
+| `naukri-scraper.py` | Naukri listings via Playwright |
+| `mcp-budget.py` | Connector usage ledger and cap enforcement |
+| `status.py` | Read-only JSON snapshot of all local state, for the `status` dashboard |
+| `sync-vault.sh` | Personal-data backup to your private repo |
+| `export-pdf.js` | Puppeteer HTML → PDF rendering |
+
+Claude reads `CLAUDE.md` every session, so it always knows the mode, the rules and where
+you left off. Skills are plain markdown — open one, read it, change it.
 
 ---
 
 ## Commands
 
-Quick highlights — see [docs/SKILLS.md](docs/SKILLS.md) for the full reference.
-
 ```
-setup                             Guided first-run setup — safe to re-run any time
-what's left to set up             Re-check and report only what's still open
-connect my job boards             Render one-click install cards for the connectors
+setup                            Guided setup; safe to re-run
+help                             Every command and skill, instantly
+status                           Live dashboard: progress, jobs, profiles, connectors, backup
 
-add company [name]                Resolve one company and add it to the registry
-show companies                    Who's fetchable, who needs a careers URL
-refresh companies                 Re-verify every board — run monthly, boards move
+find jobs                        Pull new listings from every source
+show current feed                What you haven't decided on yet
+applied to [company] [role]      Record an application
+not interested in [company]      Never show it again; record kept
 
-begin intake interview            Start capturing your professional story
-resume interview                  Continue from your last checkpoint
-make resume for [Company/Role]    Generate a tailored, ATS-checked, PDF-exported resume
-find jobs                         Aggregate live listings across every source
-find jobs at [company]            Fetch openings at one specific company
-jd check [url]                    Red/yellow/green verdict before you invest time
-profile intel for [Company]       Map who works there and what they know
-github market map for [Role]      See what people in this role actually build
-draft outreach for [Company]      Personalized cold email — drafted, never auto-sent
-prep for [Company] interview      STAR story matching + mock behavioral Q&A
-help / status                     Interactive dashboard: state, setup, connectors, budgets
-backup                            Sync personal data to your private vault repo
+make resume for [Company/Role]   Tailor → ATS check → humanise → PDF
+jd check [url]                   Verdict before you invest time
+polish my linkedin               Exact profile copy from your screenshots
+polish my naukri                 100% profile, JD-derived keywords
+what should I post               Post ideas from your proof and fresh research
+draft outreach for [company]     Cold email, drafted not sent
+prep for [company] interview     STAR matching and mock rounds
+backup                           Sync personal data to your private vault
 ```
 
 ---
 
 ## Contributing
 
-This project is open source because a good job search system helps everyone.
-See [CONTRIBUTING.md](CONTRIBUTING.md) for how to add skills, improve prompts, or fix bugs.
+Contributions are welcome — a job search system that works for one person usually works
+for many. See [CONTRIBUTING.md](CONTRIBUTING.md) for the project's structure and PR flow.
 
-Ideas for contributions:
-- More ATS slug mappings in `scripts/ats-fetcher.py` (add companies you've verified)
-- Additional job board integrations (Wellfound, LinkedIn Jobs when available, Ashby)
-- More resume templates
-- Region-specific profile optimizers (beyond India/US)
-- Better company research synthesis
-- Interview prep frameworks for specific companies (Amazon LPs, Google, etc.)
+The one rule that shapes everything: **no personal data and no hardcoded companies in
+`skills/`, `scripts/`, `templates/` or `docs/`.** Company names, slugs and URLs belong in
+`config/`, which is gitignored.
 
----
+Good places to start:
 
-## Privacy & Data
-
-Your personal data (`config/user.json`, `data/*.md`, `resumes/`, `.env`) is gitignored
-by default. It never touches the public repo.
-
-Set `PERSONALIZE=true` and `PRIVATE_REPO_URL` in `.env`, then run `bash scripts/sync-vault.sh`
-to back up your personal data to your own private GitHub repo. You own it completely —
-Career OS is just the framework that generates it.
+- A new job-board adapter in `ats_platforms.py` (one entry, and both the resolver and
+  fetcher pick it up)
+- An adapter for a recognised-but-unsupported system (iCIMS, Taleo, SuccessFactors,
+  Oracle HCM, Phenom, Jobvite)
+- Region-specific profile skills beyond India and the US
+- More resume templates in `templates/resume-templates/`
+- Interview-prep frameworks for specific companies
+- Honest documentation of anything you found fragile
 
 ---
 
 ## License
 
-MIT. Use it, fork it, improve it, help someone land their next role.
+[MIT](LICENSE). Use it, fork it, improve it, help someone land their next role.
 
 ---
 
 ## Credits
 
-Built with [Claude Code](https://claude.com/claude-code) by Anthropic.
-Job data via ATS Direct (Greenhouse/Lever APIs), Indeed, ZipRecruiter, Dice, and Naukri.
-PDF rendering via Puppeteer.
+Built with [Claude Code](https://claude.com/claude-code). PDF rendering via Puppeteer,
+browser automation via Playwright, job data via public ATS APIs, first-party job-board
+connectors, and company careers pages.
