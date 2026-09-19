@@ -25,6 +25,14 @@ When invoked, scan the resume for:
 - Vague superlatives: "significant impact", "substantial improvement", "key contributor"
 - Passive construction: "was responsible for", "was involved in", "helped to"
 - Generic claims with no specifics: "improved performance", "enhanced user experience"
+- **Punctuation tells:** em dashes (—) used as a default connector instead of a period,
+  comma, or "and"/"but". LLM output leans on them constantly; real writing mostly
+  doesn't. Replace each one with the punctuation a person would actually reach for —
+  usually splitting into two sentences, or a comma. Keep a literal em dash only where
+  it does something a comma can't (a true interruption or aside), and never more than
+  one per paragraph. Same treatment for other LLM tells: semicolons standing in for
+  periods, "not just X, but Y" constructions, rule-of-three lists ("fast, reliable, and
+  scalable"), and en dashes (–) used mid-sentence instead of "to" or "through".
 
 ### Rewrite Rules
 - Replace with: specific verbs that match what actually happened
