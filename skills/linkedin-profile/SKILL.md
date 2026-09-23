@@ -27,6 +27,9 @@ Two jobs:
 
 ---
 
+> Writing the actual text (About, headline, descriptions) is done with
+> `skills/linkedin-writer/SKILL.md`: SEO rules, tone choice, humanizer pass.
+
 ## Guardrails — non-negotiable
 
 - **Never scrape LinkedIn, never log in, never automate it.** Input is screenshots,
@@ -90,6 +93,10 @@ and `python3 scripts/job-store.py view --filter shortlist --format json`. Rank t
 frequency across those JDs and use that list for the headline, About and Skills.
 
 ### Step 4: Exact output
+
+Draft every text block (headline, About, experience descriptions) with
+`skills/linkedin-writer`; this skill decides *what* goes in each field, the writer
+decides *how it reads*.
 
 Deliver paste-ready blocks, each with its character count and LinkedIn's limit. Use
 the same order the user edits in:
@@ -220,7 +227,7 @@ Close:     a specific question that invites practitioners to comment
 When:      suggested day/time window for the user's audience
 ```
 
-On request (`draft post #N`), write the full post in the user's voice, humanized, with
+On request (`draft post #N`), write the full post via `skills/linkedin-writer` (tone choice, humanizer pass) in the user's voice, with
 line breaks for mobile. For carousels, give slide-by-slide copy.
 
 **Current format heuristics** (third-party observations, check they're still current):

@@ -12,8 +12,9 @@ description: >
 > **Naukri and LinkedIn have dedicated skills. Use them instead of the sections below:**
 > `skills/naukri-profile/SKILL.md` (100% score, JD-derived keywords, freshness routine,
 > views → calls funnel) and `skills/linkedin-profile/SKILL.md` (screenshot-driven exact
-> output, refresh, content engine). LinkedIn is never fetched or scraped: ask for
-> screenshots. The Naukri and LinkedIn notes below remain as a quick reference only.
+> output, refresh, content engine), with `skills/linkedin-writer/SKILL.md` for the
+> writing itself (SEO rules, tone, humanizer pass).
+> LinkedIn is never fetched or scraped: ask for screenshots. The Naukri and LinkedIn notes below remain as a quick reference only.
 
 Optimizes job platform profiles for maximum recruiter visibility and inbound interest.
 Each platform has a different ranking algorithm — this skill handles each specifically.

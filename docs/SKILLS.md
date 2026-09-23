@@ -158,6 +158,12 @@ Failures are logged to `data/logs/naukri-scraper.log` and don't block other sour
 
 ## Profile & Outreach
 
+### linkedin-writer
+Writes LinkedIn text (About, headline, experience, posts) with LinkedIn SEO rules, a tone choice
+(professional or balanced) and the humanizer pass. Called by `linkedin-profile`; also runs on its own.
+
+**Triggers:** `write my about`, `about tone: professional`, `linkedin seo check`
+
 ### linkedin-profile
 Polishes a LinkedIn profile from **screenshots or pasted text**. LinkedIn is never
 scraped or logged into. Transcribes every field, has you confirm it, scores each area,
