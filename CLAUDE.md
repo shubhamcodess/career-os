@@ -128,11 +128,12 @@ career-os/
 │   ├── google-resume/            ← Google-only: MQ gate, X-Y-Z bullets, application budget
 │   ├── resume-humanizer/         ← AI-to-human pass
 │   ├── cover-letter/             ← Cover letter generation
-│   ├── cold-outreach/            ← Cold email + LinkedIn variants
+│   ├── cold-outreach/            ← Cold email, connection note, InMail, referral ask, follow-ups
 │   ├── gmail-tracker/            ← Draft outreach in Gmail, scan inbox for replies
 │   ├── slack-bridge/             ← Push results to Slack, read !os commands back
 │   ├── profile-optimizer/        ← Instahyre, Wellfound, Cutshort (defers for Naukri/LinkedIn)
 │   ├── linkedin-profile/         ← LinkedIn from screenshots: exact fields, refresh, content engine
+│   ├── linkedin-writer/          ← LinkedIn SEO writing, tone (professional/balanced), humanizer pass
 │   ├── naukri-profile/           ← Naukri 100% score, JD keywords, freshness routine, calls funnel
 │   ├── pdf-export/               ← Puppeteer HTML→PDF rendering
 │   └── dashboard/                ← help / status widget
@@ -194,6 +195,7 @@ career-os/
 | JD quality check / red flag analysis | `skills/jd-analyzer/SKILL.md` |
 | Cold outreach email to recruiter/hiring manager | `skills/cold-outreach/SKILL.md` |
 | LinkedIn profile polish, refresh, post ideas / content calendar | `skills/linkedin-profile/SKILL.md` |
+| Writing LinkedIn About / headline / descriptions (SEO, tone) | `skills/linkedin-writer/SKILL.md` |
 | Naukri profile: 100% score, visibility, getting calls | `skills/naukri-profile/SKILL.md` |
 | Instahyre/Wellfound/Cutshort profile optimization | `skills/profile-optimizer/SKILL.md` |
 | Live job search across sources (Indeed/ZipRecruiter/Dice) | `skills/job-aggregator/SKILL.md` |
@@ -495,7 +497,7 @@ git commit -m "market: refreshed job feed — 34 listings, 6 strong matches"
 | `github market map for [role]` | What people in this role actually build |
 | `prep for [company] interview` | STAR matching + mock Q&A |
 | `research comp for [role/company]` | Salary, equity, negotiation position |
-| `draft outreach for [company]` | Personalized cold email: pulls all intel, ONE hook + ONE achievement, renders as email card in chat, optional persist |
+| `draft outreach for [company]` | Personalized cold email: one researched hook + one provable achievement + one small ask, humanized. Plain markdown in a copyable code block — never a widget |
 | `version log` | Display version-registry.md |
 | `diff [company] v1 v2` | Git diff between two resume versions |
 | `job tracker` | Display job-tracker.md |
