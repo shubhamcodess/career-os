@@ -21,6 +21,9 @@ body{font-family:var(--font-mono);font-size:12px;color:var(--text-primary);line-
 .rb:hover{color:var(--text-primary);border-color:var(--border-strong)}
 .div{height:0.5px;background:var(--border);margin:5px 0}
 .sk{color:var(--text-primary)}
+.st{display:flex;gap:8px;padding:4px 12px;font-size:11px;font-family:var(--font-sans);color:var(--text-secondary)}
+.st b{font-family:var(--font-mono);color:var(--text-primary);min-width:14px}
+.note{padding:3px 12px 3px 34px;font-size:11px;font-family:var(--font-sans);color:var(--text-muted)}
 .ft{padding:6px 12px;border-top:0.5px solid var(--border);font-size:10px;color:var(--text-muted)}
 </style>
 
@@ -36,6 +39,7 @@ body{font-family:var(--font-mono);font-size:12px;color:var(--text-primary);line-
   <div class="tab" data-t="resume">resume</div>
   <div class="tab" data-t="profiles">profiles</div>
   <div class="tab" data-t="outreach">outreach</div>
+  <div class="tab" data-t="recruiters">recruiters</div>
   <div class="tab" data-t="intel">intel &amp; interview</div>
   <div class="tab" data-t="setup">setup &amp; system</div>
   <div class="tab" data-t="skills">all skills</div>
@@ -49,6 +53,7 @@ body{font-family:var(--font-mono);font-size:12px;color:var(--text-primary);line-
   <div class="cr"><span class="cc">applied to [company] [role]</span><span class="cd">Record an application — hidden from future feeds</span></div>
   <div class="cr"><span class="cc">make resume for [Company/Role]</span><span class="cd">Tailored resume → ATS check → humanize → PDF</span></div>
   <div class="cr"><span class="cc">draft outreach for [company]</span><span class="cd">Personalised cold email + LinkedIn note</span></div>
+  <div class="cr"><span class="cc">find recruiters for my shortlist</span><span class="cd">Reach the people hiring for your roles first — see the recruiters tab</span><button class="rb" onclick="sendPrompt('find recruiters for my shortlist')">run ↗</button></div>
   <div class="cr"><span class="cc">what should I post</span><span class="cd">LinkedIn post ideas from your experience × what's new in your field</span><button class="rb" onclick="sendPrompt('what should I post')">run ↗</button></div>
   <div class="cr"><span class="cc">naukri refresh</span><span class="cd">This week's genuine Naukri update to stay visible</span><button class="rb" onclick="sendPrompt('naukri refresh')">run ↗</button></div>
   <div class="div"></div>
@@ -144,20 +149,46 @@ body{font-family:var(--font-mono);font-size:12px;color:var(--text-primary);line-
   <div class="cr"><span class="cc">connection request for [company]</span><span class="cd">Just the connection note</span></div>
   <div class="cr"><span class="cc">save this outreach / follow-up version</span><span class="cd">Persist drafts · 2-sentence follow-up after 7 days</span></div>
   <div class="div"></div>
-  <div class="sg">RECRUITERS — find them before they find you</div>
-  <div class="cr"><span class="cc">set my availability</span><span class="cd">Notice period, locations, work mode, resume link — reused in every message</span><button class="rb" onclick="sendPrompt('set my availability')">run ↗</button></div>
-  <div class="cr"><span class="cc">find recruiters for my shortlist</span><span class="cd">Who's hiring for your shortlisted roles, ranked by evidence</span><button class="rb" onclick="sendPrompt('find recruiters for my shortlist')">run ↗</button></div>
-  <div class="cr"><span class="cc">find recruiters at [company]</span><span class="cd">In-house and agency recruiters for one company</span></div>
-  <div class="cr"><span class="cc">which agencies should I talk to</span><span class="cd">Agencies and recruiter platforms matched to your level</span><button class="rb" onclick="sendPrompt('which agencies should I talk to')">run ↗</button></div>
-  <div class="cr"><span class="cc">reach out to recruiter [n] / sent to [n]</span><span class="cd">Role + fit + availability + resume; log it against the daily cap</span></div>
-  <div class="cr"><span class="cc">recruiter follow-ups</span><span class="cd">Who's due today, with follow-up drafts</span><button class="rb" onclick="sendPrompt('recruiter follow-ups')">run ↗</button></div>
-  <div class="cr"><span class="cc">recruiter pipeline / recruiter stats</span><span class="cd">Contact list and reply rates</span><button class="rb" onclick="sendPrompt('recruiter pipeline')">run ↗</button></div>
+  <div class="sg">RECRUITERS</div>
+  <div class="cr"><span class="cc">see the recruiters tab</span><span class="cd">Find recruiters hiring for your roles and reach them first — step by step</span></div>
   <div class="div"></div>
   <div class="sg">GMAIL — drafts only, never sends</div>
   <div class="cr"><span class="cc">draft this in gmail</span><span class="cd">Turn the current draft into a Gmail draft</span></div>
   <div class="cr"><span class="cc">check my email</span><span class="cd">Classify replies, invites, rejections; update the tracker</span><button class="rb" onclick="sendPrompt('check my email')">run ↗</button></div>
   <div class="cr"><span class="cc">who hasn't replied?</span><span class="cd">Stale threads past your follow-up window</span><button class="rb" onclick="sendPrompt(&quot;who hasn't replied?&quot;)">run ↗</button></div>
   <div class="cr"><span class="cc">follow up with [company]</span><span class="cd">Threaded follow-up draft</span></div>
+</div>
+
+<!-- RECRUITERS -->
+<div id="recruiters" class="panel">
+  <div class="sg">HOW TO USE IT — reach recruiters before they find you</div>
+  <div class="st"><b>1</b><span>Set your availability once: notice period, locations, work mode, resume link. Every message reuses it, so you never quote two different notice periods.</span></div>
+  <div class="cr"><span class="cc">set my availability</span><span class="cd">One-time snapshot, editable any time</span><button class="rb" onclick="sendPrompt('set my availability')">run ↗</button></div>
+  <div class="st"><b>2</b><span>Polish the profile they'll click. Recruiters open your LinkedIn within a minute of reading a message.</span></div>
+  <div class="cr"><span class="cc">polish my linkedin</span><span class="cd">Recommended before the first batch</span><button class="rb" onclick="sendPrompt('polish my linkedin')">run ↗</button></div>
+  <div class="st"><b>3</b><span>Find recruiters. It confirms each role is still open, then searches the posting, recent hiring posts and public profiles, and ranks 2–4 people per role by evidence.</span></div>
+  <div class="cr"><span class="cc">find recruiters for my shortlist</span><span class="cd">Every shortlisted role</span><button class="rb" onclick="sendPrompt('find recruiters for my shortlist')">run ↗</button></div>
+  <div class="cr"><span class="cc">find recruiters at [company]</span><span class="cd">One company, using your target roles</span></div>
+  <div class="cr"><span class="cc">find recruiters for [job url]</span><span class="cd">One specific posting</span></div>
+  <div class="cr"><span class="cc">which agencies should I talk to</span><span class="cd">Agencies and recruiter platforms matched to your level</span><button class="rb" onclick="sendPrompt('which agencies should I talk to')">run ↗</button></div>
+  <div class="st"><b>4</b><span>Pick who to keep by number. Only the people you pick are saved.</span></div>
+  <div class="cr"><span class="cc">pick 1, 3</span><span class="cd">Saved to your contact list as "found"</span></div>
+  <div class="st"><b>5</b><span>Get the message: role and req ID, one proof from your experience, availability, resume. Copyable text or a Gmail draft. You send it.</span></div>
+  <div class="cr"><span class="cc">reach out to recruiter [n]</span><span class="cd">Connection note, InMail or email for that person</span></div>
+  <div class="st"><b>6</b><span>Tell it once you've sent. That logs the touch, counts it against your daily cap and schedules the follow-up.</span></div>
+  <div class="cr"><span class="cc">sent to [n]</span><span class="cd">Next follow-up set automatically (day 5, then day 11)</span></div>
+  <div class="st"><b>7</b><span>Keep it moving: follow up, record replies, learn what works.</span></div>
+  <div class="cr"><span class="cc">recruiter follow-ups</span><span class="cd">Who's due today, with drafts</span><button class="rb" onclick="sendPrompt('recruiter follow-ups')">run ↗</button></div>
+  <div class="cr"><span class="cc">mark [n] replied / call scheduled</span><span class="cd">Stops follow-ups; offers interview prep</span></div>
+  <div class="cr"><span class="cc">mark [n] not now / do not contact</span><span class="cd">Not now stays warm; do-not-contact is permanent</span></div>
+  <div class="cr"><span class="cc">recruiter pipeline</span><span class="cd">Your whole contact list</span><button class="rb" onclick="sendPrompt('recruiter pipeline')">run ↗</button></div>
+  <div class="cr"><span class="cc">recruiter stats</span><span class="cd">Reply rate by channel and in-house vs agency</span><button class="rb" onclick="sendPrompt('recruiter stats')">run ↗</button></div>
+  <div class="div"></div>
+  <div class="sg">RULES IT ENFORCES</div>
+  <div class="note">LinkedIn: search results only. It never opens linkedin.com, logs in or sends there — you open the link.</div>
+  <div class="note">Emails only where they're publicly published, with the link recorded. No guessing.</div>
+  <div class="note">Daily cap on new people (default 10), three messages per person, re-check anyone found 30+ days ago.</div>
+  <div class="note">Change limits in config/user.json → recruiter_connect. Claude drafts; you send.</div>
 </div>
 
 <!-- INTEL -->
