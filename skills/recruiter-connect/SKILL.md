@@ -96,6 +96,19 @@ wants to.
 Each target is company + role + location, plus the requisition ID when the posting has
 one. Recruiters search by req ID.
 
+**Confirm the role is still open before searching.** Feeds age, and a recruiter message
+about a closed role wastes the one first impression. Check the job's own API or page:
+
+| Platform | Open check |
+|---|---|
+| Greenhouse | `https://boards-api.greenhouse.io/v1/boards/<slug>/jobs/<id>`: 200 open, 404 closed |
+| Lever | `https://api.lever.co/v0/postings/<slug>/<id>`: 200 open, 404 closed |
+| Others | Fetch the posting URL; a redirect to the board's front page or an "expired" notice means closed |
+
+If it's closed, say so plainly and offer the company-level search (Step 1, no specific
+role) or the company's other open roles instead. Don't change its status in the job store
+unless the user agrees.
+
 ## Step 2 — Find in-house recruiters
 
 Work through these with `WebSearch`, cheapest and strongest first. Record the source URL
