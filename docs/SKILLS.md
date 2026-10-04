@@ -196,6 +196,23 @@ Takes a Naukri profile to 100% and optimises for being **found → noticed → c
 
 **Triggers:** `polish my naukri`, `naukri keywords`, `naukri refresh`, `log naukri stats`, `why no naukri calls`
 
+### recruiter-connect
+Finds the recruiters hiring for your target companies and roles, so you reach them
+before waiting to be found.
+
+- **Where it looks:** the posting itself, recent hiring posts, and talent-acquisition
+  profiles surfaced by web search (LinkedIn links are opened by you, never fetched), plus
+  agencies from a researched list in `config/agencies.example.json`.
+- **How it ranks:** by evidence they hire for that role now. You pick who to keep.
+- **What it sends:** a recruiter-variant message (role and req ID, one proof,
+  availability, resume) through `cold-outreach`.
+- **What it tracks:** a contact list in `data/recruiters/` with a configurable daily cap,
+  three-touch follow-ups, a stale check before first contact, and a permanent
+  do-not-contact.
+- **Emails:** public sources only, no guessing.
+
+**Triggers:** `set my availability`, `find recruiters for my shortlist`, `find recruiters at [company]`, `recruiter follow-ups`, `recruiter pipeline`
+
 ### profile-optimizer
 Platform-specific profile optimization for Instahyre, Wellfound, Cutshort. Defers to
 `naukri-profile` and `linkedin-profile` for those platforms.

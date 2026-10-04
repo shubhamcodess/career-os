@@ -144,6 +144,15 @@ body{font-family:var(--font-mono);font-size:12px;color:var(--text-primary);line-
   <div class="cr"><span class="cc">connection request for [company]</span><span class="cd">Just the connection note</span></div>
   <div class="cr"><span class="cc">save this outreach / follow-up version</span><span class="cd">Persist drafts · 2-sentence follow-up after 7 days</span></div>
   <div class="div"></div>
+  <div class="sg">RECRUITERS — find them before they find you</div>
+  <div class="cr"><span class="cc">set my availability</span><span class="cd">Notice period, locations, work mode, resume link — reused in every message</span><button class="rb" onclick="sendPrompt('set my availability')">run ↗</button></div>
+  <div class="cr"><span class="cc">find recruiters for my shortlist</span><span class="cd">Who's hiring for your shortlisted roles, ranked by evidence</span><button class="rb" onclick="sendPrompt('find recruiters for my shortlist')">run ↗</button></div>
+  <div class="cr"><span class="cc">find recruiters at [company]</span><span class="cd">In-house and agency recruiters for one company</span></div>
+  <div class="cr"><span class="cc">which agencies should I talk to</span><span class="cd">Agencies and recruiter platforms matched to your level</span><button class="rb" onclick="sendPrompt('which agencies should I talk to')">run ↗</button></div>
+  <div class="cr"><span class="cc">reach out to recruiter [n] / sent to [n]</span><span class="cd">Role + fit + availability + resume; log it against the daily cap</span></div>
+  <div class="cr"><span class="cc">recruiter follow-ups</span><span class="cd">Who's due today, with follow-up drafts</span><button class="rb" onclick="sendPrompt('recruiter follow-ups')">run ↗</button></div>
+  <div class="cr"><span class="cc">recruiter pipeline / recruiter stats</span><span class="cd">Contact list and reply rates</span><button class="rb" onclick="sendPrompt('recruiter pipeline')">run ↗</button></div>
+  <div class="div"></div>
   <div class="sg">GMAIL — drafts only, never sends</div>
   <div class="cr"><span class="cc">draft this in gmail</span><span class="cd">Turn the current draft into a Gmail draft</span></div>
   <div class="cr"><span class="cc">check my email</span><span class="cd">Classify replies, invites, rejections; update the tracker</span><button class="rb" onclick="sendPrompt('check my email')">run ↗</button></div>
@@ -213,6 +222,7 @@ body{font-family:var(--font-mono);font-size:12px;color:var(--text-primary);line-
   <div class="div"></div>
   <div class="sg">OUTREACH &amp; INTEGRATIONS</div>
   <div class="cr"><span class="cc sk">cold-outreach</span><span class="cd">Researched cold email, connection note, InMail, referral ask — copyable text, no widgets</span></div>
+  <div class="cr"><span class="cc sk">recruiter-connect</span><span class="cd">Find recruiters hiring for your target roles and reach them first</span></div>
   <div class="cr"><span class="cc sk">gmail-tracker</span><span class="cd">Gmail drafts, reply scanning, follow-ups</span></div>
   <div class="cr"><span class="cc sk">slack-bridge</span><span class="cd">Tables to Slack, !os commands from Slack</span></div>
   <div class="div"></div>

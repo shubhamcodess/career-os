@@ -9,21 +9,11 @@ config/user.json
 # If you fork this to build your own private career OS, either:
 #   (a) keep your fork private, or
 #   (b) remove these lines to track your own data in your own private repo
-data/master-experience.md
-data/star-stories.md
-data/version-registry.md
-data/portfolio-brief.md
-data/job-tracker.md
-data/comp-intel.md
-data/profile-*.md
-data/content/
-data/linkedin/
-data/naukri/
-data/market/
-data/logs/
-data/outreach/
-data/*.pdf
-data/*.docx
+# Everything under data/ is personal. Ignore it all, so a new data folder can never
+# leak by being forgotten here. Only the empty-folder placeholder is tracked.
+data/*
+!data/outreach/
+data/outreach/*
 !data/outreach/.gitkeep
 checkpoints/interview-state.md
 resumes/*/
@@ -53,3 +43,4 @@ Thumbs.db
 
 # ── Resolved ATS registry (personal target list) ──
 config/companies.json
+config/agencies.json

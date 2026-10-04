@@ -182,6 +182,25 @@ def budgets() -> list[dict]:
     return rows
 
 
+def recruiters() -> dict:
+    store = load_json(p("data", "recruiters", "contacts.json"), {"contacts": {}})
+    contacts = store.get("contacts", {}).values()
+    t = date.today().isoformat()
+    by_status: dict[str, int] = {}
+    for c in contacts:
+        by_status[c.get("status", "?")] = by_status.get(c.get("status", "?"), 0) + 1
+    return {"total": len(contacts), "by_status": by_status,
+            "due_follow_ups": sum(1 for c in contacts if c.get("next_follow_up")
+                                  and c["next_follow_up"] <= t
+                                  and c.get("status") not in ("replied", "call_scheduled",
+                                                              "not_now", "do_not_contact", "closed")),
+            "contacted_today": sum(1 for c in contacts
+                                   if c.get("touches") and c["touches"][0]["date"] == t),
+            "snapshot_set": bool((load_json(p("config", "user.json"), {})
+                                  .get("recruiter_connect", {}).get("snapshot", {}) or {})
+                                 .get("notice_period"))}
+
+
 def synced(*parts: str) -> str:
     m = re.search(r"last_synced:\s*([0-9-]+)", read(p(*parts)))
     return m.group(1) if m else ""
@@ -206,6 +225,7 @@ def main() -> None:
                      "naukri_synced": synced("data", "profile-naukri.md"),
                      "content_ideas": os.path.exists(p("data", "content", "story-bank.md")),
                      "content_calendar": os.path.exists(p("data", "content", "calendar.md"))},
+        "recruiters": recruiters(),
         "outreach_files": len([f for f in os.listdir(p("data", "outreach"))
                                if f.endswith(".md")]) if os.path.isdir(p("data", "outreach")) else 0,
         "setup": {"node_modules": os.path.isdir(p("node_modules")),

@@ -1,5 +1,5 @@
 {
-  "_comment": "TEMPLATE FILE \u2014 copy to config/user.json and fill in your own values. This example file IS committed to git; user.json is gitignored.",
+  "_comment": "TEMPLATE FILE — copy to config/user.json and fill in your own values. This example file IS committed to git; user.json is gitignored.",
   "profile": {
     "name": "",
     "email": "",
@@ -82,5 +82,35 @@
     "default_page_length": "1-page",
     "always_run_ats_check": true,
     "always_run_humanizer": true
+  },
+  "recruiter_connect": {
+    "_note": "recruiter-connect settings. Caps protect your reputation and LinkedIn account; change them deliberately. The snapshot is reused in every recruiter message so notice period and availability never differ between people.",
+    "daily_new_contacts": 10,
+    "max_touches": 3,
+    "follow_up_days": [
+      5,
+      11
+    ],
+    "stale_after_days": 30,
+    "include_agencies": true,
+    "agency_types": [
+      "tech_specialist",
+      "staffing",
+      "platform"
+    ],
+    "attach_resume_for": "in_house_with_open_role",
+    "snapshot": {
+      "headline": "",
+      "years_experience": "",
+      "notice_period": "",
+      "available_from": "",
+      "current_location": "",
+      "open_to_locations": [],
+      "work_mode": "",
+      "expected_ctc": "",
+      "share_ctc_in_first_message": false,
+      "resume_link": "",
+      "portfolio_link": ""
+    }
   }
 }

@@ -64,6 +64,13 @@ year old.
 
 ---
 
+## Recruiters
+
+When the recipient is a recruiter (in-house or agency), `skills/recruiter-connect` finds
+them and defines the recruiter variants: role and req ID up front, availability from the
+candidate snapshot, resume attached or linked. Everything in this skill still applies:
+research, voice, humanizer, quality gates and copyable output.
+
 ## Step 1 — Load what we already know
 
 Read, without asking:

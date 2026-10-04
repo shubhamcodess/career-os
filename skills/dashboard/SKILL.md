@@ -89,6 +89,7 @@ infer connectors from `mcp/.mcp.json`.
 - vault synced more than 3 days ago
 - LinkedIn/Naukri `last_synced` more than 30 days ago
 - Google applications at 3/3
+- recruiter follow-ups due today, or the availability snapshot not set
 - setup checklist items open
 
 ### Step 3: Render
@@ -149,6 +150,7 @@ body{font-family:var(--font-mono);font-size:12px;color:var(--text-primary);line-
     <div class="row"><span class="k">applied</span><span class="v">{{APPLIED}}</span></div>
     <div class="row"><span class="k">stale / expired</span><span class="v">{{STALE}} / {{EXPIRED}}</span></div>
     <div class="row"><span class="k">last feed</span><span class="v">{{FEED_TARGETED}} targeted · {{FEED_DISCOVERY}} discovery</span></div>
+    <div class="row"><span class="k">recruiters (contacted / replied)</span><span class="v">{{RECRUITERS}}</span></div>
   </div>
   <div class="card"><div class="ch">COMPANIES</div>
     <div class="row"><span class="k">targets</span><span class="v">{{TARGETS}}</span></div>
@@ -192,6 +194,7 @@ body{font-family:var(--font-mono);font-size:12px;color:var(--text-primary);line-
 | `{{JOBS_LABEL}}` | `N undecided · last run DAY` |
 | `{{PROFILES_LABEL}}` | e.g. `LinkedIn ✓ · Naukri —`; `dot-y` if either is missing or older than 30 days |
 | `{{SHORTLIST}}` | interested + saved + pinned |
+| `{{RECRUITERS}}` | from `recruiters`: sent + later statuses / replied + call_scheduled, and `· N due` when follow-ups are due |
 | `{{UNREACHABLE}}` | count, then the first 4 names |
 | `{{ATTENTION_BLOCK}}` | `<div class="att"><div>item</div>…</div>`, or empty string if nothing needs attention |
 | `{{CONNECTOR_ROWS}}` | one `.row` per job/comms connector: `✓ connected` / `○ not connected — what's off` |

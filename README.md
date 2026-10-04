@@ -11,7 +11,7 @@ Built as a set of skills for [Claude Code](https://claude.com/claude-code). Ever
 is markdown or JSON, every change is a git commit, and nothing about you leaves your
 machine except what you choose to send.
 
-![Skills](https://img.shields.io/badge/skills-22-6b5bd6)
+![Skills](https://img.shields.io/badge/skills-24-6b5bd6)
 ![Job platforms](https://img.shields.io/badge/ATS%20platforms-11-1d9e75)
 ![Sources](https://img.shields.io/badge/sources-boards%20%C2%B7%20careers%20pages%20%C2%B7%20connectors%20%C2%B7%20Naukri-378add)
 ![Hardcoded companies](https://img.shields.io/badge/hardcoded%20companies-0-444441)
@@ -156,6 +156,7 @@ command reads what has already been collected.
 | **Content engine** | Post ideas pairing something new in your field with something you actually built | `what should I post` · `content calendar` | [linkedin-profile](skills/linkedin-profile/SKILL.md) |
 | **Naukri profile** | 100% profile score, keywords taken from your real target JDs, weekly freshness routine | `polish my naukri` · `why no naukri calls` | [naukri-profile](skills/naukri-profile/SKILL.md) |
 | **Cold outreach** | One hook, one achievement, humanised — as a Gmail draft, never auto-sent | `draft outreach for [company]` | [cold-outreach](skills/cold-outreach/SKILL.md) |
+| **Recruiter connect** | Finds the recruiters hiring for your shortlisted roles — in-house and agency, public sources only — and drafts a message with role, fit, availability and resume | `find recruiters for my shortlist` · `recruiter follow-ups` | [recruiter-connect](skills/recruiter-connect/SKILL.md) |
 | **Inbox tracking** | Classifies replies, invites and rejections; updates the tracker | `check my email` · `who hasn't replied?` | [gmail-tracker](skills/gmail-tracker/SKILL.md) |
 | **Slack bridge** | Results as clean tables in your channel; `!os` commands read back | `send to slack` · `check slack` | [slack-bridge](skills/slack-bridge/SKILL.md) |
 | **Company intel** | Who works there, what that team values, before you tailor or reach out | `profile intel for [company]` | [profile-intelligence](skills/profile-intelligence/SKILL.md) |
@@ -203,6 +204,7 @@ data/
 ├── profile-linkedin.md           your current LinkedIn copy + audit
 ├── profile-naukri.md             your Naukri copy, keywords and views→calls funnel
 ├── content/                      story bank, post ideas, calendar, performance log
+├── recruiters/contacts.json      recruiters you chose to contact: status, touches, follow-ups
 └── market/
     ├── job-index.json            every listing ever seen, with your decisions
     ├── runs/YYYY-MM-DD.json      what was fetched each day
@@ -261,6 +263,7 @@ Three layers, by design:
 | `job-store.py` | Persistent job memory: day-grouped runs, statuses, decision history, pruning |
 | `naukri-scraper.py` | Naukri listings via Playwright |
 | `mcp-budget.py` | Connector usage ledger and cap enforcement |
+| `recruiters.py` | Recruiter contact list: daily cap, follow-up cadence, stale checks, permanent do-not-contact |
 | `status.py` | Read-only JSON snapshot of all local state, for the `status` dashboard |
 | `sync-vault.sh` | Personal-data backup to your private repo |
 | `export-pdf.js` | Puppeteer HTML → PDF rendering |
@@ -288,6 +291,7 @@ polish my linkedin               Exact profile copy from your screenshots
 polish my naukri                 100% profile, JD-derived keywords
 what should I post               Post ideas from your proof and fresh research
 draft outreach for [company]     Cold email, drafted not sent
+find recruiters for my shortlist Who's hiring for your roles; reach them first
 prep for [company] interview     STAR matching and mock rounds
 backup                           Sync personal data to your private vault
 ```

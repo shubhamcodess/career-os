@@ -109,7 +109,8 @@ career-os/
 │   ├── user.json                 ← My personal config (gitignored)
 │   ├── user.example.json         ← Template (committed)
 │   ├── companies.json            ← Resolved ATS registry (gitignored) — built by resolve-ats.py
-│   └── companies.example.json    ← Registry shape + docs (committed)
+│   ├── companies.example.json    ← Registry shape + docs (committed)
+│   └── agencies.example.json     ← Researched recruitment agencies + recruiter platforms (committed)
 ├── .claude/settings.json         ← Claude Code permissions
 ├── mcp/.mcp.json                 ← Local MCP servers only. Indeed/Dice/Slack/Gmail are
 │                                   first-party connectors and are NOT configured here.
@@ -129,6 +130,7 @@ career-os/
 │   ├── resume-humanizer/         ← AI-to-human pass
 │   ├── cover-letter/             ← Cover letter generation
 │   ├── cold-outreach/            ← Cold email, connection note, InMail, referral ask, follow-ups
+│   ├── recruiter-connect/        ← Find recruiters hiring for target roles, reach them first, contact list
 │   ├── gmail-tracker/            ← Draft outreach in Gmail, scan inbox for replies
 │   ├── slack-bridge/             ← Push results to Slack, read !os commands back
 │   ├── profile-optimizer/        ← Instahyre, Wellfound, Cutshort (defers for Naukri/LinkedIn)
@@ -168,6 +170,7 @@ career-os/
 │   ├── naukri-scraper.py         ← Naukri via Playwright
 │   ├── mcp-budget.py             ← Connector usage ledger + cap enforcement
 │   ├── status.py                 ← Read-only JSON snapshot of all local state for `status`
+│   ├── recruiters.py             ← Recruiter contact list: cap, follow-ups, do-not-contact
 │   ├── sync-vault.sh             ← Personal data backup to the private repo
 │   ├── export-pdf.js
 │   └── requirements.txt
@@ -194,6 +197,7 @@ career-os/
 | Cover letter generation | `skills/cover-letter/SKILL.md` |
 | JD quality check / red flag analysis | `skills/jd-analyzer/SKILL.md` |
 | Cold outreach email to recruiter/hiring manager | `skills/cold-outreach/SKILL.md` |
+| Finding recruiters for target companies/roles, recruiter follow-ups | `skills/recruiter-connect/SKILL.md` |
 | LinkedIn profile polish, refresh, post ideas / content calendar | `skills/linkedin-profile/SKILL.md` |
 | Writing LinkedIn About / headline / descriptions (SEO, tone) | `skills/linkedin-writer/SKILL.md` |
 | Naukri profile: 100% score, visibility, getting calls | `skills/naukri-profile/SKILL.md` |
@@ -498,6 +502,11 @@ git commit -m "market: refreshed job feed — 34 listings, 6 strong matches"
 | `prep for [company] interview` | STAR matching + mock Q&A |
 | `research comp for [role/company]` | Salary, equity, negotiation position |
 | `draft outreach for [company]` | Personalized cold email: one researched hook + one provable achievement + one small ask, humanized. Plain markdown in a copyable code block — never a widget |
+| `set my availability` | Candidate snapshot (notice period, locations, work mode, resume link) reused in every recruiter message |
+| `find recruiters for my shortlist` / `find recruiters at [company]` | Public-source search for recruiters hiring for those roles, ranked by evidence; you pick who to keep |
+| `reach out to recruiter [n]` / `sent to [n]` | Recruiter-variant draft (role, fit, availability, resume); log the touch against the daily cap |
+| `recruiter pipeline` / `recruiter follow-ups` / `recruiter stats` | Contact list, who's due today, reply rates by channel and in-house vs agency |
+| `which agencies should I talk to` | Agencies and recruiter platforms matched to your level |
 | `version log` | Display version-registry.md |
 | `diff [company] v1 v2` | Git diff between two resume versions |
 | `job tracker` | Display job-tracker.md |
@@ -618,4 +627,6 @@ The ASCII template below is kept for reference only — do NOT render it as plai
 - When a new file appears in `skills/` or `templates/`, acknowledge and integrate it
 - Be honest about data source limitations — if Naukri scraper fails or Crustdata has gaps,
   say so plainly rather than presenting incomplete data as complete
-- Never scrape LinkedIn directly — Crustdata is the only legal path for LinkedIn-layer data
+- Never scrape LinkedIn directly — Crustdata is the only legal path for LinkedIn-layer data.
+  `recruiter-connect` may use web-search results that link to public LinkedIn profiles,
+  but never fetches a linkedin.com page, logs in, or sends anything there
