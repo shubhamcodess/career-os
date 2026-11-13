@@ -42,7 +42,7 @@ except ImportError:                                    # older installs expose i
 STANDARD_SECTIONS = {"summary", "experience", "work experience", "professional experience", "projects",
                      "skills", "technical skills", "education", "certifications", "awards", "publications"}
 WEAK = r"\b(helped|assisted|worked on|responsible for|involved in|participated in|supported|tasked with)\b"
-AI_TELLS = r"\b(spearheaded|leveraged|leveraging|synergi[sz]ed|orchestrated|facilitated|utili[sz]ed|seamless(ly)?|robust|cutting-edge|passionate|results-driven|proven track record|dynamic)\b"
+AI_TELLS = r"(?:^orchestrated\b|\b(?:spearheaded|leveraged|leveraging|synergi[sz]ed|facilitated|utili[sz]ed|seamless(ly)?|robust|cutting-edge|passionate|results-driven|proven track record|dynamic)\b)"
 VARIANTS = [("programme", "program(?!me)"), ("organis", "organiz"), ("optimis", "optimiz"), ("moderni[s]", "moderniz"),
             ("standardis", "standardiz"), ("analys", "analyz"), ("colour", "color"), ("centre", "center"),
             ("licence", "license"), ("behaviour", "behavior")]
@@ -183,7 +183,7 @@ def check_content(text, md_text, r):
         if not bl:
             r.info("content", f"'{title}' has no bullets")
     for pattern, label in ((WEAK, "weak verb"), (AI_TELLS, "AI-sounding word")):
-        hits = sorted({m.group(0).lower() for b in bullets for m in re.finditer(pattern, b, re.I)})
+        hits = sorted({m.group(0).lower() for b in bullets for m in re.finditer(pattern, b, re.I)})   # "orchestrated" counts only as an opening verb; as an adjective it is fine
         if hits:
             r.warn("content", f"{label}s: " + ", ".join(hits))
     if "—" in md_text:

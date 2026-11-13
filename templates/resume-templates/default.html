@@ -24,6 +24,7 @@
     background: white;
   }
   a { color: #1e3a5f; text-decoration: none; }
+  li a { color: inherit; text-decoration: underline dotted; text-decoration-color: #7a8aa3; text-decoration-thickness: 0.7pt; text-underline-offset: 2px; }   /* a link inside a bullet: body-coloured text, thin dotted underline */
   .nb { white-space: nowrap; }   /* number compounds such as "41-tool" never break at the hyphen */
 
   /* ── Header: identity on the left, links stacked on the right.
@@ -39,11 +40,13 @@
   .header .id { flex-shrink: 0; }
   .name { font-size: 20pt; font-weight: 700; color: #1e3a5f; letter-spacing: 0.5px; margin-bottom: 1px; }
   .headline { font-size: 10.5pt; color: #444; margin-bottom: 3px; }
-  .contact { font-size: 8.3pt; color: #555; white-space: nowrap; }
+  .contact { font-size: 8.2pt; color: #555; white-space: nowrap; }
   .contact .sep { color: #aaa; margin: 0 2px; }
   .links { text-align: right; font-size: 8.2pt; line-height: 1.5; }
+  .links div:last-child { border-left: 1px solid #b4bcc8; padding-left: 7px; }   /* small divider on the last row only, between the email and the last link */
   .header.centered { display: block; text-align: center; }
   .header.centered .links { text-align: center; margin-top: 2px; }
+  .header.centered .links div:last-child { border-left: 0; padding-left: 0; }
   .header.centered .links div { display: inline; margin: 0 7px; }
 
   /* Small, quiet icons in front of visible URLs. Decorative only: the URL text is what an ATS reads. */
