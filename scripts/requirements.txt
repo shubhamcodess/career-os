@@ -1,1 +1,2 @@
 playwright>=1.40.0
+pymupdf>=1.24.0   # ats-check.py: read the PDF the way an ATS does

@@ -32,15 +32,15 @@ The master orchestrator. Coordinates the full 9-phase job search process.
 See `skills/job-search-command-center/references/phases.md` for complete details.
 
 ### resume-builder
-Structure, bullet formulas, length rules, section ordering.
+The `resume.md` format, section order, X-Y-Z bullets, depth by recency, skills and summary rules.
 **Triggers:** resume generation (Phase 2 & 3)
 
 ### resume-tailoring
-JD parsing, company research, experience-to-JD mapping.
+Pre-draft intake: standing preferences, `jd-keywords.json`, evidence map, one round of questions. Then tailoring.
 **Triggers:** `make resume for [Company/Role]`
 
 ### resume-ats-optimizer
-ATS compatibility scoring, keyword gap analysis.
+Runs `scripts/ats-check.py` (layout, parsing, content, JD keyword coverage) and the fix for each finding.
 **Triggers:** `ats check`, automatically after resume generation
 
 ### resume-humanizer
@@ -48,7 +48,7 @@ Detects and fixes AI-sounding phrasing.
 **Triggers:** automatically after resume generation, or `humanize this`
 
 ### pdf-export
-Puppeteer-based HTML→PDF rendering with full margin/padding/font control.
+Builds `resume.md` into HTML and PDF with `scripts/render-resume.py`, auto-fitted to the page target.
 **Triggers:** `export pdf`, automatically after resume generation
 
 ---

@@ -4,11 +4,18 @@ HTML/CSS templates used by the pdf-export skill to render professional resume PD
 
 ## How Templates Work
 
-Each template is a self-contained HTML/CSS file with a `{{RESUME_CONTENT}}` placeholder where
-the generated resume content gets injected before PDF rendering.
+Each template is a self-contained HTML/CSS file with two placeholders:
 
-The pdf-export skill handles the injection automatically — you never edit templates manually
-during a job search session.
+- `{{RESUME_CONTENT}}` — where `scripts/render-resume.py` injects the resume
+- `{{DENSITY}}` — a class on `<body>` (`roomy`, `normal`, `compact`, `tight`). The renderer tries
+  each and keeps the roomiest one that fits the page target, so a template must style all four.
+
+```bash
+python3 scripts/render-resume.py resumes/<folder> --template <name>
+```
+
+The class names the renderer emits are listed in `skills/pdf-export/SKILL.md`. You never edit
+templates by hand during a job search session.
 
 ## Adding Templates
 

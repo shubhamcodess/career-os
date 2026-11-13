@@ -1,6 +1,7 @@
 <!-- default: true -->
-<!-- Career OS — Default Resume Template -->
-<!-- Rendered to PDF via Puppeteer. Margins controlled by export-pdf.js. -->
+<!-- Career OS — Default Resume Template (single column, ATS-safe, split header) -->
+<!-- Filled by scripts/render-resume.py. Margins are set by scripts/export-pdf.js. -->
+<!-- {{DENSITY}} is one of: roomy | normal | compact | tight (picked automatically to fit the page target). -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,63 +10,60 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
+  /* ── Density knobs: the renderer switches the body class until the page target fits ── */
+  body          { --li: 9.6pt; --li-gap: 2.4px; --li-lh: 1.36; --sec-gap: 6px;  --role-gap: 5px; --sum-lh: 1.42; }
+  body.roomy    { --li: 9.8pt; --li-gap: 3.2px; --li-lh: 1.40; --sec-gap: 10px; --role-gap: 7px; --sum-lh: 1.48; }
+  body.compact  { --li: 9.4pt; --li-gap: 2px;   --li-lh: 1.33; --sec-gap: 6px;  --role-gap: 4px; --sum-lh: 1.38; }
+  body.tight    { --li: 9.2pt; --li-gap: 1.5px; --li-lh: 1.30; --sec-gap: 5px;  --role-gap: 3px; --sum-lh: 1.34; }
+
   body {
-    font-family: 'Calibri', 'Segoe UI', Arial, sans-serif;
-    font-size: 10.5pt;
+    font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+    font-size: 10pt;
     line-height: 1.45;
     color: #1a1a1a;
     background: white;
   }
+  a { color: #1e3a5f; text-decoration: none; }
+  .nb { white-space: nowrap; }   /* number compounds such as "41-tool" never break at the hyphen */
 
-  /* ── Header ── */
+  /* ── Header: identity on the left, links stacked on the right.
+        The left block comes first in the DOM so an ATS reads name → contact → links. ── */
   .header {
-    text-align: center;
-    margin-bottom: 16px;
-    padding-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
     border-bottom: 2px solid #1e3a5f;
   }
-  .name {
-    font-size: 24pt;
-    font-weight: 700;
-    color: #1e3a5f;
-    letter-spacing: 0.5px;
-    margin-bottom: 5px;
-  }
-  .title-line {
-    font-size: 11pt;
-    color: #444;
-    font-weight: 400;
-    margin-bottom: 6px;
-  }
-  .contact-line {
-    font-size: 9pt;
-    color: #555;
-    display: flex;
-    justify-content: center;
-    gap: 18px;
-    flex-wrap: wrap;
-  }
-  .contact-line a { color: #1e3a5f; text-decoration: none; }
-  .contact-line span::before { content: '·'; margin-right: 18px; color: #999; }
-  .contact-line span:first-child::before { content: none; margin-right: 0; }
+  .header .id { flex-shrink: 0; }
+  .name { font-size: 20pt; font-weight: 700; color: #1e3a5f; letter-spacing: 0.5px; margin-bottom: 1px; }
+  .headline { font-size: 10.5pt; color: #444; margin-bottom: 3px; }
+  .contact { font-size: 8.3pt; color: #555; white-space: nowrap; }
+  .contact .sep { color: #aaa; margin: 0 2px; }
+  .links { text-align: right; font-size: 8.2pt; line-height: 1.5; }
+  .header.centered { display: block; text-align: center; }
+  .header.centered .links { text-align: center; margin-top: 2px; }
+  .header.centered .links div { display: inline; margin: 0 7px; }
+
+  /* Small, quiet icons in front of visible URLs. Decorative only: the URL text is what an ATS reads. */
+  .ic { width: 8px; height: 8px; vertical-align: -0.5px; margin-right: 3px; color: #a0aab6; }
+  a.plink { color: #4a5568; white-space: nowrap; }
 
   /* ── Summary ── */
   .summary {
-    font-size: 10pt;
-    line-height: 1.55;
+    font-size: var(--li);
+    line-height: var(--sum-lh);
     color: #222;
-    margin-bottom: 14px;
-    padding: 8px 12px;
+    margin-bottom: 10px;
+    padding: 6px 10px;
     background: #f7f9fc;
     border-left: 3px solid #1e3a5f;
     border-radius: 0 4px 4px 0;
   }
 
-  /* ── Section ── */
-  .section {
-    margin-bottom: 14px;
-    page-break-inside: avoid;
-  }
+  /* ── Sections ── */
+  .section { margin-bottom: var(--sec-gap); }
   .section-title {
     font-size: 9.5pt;
     font-weight: 700;
@@ -74,118 +72,35 @@
     color: #1e3a5f;
     border-bottom: 1.5px solid #1e3a5f;
     padding-bottom: 3px;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
+    page-break-after: avoid;
   }
 
-  /* ── Experience Entry ── */
-  .entry {
-    margin-bottom: 10px;
-    page-break-inside: avoid;
-  }
-  .entry-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 1px;
-  }
-  .company {
-    font-weight: 700;
-    font-size: 10.5pt;
-    color: #111;
-  }
-  .date {
-    font-size: 9pt;
-    color: #666;
-    white-space: nowrap;
-    flex-shrink: 0;
-    margin-left: 12px;
-  }
-  .role-location {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 4px;
-  }
-  .role {
-    font-style: italic;
-    font-size: 10pt;
-    color: #333;
-    font-weight: 500;
-  }
-  .location {
-    font-size: 9pt;
-    color: #777;
-  }
+  /* ── Rows: label on the left, detail on the right ── */
+  .row { display: flex; justify-content: space-between; align-items: baseline; page-break-after: avoid; }
+  .row .right { font-size: 9pt; color: #666; white-space: nowrap; flex-shrink: 0; margin-left: 12px; }
+  .row.company { margin-bottom: 2px; }
+  .row.company .left { font-weight: 700; font-size: 10.5pt; color: #111; }
+  .row.role { margin-top: var(--role-gap); margin-bottom: 2px; }
+  .row.role .left { font-style: italic; font-size: 10pt; color: #333; font-weight: 500; }
+  .row.project { margin-top: var(--role-gap); }
+  .row.project .name-tag { font-weight: 700; font-size: 10.5pt; }
+  .row.project .tech { font-size: 8.8pt; color: #555; font-style: italic; margin-left: 4px; }
+  .row.project .right { font-size: 8.6pt; }
+  .row.project .right a.plink { margin-left: 7px; font-size: 7.9pt; }
+  .row.edu .left .inst { font-weight: 700; font-size: 10.5pt; }
+  .row.edu .left .deg { font-size: 10pt; color: #444; font-style: italic; }
 
   /* ── Bullets ── */
-  ul {
-    padding-left: 14px;
-    margin-top: 3px;
-  }
-  ul li {
-    margin-bottom: 3px;
-    font-size: 10pt;
-    line-height: 1.42;
-    color: #1a1a1a;
-  }
-  ul li::marker {
-    color: #1e3a5f;
-    font-size: 9pt;
-  }
+  ul { padding-left: 14px; margin-top: 2px; }
+  ul li { margin-bottom: var(--li-gap); font-size: var(--li); line-height: var(--li-lh); color: #1a1a1a; page-break-inside: avoid; }
+  ul li::marker { color: #1e3a5f; font-size: 9pt; }
 
-  /* ── Skills Grid ── */
-  .skills-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  .skills-table td {
-    padding: 2px 0;
-    font-size: 10pt;
-    vertical-align: top;
-  }
-  .skill-label {
-    font-weight: 600;
-    color: #333;
-    white-space: nowrap;
-    padding-right: 12px;
-    width: 130px;
-  }
-  .skill-values {
-    color: #1a1a1a;
-  }
-
-  /* ── Education ── */
-  .edu-entry {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 4px;
-  }
-  .edu-left .institution { font-weight: 700; font-size: 10.5pt; }
-  .edu-left .degree { font-size: 10pt; color: #444; font-style: italic; }
-  .edu-right { text-align: right; font-size: 9pt; color: #666; white-space: nowrap; }
-
-  /* ── Projects ── */
-  .project-entry { margin-bottom: 8px; page-break-inside: avoid; }
-  .project-header { display: flex; justify-content: space-between; align-items: baseline; }
-  .project-name { font-weight: 700; font-size: 10.5pt; }
-  .project-link { font-size: 9pt; color: #1e3a5f; }
-  .project-tech { font-size: 9pt; color: #555; font-style: italic; margin-bottom: 3px; }
-
-  /* ── Certifications ── */
-  .cert-entry {
-    display: flex;
-    justify-content: space-between;
-    font-size: 10pt;
-    margin-bottom: 3px;
-  }
-
-  /* ── Page Breaks ── */
-  h1, .section-title { page-break-after: avoid; }
-  .entry, .project-entry, .edu-entry { page-break-inside: avoid; }
+  /* ── Plain lines (certifications, free text) ── */
+  .line { font-size: var(--li); line-height: 1.45; }
 </style>
 </head>
-<body>
+<body class="{{DENSITY}}">
 <div class="page">
   {{RESUME_CONTENT}}
 </div>

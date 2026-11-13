@@ -169,6 +169,8 @@ career-os/
 │   ├── careers-crawler.py        ← Browser discovery (on demand) + recipe extraction (daily)
 │   ├── naukri-scraper.py         ← Naukri via Playwright
 │   ├── mcp-budget.py             ← Connector usage ledger + cap enforcement
+│   ├── render-resume.py          ← resume.md → html → pdf, auto-fitted to the page target
+│   ├── ats-check.py              ← Reads the built PDF as an ATS does: layout, parsing, content, JD keywords
 │   ├── status.py                 ← Read-only JSON snapshot of all local state for `status`
 │   ├── recruiters.py             ← Recruiter contact list: cap, follow-ups, do-not-contact
 │   ├── sync-vault.sh             ← Personal data backup to the private repo
@@ -360,9 +362,10 @@ Every generated resume lives in its own folder under `resumes/`:
 
 ```
 resumes/Razorpay_SeniorPM_2026-09-07_v1/
-├── resume.md      ← Editable source
-├── resume.html    ← Styled HTML (from active template)
-└── resume.pdf     ← Final PDF (via Puppeteer)
+├── resume.md         ← Editable source (format in skills/resume-builder/SKILL.md)
+├── jd-keywords.json  ← The job's terms, written once, scored on every version
+├── resume.html       ← Built by scripts/render-resume.py from the active template
+└── resume.pdf        ← Final PDF (via Puppeteer)
 ```
 
 **Naming:** `[Company]_[Role]_[YYYY-MM-DD]_v[N]`
@@ -372,15 +375,16 @@ minimum-qualification gate, Google's 3-applications-per-30-days budget, and Goog
 own bullet formula on top of the pipeline below.
 
 **Full pipeline on `make resume for [Company/Role]`:**
-1. Check for existing company-intel and role-portrait; offer to refresh if stale
-2. Fetch/parse JD → `resume-tailoring` skill
-3. Build resume → `resume-builder` skill
-4. Run ATS check → `resume-ats-optimizer` skill
-5. Run humanizer pass → `resume-humanizer` skill
-6. Save `resume.md`, generate `resume.html` and `resume.pdf` → `pdf-export` skill
-7. Log to `data/version-registry.md`
-8. Commit all files
-9. Offer: "Generate a cover letter for this application? (`make cover letter for [Company/Role]`)"
+1. Read `data/resume-preferences.md` (the user's standing resume decisions) and the latest resume folder
+2. Check for existing company-intel and role-portrait; offer to refresh if stale
+3. Fetch/parse JD, write `jd-keywords.json`, map evidence, ask open questions once → `resume-tailoring` skill
+4. Write `resume.md` → `resume-builder` skill, then humanizer pass → `resume-humanizer` skill
+5. Build: `python3 scripts/render-resume.py resumes/[folder]` → `pdf-export` skill
+6. Check: `python3 scripts/ats-check.py resumes/[folder]` → `resume-ats-optimizer` skill. Fix and rebuild until 0 fails, 0 warnings
+7. Look at the PDF once, then show the user. Log to `data/version-registry.md`
+8. Back up: `bash scripts/sync-vault.sh -m "resume: …"` (resume folders are personal data, never committed to the framework repo)
+9. When the user corrects a draft: batch every fix from their message into one new version, and record standing preferences in `data/resume-preferences.md`
+10. Offer: "Generate a cover letter for this application? (`make cover letter for [Company/Role]`)"
 
 **For `make cover letter for [Company/Role]`** — reads `skills/cover-letter/SKILL.md`:
 1. Locate the targeted `resume.md` for this company/role (latest version)
@@ -438,6 +442,7 @@ git commit -m "market: refreshed job feed — 34 listings, 6 strong matches"
 | `data/master-experience.md` | Complete professional story — never fabricate, only frame |
 | `data/star-stories.md` | STAR behavioral stories tagged by competency |
 | `data/version-registry.md` | Every resume: company, role, version, date, changes, status |
+| `data/resume-preferences.md` | Standing resume decisions (layout, wording, numbers, links) — read before every resume |
 | `data/portfolio-brief.md` | Portfolio website content (human-readable) |
 | `data/job-tracker.md` | Every application: source, status, next action |
 | `data/comp-intel.md` | Market salary/equity data and negotiation positions |

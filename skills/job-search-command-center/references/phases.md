@@ -59,16 +59,18 @@ Generate from `master-experience.md`. Comprehensive, unabridged, full inventory.
 
 **Trigger:** `make resume for [Company/Role]` + job posting (URL or text)
 
-1. **Fetch JD** — if URL given, read it. Extract: required skills, preferred skills, implicit signals, red flags, seniority signals.
-2. **Research company** — product, tech stack, growth stage, recent news, engineering culture, Glassdoor signals. For Indian product companies (Meesho, Razorpay, Zepto, Groww, CRED, etc.) note stage, scale, domain specifically.
-3. **Cross-reference** with `master-experience.md` — map: strong matches (direct), partial matches (reframeable), gaps (flag honestly).
-4. **Generate tailored resume:**
-   - Prioritize what's most relevant to this role
-   - Mirror the company's language and terminology
-   - Surface 2–3 most relevant projects prominently
-   - 100% truthful — optimize framing, never fabricate
-   - Length: 1 page (under 5 years), 2 pages (5+ years)
-5. **Auto-run Phase 4** immediately after generation.
+0. **Load standing decisions** — `data/resume-preferences.md`, `config/user.json` profile, the latest resume folder and `data/version-registry.md`. Never re-ask what they answer. (`skills/resume-tailoring/SKILL.md`, Step 0)
+1. **Fetch JD** — if URL given, read it. Write `resumes/[folder]/jd-keywords.json` (required, preferred, gaps) before drafting; it is the fixed yardstick for every version.
+2. **Research company** — product, tech stack, growth stage, recent news, engineering culture, employee-review signals.
+3. **Evidence map** — for every JD term find the evidence in `master-experience.md`, searching every phase including the oldest. Strong / partial / none. Terms with no evidence are gaps: flag them, never word around them.
+4. **Ask once** — collect every open question (missing contact details, certificate links, real numbers, project choice) and ask them together before drafting.
+5. **Write `resume.md`** in the format in `skills/resume-builder/SKILL.md`:
+   - Prioritize what's most relevant to this role; mirror the JD's exact wording
+   - Surface 2–3 most relevant projects
+   - 100% truthful — optimize framing, never fabricate a claim or a number
+   - Length from `config/user.json` → `resume.default_page_length`
+6. **Build** — `python3 scripts/render-resume.py resumes/[folder]` (auto-fits the page target).
+7. **Auto-run Phase 4** immediately after the build, and fix what it finds before showing the user.
 
 ---
 
@@ -80,8 +82,7 @@ Generate from `master-experience.md`. Comprehensive, unabridged, full inventory.
 
 | Check | What to Do |
 |---|---|
-| ATS Compatibility | Scan for: tables, columns, text boxes, headers/footers, images, non-standard fonts, non-parseable PDFs. Score /100. |
-| Keyword Match | Compare vs JD keywords (required + preferred). Show matched ✅, missing ❌, underrepresented ⚠️. Target 80%+. |
+| ATS Compatibility + Keyword Match | Run `python3 scripts/ats-check.py resumes/[folder]`. Bar: 0 fails, 0 warnings, required keywords ≥ 85%, preferred ≥ 75%. Fix and rebuild until it passes (`skills/resume-ats-optimizer/SKILL.md`). |
 | Impact Audit | Flag every bullet that is a responsibility vs. an achievement. Prompt user to convert with specific suggestions. |
 | AI-to-Human Pass | If humanizer skill saved, invoke it. Otherwise flag templated/generic sentences. Suggest rewrites that sound human. |
 | Fact Consistency | Cross-check resume against `master-experience.md`. Flag any drift. |

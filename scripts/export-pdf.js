@@ -34,8 +34,10 @@ async function exportPDF(htmlPath, pdfPath) {
   try {
     const page = await browser.newPage();
 
-    // Set viewport to A4 width for accurate rendering
-    await page.setViewport({ width: 794, height: 1123 });
+    // Viewport = the printable width (A4 minus the left/right margins below), so that
+    // anything wider than the page shows up as horizontal overflow we can measure.
+    const PRINTABLE_WIDTH = Math.round((8.27 - 0.65 * 2) * 96);
+    await page.setViewport({ width: PRINTABLE_WIDTH, height: 1123 });
 
     await page.goto(`file://${absoluteHtmlPath}`, {
       waitUntil: 'networkidle0',
@@ -44,6 +46,16 @@ async function exportPDF(htmlPath, pdfPath) {
 
     // Wait for any fonts to load
     await page.evaluateHandle('document.fonts.ready');
+
+    // If any row is wider than the printable area, Chrome shrinks the WHOLE page to fit.
+    // The PDF still looks fine at a glance but every font is smaller and the bottom is empty.
+    // Report it so the caller can shorten the offending row instead.
+    const overflowX = await page.evaluate(
+      (w) => Math.max(0, document.documentElement.scrollWidth - w), PRINTABLE_WIDTH);
+    console.log(`OVERFLOW_X=${overflowX}`);
+    if (overflowX > 0) {
+      console.warn(`  Warning: content is ${overflowX}px wider than the page — the PDF will be scaled down. Shorten the widest row.`);
+    }
 
     await page.pdf({
       path: absolutePdfPath,
