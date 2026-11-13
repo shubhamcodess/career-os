@@ -79,14 +79,18 @@ done
 
 # ── Stage everything (force-add gitignored personal files) ────────────────────
 git add -A
-git add -f checkpoints data resumes config/user.json config/companies.json config/agencies.json 2>/dev/null || true
+# Add each path on its own: a single `git add` naming a path that doesn't exist
+# aborts the whole command, which silently left new (ignored) files unstaged.
+for path in "${PERSONAL_PATHS[@]}"; do
+  if [ -e "$path" ]; then
+    git add -f -- "$path"
+  fi
+done
 
 if git diff --cached --quiet; then
   echo "Nothing changed — vault already up to date."
 else
-  git commit -m "$COMMIT_MSG
-
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
+  git commit -m "$COMMIT_MSG"
   echo "✓ Committed: $COMMIT_MSG"
 fi
 
