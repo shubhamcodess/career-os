@@ -103,7 +103,7 @@ Four paragraphs, strict structure:
 - No "I hope to hear from you soon" — too passive
 
 **Salutation:** "Hi [Hiring Manager name]," if known from intel, otherwise "Hi [Company] Team,"
-**Sign-off:** "Best," followed by full name
+**Sign-off:** "Best regards," followed by full name
 
 ### Step 4 — Humanizer Pass
 
@@ -280,5 +280,5 @@ Before saving, verify:
 - [ ] No banned phrases from the humanizer list
 - [ ] Metrics are preserved exactly (no rounding or paraphrasing)
 - [ ] Salutation is specific (name or team), not "To Whom It May Concern"
-- [ ] Sign-off is "Best," not "Sincerely" or "Regards" (too formal)
+- [ ] Sign-off is "Best regards," not "Sincerely" or a bare "Best,"
 - [ ] PDF renders cleanly on one page
