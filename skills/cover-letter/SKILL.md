@@ -264,7 +264,7 @@ When populating this template, build the HTML body as:
 </div>
 
 <div class="closing">
-  <span class="sign-off">Best,</span>
+  <span class="sign-off">Best regards,</span>
   <span class="sig-name">[Full Name]</span>
 </div>
 ```
