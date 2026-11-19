@@ -171,9 +171,12 @@ def render_body(md_text, header="split"):
                 right = iconize(inline(parts[2])) if len(parts) > 2 else ""
                 out.append(f'<div class="row project"><span class="left"><span class="name-tag">{inline(parts[0])}</span> {tech}</span><span class="right">{right}</span></div>')
             elif "education" in sec:
-                inst = parts[1] if len(parts) > 1 else ""
-                right = parts[2] if len(parts) > 2 else ""
-                out.append(f'<div class="row edu"><span class="left"><span class="inst">{inline(inst)}</span> · <span class="deg">{inline(parts[0])}</span></span><span class="right">{inline(right)}</span></div>')
+                if len(parts) == 2:     # institution | place · years  (degree goes on the next line)
+                    out.append(f'<div class="row edu"><span class="left"><span class="inst">{inline(parts[0])}</span></span><span class="right">{inline(parts[1])}</span></div>')
+                else:
+                    inst = parts[1] if len(parts) > 1 else ""
+                    right = parts[2] if len(parts) > 2 else ""
+                    out.append(f'<div class="row edu"><span class="left"><span class="inst">{inline(inst)}</span> · <span class="deg">{inline(parts[0])}</span></span><span class="right">{inline(right)}</span></div>')
             else:
                 right = " · ".join(parts[1:])
                 out.append(f'<div class="row role"><span class="left">{inline(parts[0])}</span><span class="right">{inline(right)}</span></div>')
