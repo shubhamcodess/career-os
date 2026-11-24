@@ -87,6 +87,10 @@
   .row.company .left { font-weight: 700; font-size: 10.5pt; color: #111; }
   .row.role { margin-top: var(--role-gap); margin-bottom: 2px; }
   .row.role .left { font-style: italic; font-size: 10pt; color: #333; font-weight: 500; }
+  /* Two-line role: title row followed by a plain line naming the product or team.
+     The title becomes the emphasis (bold, upright); the product line drops to secondary text. */
+  .row.role:has(+ .line) .left { font-style: normal; font-weight: 700; color: #1a1a1a; }
+  .row.role + .line { font-style: italic; color: #555; margin-bottom: 2px; }
   .row.project { margin-top: var(--role-gap); }
   .row.project .name-tag { font-weight: 700; font-size: 10.5pt; }
   .row.project .tech { font-size: 8.8pt; color: #555; font-style: italic; margin-left: 4px; }
