@@ -42,9 +42,9 @@
   .headline { font-size: 10.5pt; color: #444; margin-bottom: 3px; }
   .contact { font-size: 8.2pt; color: #555; white-space: nowrap; }
   .contact .sep { color: #aaa; margin: 0 2px; }
-  .links { text-align: right; font-size: 8.2pt; line-height: 1.5; }
+  .links { text-align: right; font-size: 8.2pt; line-height: 1.5; padding-right: 4px; }   /* 4px inset: glyphs flush with the print edge get clipped in some PDF viewers */
   .links a.plink { color: #1f2937; }   /* header links: a shade darker than body links; no stroke, so the PDF text stays plain and parses cleanly */
-  .links div:last-child { border-left: 1px solid #b4bcc8; padding-left: 7px; }   /* small divider on the last row only, between the email and the last link */
+  .links:has(> div:nth-child(4)) div:last-child { border-left: 1px solid #b4bcc8; padding-left: 7px; }   /* divider only when a 4th link drops beside the contact line */
   .header.centered { display: block; text-align: center; }
   .header.centered .links { text-align: center; margin-top: 2px; }
   .header.centered .links div:last-child { border-left: 0; padding-left: 0; }
@@ -82,7 +82,7 @@
 
   /* ── Rows: label on the left, detail on the right ── */
   .row { display: flex; justify-content: space-between; align-items: baseline; page-break-after: avoid; }
-  .row .right { font-size: 9pt; color: #666; white-space: nowrap; flex-shrink: 0; margin-left: 12px; }
+  .row .right { font-size: 9pt; color: #666; white-space: nowrap; flex-shrink: 0; margin-left: 12px; padding-right: 4px; }
   .row.company { margin-bottom: 2px; }
   .row.company .left { font-weight: 700; font-size: 10.5pt; color: #111; }
   .row.role { margin-top: var(--role-gap); margin-bottom: 2px; }
