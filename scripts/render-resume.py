@@ -79,10 +79,11 @@ ICONS = {
 
 
 def inline(text):
-    """Markdown inline → HTML: links, bold, code ticks dropped."""
+    """Markdown inline → HTML: links, bold, *italic*, code ticks dropped."""
     text = html.escape(text, quote=False)
     text = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r'<a href="\2">\1</a>', text)
     text = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", text)
+    text = re.sub(r"(?<![\w*])\*([^*\s][^*]*?)\*(?![\w*])", r"<em>\1</em>", text)   # *italic*
     text = re.sub(r"`([^`]+)`", r"\1", text)
     # Keep number compounds ("41-tool", "500-case", "400K-record") on one line: a break after
     # the hyphen strands the number at the end of a line.
